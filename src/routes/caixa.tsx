@@ -31,12 +31,12 @@ import {
   categoriasSaida,
   formatarData,
   lancamentos as iniciais,
-  podeVerCaixa,
-  usuarioAtual,
   type FormaPagamento,
   type Lancamento,
   type TipoLancamento,
 } from "@/lib/church-data";
+import { usePerfil } from "@/hooks/usePerfil";
+import { podeVerCaixaPerfil } from "@/lib/permissoes";
 
 export const Route = createFileRoute("/caixa")({
   head: () => ({
@@ -82,6 +82,9 @@ const rotuloMes = (m: string) => {
 };
 
 function Caixa() {
+  const { perfil, permissao, carregando } = usePerfil();
+  const nomeResponsavel = perfil?.nome ?? "Tesouraria";
+  const [editandoId, setEditandoId] = useState<string | null>(null);
   const [itens, setItens] = useState<Lancamento[]>(iniciais);
   const [mesesFechados, setMesesFechados] = useState<string[]>([]);
   const [montado, setMontado] = useState(false);
@@ -163,14 +166,14 @@ function Caixa() {
     return { e, s, saldo: e - s };
   }, [filtrados]);
 
-  if (!podeVerCaixa(usuarioAtual.cargo)) {
+  if (!carregando && !podeVerCaixaPerfil(permissao)) {
     return (
       <AppShell>
         <PageHeader title="Livro Caixa" />
         <div className="surface-card mx-5 mt-5 p-5 text-center">
           <Lock className="mx-auto size-8 text-primary" />
           <p className="mt-3 text-sm">
-            Acesso restrito ao Auxiliar de Caixa, Pastor, Presbítero e Fundador.
+            Acesso restrito ao Auxiliar de Caixa, Admin, Pastor, Presbítero e Fundador.
           </p>
         </div>
       </AppShell>
@@ -188,9 +191,55 @@ function Caixa() {
     reader.readAsDataURL(file);
   };
 
+  const limparForm = () => {
+    setEditandoId(null);
+    limparForm();
+  };
+
+  const editar = (i: Lancamento) => {
+    setEditandoId(i.id);
+    setTipo(i.tipo);
+    setCategoria(i.categoria);
+    setDescricao(i.descricao);
+    setValor(String(i.valor).replace(".", ","));
+    setData(i.dataISO);
+    setForma(i.forma);
+    setObservacao(i.observacao ?? "");
+    setComprovante(i.comprovante ?? null);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const excluir = (id: string) => {
+    if (!window.confirm("Excluir este lançamento definitivamente?")) return;
+    setItens((atual) => atual.filter((x) => x.id !== id));
+    if (editandoId === id) limparForm();
+  };
+
   const lancar = () => {
     const v = Number(valor.replace(/\./g, "").replace(",", "."));
     if (!v || !descricao.trim() || mesTravado) return;
+    if (editandoId) {
+      setItens((atual) =>
+        atual.map((x) =>
+          x.id === editandoId
+            ? {
+                ...x,
+                tipo,
+                categoria,
+                descricao: descricao.trim(),
+                valor: v,
+                data: formatarData(data),
+                dataISO: data,
+                forma,
+                observacao: observacao.trim() || undefined,
+                comprovante,
+              }
+            : x,
+        ),
+      );
+      limparForm();
+      return;
+    }
     setItens([
       {
         id: crypto.randomUUID(),
@@ -200,7 +249,7 @@ function Caixa() {
         valor: v,
         data: formatarData(data),
         dataISO: data,
-        responsavel: usuarioAtual.nome,
+        responsavel: nomeResponsavel,
         forma,
         observacao: observacao.trim() || undefined,
         comprovante,
@@ -234,7 +283,7 @@ td.v{text-align:right;white-space:nowrap}
 .tot{margin-top:20px;font-size:14px}
 </style></head><body>
 <h1>Igreja Presbiteriana Renovada — Livro Caixa</h1>
-<p class="sub">Relatório de ${rotuloMes(mesRelatorio)} · emitido por ${usuarioAtual.nome}</p>
+<p class="sub">Relatório de ${rotuloMes(mesRelatorio)} · emitido por ${nomeResponsavel}</p>
 <table><thead><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th>Forma</th><th>Lançado por</th><th>Valor</th></tr></thead><tbody>
 ${linhas
   .map(
@@ -465,7 +514,7 @@ ${linhas
           ) : null}
 
           <Button onClick={lancar} disabled={mesTravado} className="mt-3 w-full">
-            Registrar como {usuarioAtual.nome}
+            {editandoId ? "Salvar alterações" : `Registrar como ${nomeResponsavel}`}
           </Button>
           {mesTravado ? (
             <p className="mt-2 text-center text-[11px] text-destructive">
@@ -588,6 +637,22 @@ ${linhas
                 {i.tipo === "entrada" ? "+" : "-"}
                 {brl(i.valor)}
               </span>
+              <div className="flex shrink-0 flex-col gap-1">
+                <button
+                  aria-label={`Editar ${i.descricao}`}
+                  onClick={() => editar(i)}
+                  className="rounded-lg bg-secondary p-1.5 text-primary"
+                >
+                  <Pencil className="size-3.5" />
+                </button>
+                <button
+                  aria-label={`Excluir ${i.descricao}`}
+                  onClick={() => excluir(i.id)}
+                  className="rounded-lg bg-secondary p-1.5 text-destructive"
+                >
+                  <Trash2 className="size-3.5" />
+                </button>
+              </div>
             </div>
           ))}
           {filtrados.length === 0 ? (
