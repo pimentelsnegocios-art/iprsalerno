@@ -81,17 +81,14 @@ function MinisterioPage() {
           alt={`Capa do ${conteudo.nome}`}
           width={1024}
           height={1024}
-          className="h-[300px] w-full object-cover"
+          className="h-[300px] w-full object-contain object-top"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-background/85 via-background/25 to-background" />
 
-        <div className="absolute inset-x-0 top-0 flex items-center justify-between px-4 pt-4">
-          <Link
-            to="/ministerios"
-            className="inline-flex items-center gap-1 rounded-full bg-background/50 px-2.5 py-1.5 text-xs backdrop-blur"
-          >
-            <ChevronLeft className="size-4" /> Voltar
-          </Link>
+        <div
+          className="absolute inset-x-0 top-0 flex items-center justify-end px-4 pt-4"
+          style={{ paddingTop: "calc(1rem + env(safe-area-inset-top))" }}
+        >
           <Bell className="size-5 text-primary" />
         </div>
 

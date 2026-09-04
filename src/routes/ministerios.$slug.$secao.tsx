@@ -47,7 +47,6 @@ function SecaoPage() {
       <PageHeader
         title={`${meta.emoji} ${meta.label}`}
         subtitle={`${conteudo.nome} · ${conteudo.subtitulo}`}
-        back={`/ministerios/${conteudo.slug}`}
       />
       <div className="px-5 py-5">
         {!temAcesso ? (
