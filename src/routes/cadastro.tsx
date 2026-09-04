@@ -4,7 +4,12 @@ import { useState } from "react";
 
 import dove from "@/assets/dove.png";
 import { acoes, type Membro } from "@/lib/app-store";
-import { ministerios } from "@/lib/ministerio-data";
+
+const OPCOES_MINISTERIO: { valor: Membro["ministerio"]; nome: string }[] = [
+  { valor: "louvor", nome: "Ministério de Louvor" },
+  { valor: "jovens", nome: "Ministério de Jovens" },
+  { valor: "irmas", nome: "Ministério de Irmãs" },
+];
 
 export const Route = createFileRoute("/cadastro")({
   head: () => ({
