@@ -5,7 +5,7 @@ import { AppShell, PageHeader } from "@/components/AppShell";
 import { ministerios, usuarioAtual, ehLideranca } from "@/lib/church-data";
 import { ministeriosConteudo } from "@/lib/ministerio-data";
 
-export const Route = createFileRoute("/ministerios/$slug")({
+export const Route = createFileRoute("/ministerios/$slug/")({
   head: () => ({
     meta: [
       { title: "Ministério — IPR" },
