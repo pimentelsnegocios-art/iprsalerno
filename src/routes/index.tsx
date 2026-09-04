@@ -13,6 +13,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 
+import { AniversariantesHoje } from "@/components/AniversariantesHoje";
 import { AppShell } from "@/components/AppShell";
 import { cultos, usuarioAtual } from "@/lib/church-data";
 import { useAppStore } from "@/lib/app-store";

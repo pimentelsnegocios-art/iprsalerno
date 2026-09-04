@@ -47,7 +47,6 @@ const MINISTERIOS = [
   "Infantil",
   "Recepção",
 ] as const;
-const STATUS = ["Membro", "Visitante", "Liderança"] as const;
 const PASSOS = ["Batismo", "Curso de Membros", "Voluntariado"] as const;
 
 interface Profile {
@@ -543,7 +542,6 @@ function ModalEditar({
     nascimento: perfil.nascimento ?? "",
     batismo: perfil.batismo ?? "",
     ministerio: perfil.ministerio ?? "",
-    status: perfil.status,
     versiculo: perfil.versiculo ?? "",
     bio: perfil.bio ?? "",
   });
@@ -561,7 +559,6 @@ function ModalEditar({
         nascimento: form.nascimento || null,
         batismo: form.batismo || null,
         ministerio: form.ministerio || null,
-        status: form.status,
         versiculo: form.versiculo || null,
         bio: form.bio || null,
       })
@@ -628,17 +625,6 @@ function ModalEditar({
           {MINISTERIOS.map((m) => (
             <option key={m} value={m}>
               {m}
-            </option>
-          ))}
-        </select>
-        <select
-          value={form.status}
-          onChange={(e) => setForm({ ...form, status: e.target.value })}
-          className={campoCls}
-        >
-          {STATUS.map((s) => (
-            <option key={s} value={s}>
-              {s}
             </option>
           ))}
         </select>
