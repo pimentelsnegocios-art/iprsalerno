@@ -84,24 +84,10 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "mural_autor_id_fkey"
-            columns: ["autor_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "mural_profile_id_fkey"
             columns: ["profile_id"]
             isOneToOne: false
             referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "mural_profile_id_fkey"
-            columns: ["profile_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -196,13 +182,6 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "proximos_passos_profile_id_fkey"
-            columns: ["profile_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
         ]
       }
       user_roles: {
@@ -225,35 +204,17 @@ export type Database = {
       }
     }
     Views: {
-      public_profiles: {
-        Row: {
-          dia_aniversario: number | null
-          foto_url: string | null
-          id: string | null
-          mes_aniversario: number | null
-          ministerio: string | null
-          nome: string | null
-        }
-        Insert: {
-          dia_aniversario?: never
-          foto_url?: string | null
-          id?: string | null
-          mes_aniversario?: never
-          ministerio?: string | null
-          nome?: string | null
-        }
-        Update: {
-          dia_aniversario?: never
-          foto_url?: string | null
-          id?: string | null
-          mes_aniversario?: never
-          ministerio?: string | null
-          nome?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
+      aniversariantes_hoje: {
+        Args: never
+        Returns: {
+          foto_url: string
+          id: string
+          nome: string
+        }[]
+      }
       check_aniversariantes_hoje: { Args: never; Returns: number }
       has_role: {
         Args: {
