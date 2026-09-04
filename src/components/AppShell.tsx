@@ -2,13 +2,16 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { Home, Book, CalendarDays, Sun, MoreHorizontal } from "lucide-react";
 import type { ReactNode } from "react";
 
-const tabs = [
-  { to: "/", label: "Início", Icon: Home, match: (p: string) => p === "/" },
-  { to: "/culto/quinta", label: "Quinta", Icon: Book, match: (p: string) => p === "/culto/quinta" },
-  { to: "/culto/sabado", label: "Sábado", Icon: CalendarDays, match: (p: string) => p === "/culto/sabado" },
-  { to: "/culto/domingo", label: "Domingo", Icon: Sun, match: (p: string) => p === "/culto/domingo" },
-  { to: "/mais", label: "Mais", Icon: MoreHorizontal, match: (p: string) => p === "/mais" },
+const cultoTabs = [
+  { dia: "quinta", label: "Quinta", Icon: Book },
+  { dia: "sabado", label: "Sábado", Icon: CalendarDays },
+  { dia: "domingo", label: "Domingo", Icon: Sun },
 ] as const;
+
+const linkClass = (active: boolean) =>
+  `flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium transition-colors ${
+    active ? "text-primary" : "text-soft"
+  }`;
 
 export function BottomNav() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -19,21 +22,23 @@ export function BottomNav() {
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
       <div className="mx-auto flex max-w-lg items-stretch">
-        {tabs.map(({ to, label, Icon, match }) => {
-          const active = match(pathname);
+        <Link to="/" className={linkClass(pathname === "/")}>
+          <Home className="size-5" strokeWidth={pathname === "/" ? 2.4 : 1.8} />
+          Início
+        </Link>
+        {cultoTabs.map(({ dia, label, Icon }) => {
+          const active = pathname === `/culto/${dia}`;
           return (
-            <Link
-              key={to}
-              to={to}
-              className={`flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium transition-colors ${
-                active ? "text-primary" : "text-soft"
-              }`}
-            >
+            <Link key={dia} to="/culto/$dia" params={{ dia }} className={linkClass(active)}>
               <Icon className="size-5" strokeWidth={active ? 2.4 : 1.8} />
               {label}
             </Link>
           );
         })}
+        <Link to="/mais" className={linkClass(pathname === "/mais")}>
+          <MoreHorizontal className="size-5" strokeWidth={pathname === "/mais" ? 2.4 : 1.8} />
+          Mais
+        </Link>
       </div>
     </nav>
   );
