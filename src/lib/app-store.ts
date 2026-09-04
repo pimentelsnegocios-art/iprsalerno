@@ -196,4 +196,20 @@ export const acoes = {
     };
     emit();
   },
+  cadastrarMembro(m: { nome: string; email: string; ministerio: Membro["ministerio"] }) {
+    const novo: Membro = {
+      id: crypto.randomUUID(),
+      nome: m.nome,
+      email: m.email,
+      cargo: "Membro",
+      ministerio: m.ministerio,
+      funcao: "Participante",
+      acesso: "Membro",
+      status: "pendente",
+      foto: null,
+    };
+    state = { ...state, membros: [novo, ...state.membros] };
+    emit();
+    return novo;
+  },
 };
