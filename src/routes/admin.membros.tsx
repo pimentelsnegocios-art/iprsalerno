@@ -8,7 +8,14 @@ import { AppShell, PageHeader } from "@/components/AppShell";
 import { PainelAcessos } from "@/components/PainelAcessos";
 import { supabase } from "@/integrations/supabase/client";
 import { excluirUsuario } from "@/lib/admin.functions";
-import { OPCOES_MINISTERIOS, listaMinisterios } from "@/lib/ministerios-opcoes";
+import { listaMinisterios } from "@/lib/ministerios-opcoes";
+import { usePerfil } from "@/hooks/usePerfil";
+import {
+  CARGOS,
+  MINISTERIOS_DISPONIVEIS,
+  podeAprovarCadastros,
+  podeExcluirMembros,
+} from "@/lib/permissoes";
 
 export const Route = createFileRoute("/admin/membros")({
   ssr: false,
@@ -38,8 +45,6 @@ interface Conta {
   foto_url: string | null;
 }
 
-const cargos = ["Membro", "Auxiliar de Caixa", "Presbítero", "Pastor", "Admin", "Fundador"];
-
 const tabs = [
   { key: "Pendente", label: "Pendentes" },
   { key: "Aprovado", label: "Aprovados" },
@@ -49,6 +54,7 @@ const tabs = [
 const FUNDADOR = "louvoriprb7@gmail.com";
 
 function AdminMembros() {
+  const { permissao, carregando: carregandoPerfil } = usePerfil();
   const [contas, setContas] = useState<Conta[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [ehAdmin, setEhAdmin] = useState(false);
@@ -106,7 +112,9 @@ function AdminMembros() {
 
   const emEdicao = contas.find((c) => c.id === aberto) ?? null;
   const pendentes = contas.filter((c) => c.status === "Pendente").length;
+  const gestor = ehAdmin || podeAprovarCadastros(permissao);
   const podeExcluir =
+    podeExcluirMembros(permissao) &&
     ehAdmin &&
     emEdicao != null &&
     emEdicao.id !== meuId &&
@@ -127,7 +135,7 @@ function AdminMembros() {
     setExcluindo(false);
   }
 
-  if (carregando) {
+  if (carregando || carregandoPerfil) {
     return (
       <AppShell>
         <PageHeader title="Hall de Membros" />
@@ -138,7 +146,7 @@ function AdminMembros() {
     );
   }
 
-  if (!ehAdmin) {
+  if (!gestor) {
     return (
       <AppShell>
         <PageHeader title="Hall de Membros" />
@@ -281,7 +289,7 @@ function AdminMembros() {
               Trocar cargo
             </p>
             <div className="mt-1 flex flex-wrap gap-1.5">
-              {cargos.map((c) => (
+              {CARGOS.map((c) => (
                 <button
                   key={c}
                   onClick={() => atualizar(emEdicao.id, { cargo: c })}
@@ -300,7 +308,7 @@ function AdminMembros() {
               Ministérios (pode marcar vários)
             </p>
             <div className="mt-1 flex flex-wrap gap-1.5">
-              {OPCOES_MINISTERIOS.map((nome) => {
+              {MINISTERIOS_DISPONIVEIS.map((nome) => {
                 const marcado = (emEdicao.ministerios ?? []).includes(nome);
                 return (
                   <button
