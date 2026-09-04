@@ -23,6 +23,7 @@ import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as CultoDiaRouteImport } from './routes/culto.$dia'
 import { Route as MinisteriosIndexRouteImport } from './routes/ministerios.index'
 import { Route as MinisteriosSlugIndexRouteImport } from './routes/ministerios.$slug.index'
+import { Route as MinisteriosSlugSecaoRouteImport } from './routes/ministerios.$slug.$secao'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -94,6 +95,11 @@ const MinisteriosSlugIndexRoute = MinisteriosSlugIndexRouteImport.update({
   path: '/$slug/',
   getParentRoute: () => MinisteriosRoute,
 } as any)
+const MinisteriosSlugSecaoRoute = MinisteriosSlugSecaoRouteImport.update({
+  id: '/$slug/$secao',
+  path: '/$slug/$secao',
+  getParentRoute: () => MinisteriosRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -109,6 +115,7 @@ export interface FileRoutesByFullPath {
   '/perfil': typeof PerfilRoute
   '/culto/$dia': typeof CultoDiaRoute
   '/ministerios/': typeof MinisteriosIndexRoute
+  '/ministerios/$slug/$secao': typeof MinisteriosSlugSecaoRoute
   '/ministerios/$slug/': typeof MinisteriosSlugIndexRoute
 }
 export interface FileRoutesByTo {
@@ -124,6 +131,7 @@ export interface FileRoutesByTo {
   '/perfil': typeof PerfilRoute
   '/culto/$dia': typeof CultoDiaRoute
   '/ministerios': typeof MinisteriosIndexRoute
+  '/ministerios/$slug/$secao': typeof MinisteriosSlugSecaoRoute
   '/ministerios/$slug': typeof MinisteriosSlugIndexRoute
 }
 export interface FileRoutesById {
@@ -141,6 +149,7 @@ export interface FileRoutesById {
   '/perfil': typeof PerfilRoute
   '/culto/$dia': typeof CultoDiaRoute
   '/ministerios/': typeof MinisteriosIndexRoute
+  '/ministerios/$slug/$secao': typeof MinisteriosSlugSecaoRoute
   '/ministerios/$slug/': typeof MinisteriosSlugIndexRoute
 }
 export interface FileRouteTypes {
@@ -159,6 +168,7 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/culto/$dia'
     | '/ministerios/'
+    | '/ministerios/$slug/$secao'
     | '/ministerios/$slug/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -174,6 +184,7 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/culto/$dia'
     | '/ministerios'
+    | '/ministerios/$slug/$secao'
     | '/ministerios/$slug'
   id:
     | '__root__'
@@ -190,6 +201,7 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/culto/$dia'
     | '/ministerios/'
+    | '/ministerios/$slug/$secao'
     | '/ministerios/$slug/'
   fileRoutesById: FileRoutesById
 }
@@ -308,16 +320,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MinisteriosSlugIndexRouteImport
       parentRoute: typeof MinisteriosRoute
     }
+    '/ministerios/$slug/$secao': {
+      id: '/ministerios/$slug/$secao'
+      path: '/$slug/$secao'
+      fullPath: '/ministerios/$slug/$secao'
+      preLoaderRoute: typeof MinisteriosSlugSecaoRouteImport
+      parentRoute: typeof MinisteriosRoute
+    }
   }
 }
 
 interface MinisteriosRouteChildren {
   MinisteriosIndexRoute: typeof MinisteriosIndexRoute
+  MinisteriosSlugSecaoRoute: typeof MinisteriosSlugSecaoRoute
   MinisteriosSlugIndexRoute: typeof MinisteriosSlugIndexRoute
 }
 
 const MinisteriosRouteChildren: MinisteriosRouteChildren = {
   MinisteriosIndexRoute: MinisteriosIndexRoute,
+  MinisteriosSlugSecaoRoute: MinisteriosSlugSecaoRoute,
   MinisteriosSlugIndexRoute: MinisteriosSlugIndexRoute,
 }
 

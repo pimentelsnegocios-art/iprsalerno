@@ -193,10 +193,10 @@ function OracaoView({ c }: { c: MinisterioConteudo }) {
 
 /* ---------- Repertório / Letras ---------- */
 function RepertorioView({ c }: { c: MinisterioConteudo }) {
-  const [aba, setAba] = useState(c.abas[0].id);
+  const [aba, setAba] = useState(c.abas[0]?.id ?? "");
   const [aberto, setAberto] = useState<string | null>(null);
   const [avisoAcao, setAvisoAcao] = useState<string | null>(null);
-  const atual = c.abas.find((a) => a.id === aba)!;
+  const atual = c.abas.find((a) => a.id === aba) ?? c.abas[0];
   const ehLouvor = c.slug === "louvor";
 
   return (
