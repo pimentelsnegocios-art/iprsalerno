@@ -14,7 +14,7 @@ const OPCOES_MINISTERIO: { valor: Membro["ministerio"]; nome: string }[] = [
 export const Route = createFileRoute("/cadastro")({
   head: () => ({
     meta: [
-      { title: "Cadastre-se — Família PIB" },
+      { title: "Cadastre-se — Família IPRB Renovada" },
       { name: "description", content: "Crie sua conta na Igreja Presbiteriana Renovada." },
     ],
   }),
@@ -96,7 +96,7 @@ function CadastroPage() {
                 <Cross className="h-7 w-7 text-[#D4B678]" />
               </div>
               <h1 className="mt-4 font-serif text-2xl font-semibold text-[#1E3A5F]">
-                Bem-vindo à Família PIB
+                Bem-vindo à Família IPRB Renovada
               </h1>
               <p className="mt-1 text-sm text-[#1E3A5F]/60">Que bom ter você aqui</p>
             </div>
