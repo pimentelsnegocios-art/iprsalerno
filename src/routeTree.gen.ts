@@ -22,6 +22,7 @@ import { Route as MaisRouteImport } from './routes/mais'
 import { Route as MinisteriosRouteImport } from './routes/ministerios'
 import { Route as OracaoRouteImport } from './routes/oracao'
 import { Route as PastoralRouteImport } from './routes/pastoral'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedPerfilRouteImport } from './routes/_authenticated/perfil'
 import { Route as AdminAvisosRouteImport } from './routes/admin.avisos'
 import { Route as AdminMembrosRouteImport } from './routes/admin.membros'
@@ -94,6 +95,11 @@ const PastoralRoute = PastoralRouteImport.update({
   path: '/pastoral',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedPerfilRoute = AuthenticatedPerfilRouteImport.update({
   id: '/perfil',
   path: '/perfil',
@@ -143,6 +149,7 @@ export interface FileRoutesByFullPath {
   '/ministerios': typeof MinisteriosRouteWithChildren
   '/oracao': typeof OracaoRoute
   '/pastoral': typeof PastoralRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/perfil': typeof AuthenticatedPerfilRoute
   '/admin/avisos': typeof AdminAvisosRoute
   '/admin/membros': typeof AdminMembrosRoute
@@ -163,6 +170,7 @@ export interface FileRoutesByTo {
   '/mais': typeof MaisRoute
   '/oracao': typeof OracaoRoute
   '/pastoral': typeof PastoralRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/perfil': typeof AuthenticatedPerfilRoute
   '/admin/avisos': typeof AdminAvisosRoute
   '/admin/membros': typeof AdminMembrosRoute
@@ -186,6 +194,7 @@ export interface FileRoutesById {
   '/ministerios': typeof MinisteriosRouteWithChildren
   '/oracao': typeof OracaoRoute
   '/pastoral': typeof PastoralRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/perfil': typeof AuthenticatedPerfilRoute
   '/admin/avisos': typeof AdminAvisosRoute
   '/admin/membros': typeof AdminMembrosRoute
@@ -209,6 +218,7 @@ export interface FileRouteTypes {
     | '/ministerios'
     | '/oracao'
     | '/pastoral'
+    | '/reset-password'
     | '/perfil'
     | '/admin/avisos'
     | '/admin/membros'
@@ -229,6 +239,7 @@ export interface FileRouteTypes {
     | '/mais'
     | '/oracao'
     | '/pastoral'
+    | '/reset-password'
     | '/perfil'
     | '/admin/avisos'
     | '/admin/membros'
@@ -251,6 +262,7 @@ export interface FileRouteTypes {
     | '/ministerios'
     | '/oracao'
     | '/pastoral'
+    | '/reset-password'
     | '/_authenticated/perfil'
     | '/admin/avisos'
     | '/admin/membros'
@@ -274,6 +286,7 @@ export interface RootRouteChildren {
   MinisteriosRoute: typeof MinisteriosRouteWithChildren
   OracaoRoute: typeof OracaoRoute
   PastoralRoute: typeof PastoralRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   AdminAvisosRoute: typeof AdminAvisosRoute
   AdminMembrosRoute: typeof AdminMembrosRoute
   CultoDiaRoute: typeof CultoDiaRoute
@@ -372,6 +385,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PastoralRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/perfil': {
       id: '/_authenticated/perfil'
       path: '/perfil'
@@ -465,6 +485,7 @@ const rootRouteChildren: RootRouteChildren = {
   MinisteriosRoute: MinisteriosRouteWithChildren,
   OracaoRoute: OracaoRoute,
   PastoralRoute: PastoralRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   AdminAvisosRoute: AdminAvisosRoute,
   AdminMembrosRoute: AdminMembrosRoute,
   CultoDiaRoute: CultoDiaRoute,

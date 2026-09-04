@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import dove from "@/assets/dove.png";
 import { acoes, type Membro } from "@/lib/app-store";
+import { supabase } from "@/integrations/supabase/client";
 
 const OPCOES_MINISTERIO: { valor: Membro["ministerio"]; nome: string }[] = [
   { valor: "louvor", nome: "Ministério de Louvor" },
@@ -33,7 +34,9 @@ function CadastroPage() {
   const [erro, setErro] = useState("");
   const [sucesso, setSucesso] = useState(false);
 
-  function cadastrar(e: React.FormEvent) {
+  const [enviando, setEnviando] = useState(false);
+
+  async function cadastrar(e: React.FormEvent) {
     e.preventDefault();
     setErro("");
     if (!nome.trim() || !email.trim() || !senha) {
@@ -50,6 +53,27 @@ function CadastroPage() {
     }
     if (!concordo) {
       setErro("É preciso concordar em fazer parte para criar a conta.");
+      return;
+    }
+    setEnviando(true);
+    const nomeMinisterio =
+      OPCOES_MINISTERIO.find((m) => m.valor === ministerio)?.nome.replace("Ministério de ", "") ??
+      null;
+    const { error } = await supabase.auth.signUp({
+      email: email.trim().toLowerCase(),
+      password: senha,
+      options: {
+        emailRedirectTo: window.location.origin,
+        data: { nome: nome.trim(), whatsapp: whatsapp || null, ministerio: nomeMinisterio },
+      },
+    });
+    setEnviando(false);
+    if (error) {
+      setErro(
+        error.message.toLowerCase().includes("already")
+          ? "Esse e-mail já tem conta. Tente entrar ou recuperar a senha."
+          : "Não conseguimos criar sua conta agora. Tente novamente em instantes.",
+      );
       return;
     }
     acoes.cadastrarMembro({ nome: nome.trim(), email: email.trim(), ministerio });
@@ -79,8 +103,8 @@ function CadastroPage() {
               Cadastro recebido!
             </h1>
             <p className="mt-2 text-sm text-[#1E3A5F]/60">
-              Seu pedido foi enviado para a liderança. Assim que for aprovado, você poderá entrar
-              e fazer parte de tudo por aqui.
+              Sua conta foi criada e seu nome foi enviado para a liderança. Já pode entrar e
+              começar a fazer parte de tudo por aqui.
             </p>
             <button
               onClick={() => navigate({ to: "/login" })}
@@ -184,9 +208,10 @@ function CadastroPage() {
 
               <button
                 type="submit"
+                disabled={enviando}
                 className="w-full rounded-2xl bg-[#1E3A5F] py-3.5 text-sm font-semibold text-white transition hover:bg-[#1E3A5F]/90"
               >
-                Criar minha conta
+                {enviando ? "Criando..." : "Criar minha conta"}
               </button>
             </form>
 
