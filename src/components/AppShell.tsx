@@ -3,10 +3,9 @@ import { ChevronLeft, CalendarDays, Music, Church, MoreHorizontal } from "lucide
 import type { ReactNode } from "react";
 
 const tabs = [
-  { to: "/culto/quinta", label: "Quinta", Icon: CalendarDays },
-  { to: "/culto/sabado", label: "Sábado", Icon: Music },
-  { to: "/culto/domingo", label: "Domingo", Icon: Church },
-  { to: "/mais", label: "Mais", Icon: MoreHorizontal },
+  { dia: "quinta", label: "Quinta", Icon: CalendarDays },
+  { dia: "sabado", label: "Sábado", Icon: Music },
+  { dia: "domingo", label: "Domingo", Icon: Church },
 ] as const;
 
 export function BottomNav() {
@@ -15,12 +14,13 @@ export function BottomNav() {
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-popover/95 backdrop-blur">
       <div className="mx-auto flex max-w-lg items-stretch">
-        {tabs.map(({ to, label, Icon }) => {
-          const active = pathname === to;
+        {tabs.map(({ dia, label, Icon }) => {
+          const active = pathname === `/culto/${dia}`;
           return (
             <Link
-              key={to}
-              to={to}
+              key={dia}
+              to="/culto/$dia"
+              params={{ dia }}
               className={`flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium transition-colors ${
                 active ? "text-primary" : "text-soft"
               }`}
@@ -30,10 +30,20 @@ export function BottomNav() {
             </Link>
           );
         })}
+        <Link
+          to="/mais"
+          className={`flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium transition-colors ${
+            pathname === "/mais" ? "text-primary" : "text-soft"
+          }`}
+        >
+          <MoreHorizontal className="size-5" />
+          Mais
+        </Link>
       </div>
     </nav>
   );
 }
+
 
 export function PageHeader({
   title,

@@ -42,7 +42,7 @@ const botoes = [
 ] as const;
 
 function Home() {
-  const aviso = avisos[0];
+  const aviso = avisos[0]!;
 
   return (
     <AppShell>

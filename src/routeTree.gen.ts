@@ -10,9 +10,12 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdministracaoRouteImport } from './routes/administracao'
 import { Route as AgendaRouteImport } from './routes/agenda'
 import { Route as AvisosRouteImport } from './routes/avisos'
+import { Route as CaixaRouteImport } from './routes/caixa'
 import { Route as EstudoRouteImport } from './routes/estudo'
+import { Route as MaisRouteImport } from './routes/mais'
 import { Route as MinisteriosRouteImport } from './routes/ministerios'
 import { Route as OracaoRouteImport } from './routes/oracao'
 import { Route as PastoralRouteImport } from './routes/pastoral'
@@ -25,6 +28,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdministracaoRoute = AdministracaoRouteImport.update({
+  id: '/administracao',
+  path: '/administracao',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AgendaRoute = AgendaRouteImport.update({
   id: '/agenda',
   path: '/agenda',
@@ -35,9 +43,19 @@ const AvisosRoute = AvisosRouteImport.update({
   path: '/avisos',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CaixaRoute = CaixaRouteImport.update({
+  id: '/caixa',
+  path: '/caixa',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EstudoRoute = EstudoRouteImport.update({
   id: '/estudo',
   path: '/estudo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MaisRoute = MaisRouteImport.update({
+  id: '/mais',
+  path: '/mais',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MinisteriosRoute = MinisteriosRouteImport.update({
@@ -73,9 +91,12 @@ const MinisteriosSlugRoute = MinisteriosSlugRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/administracao': typeof AdministracaoRoute
   '/agenda': typeof AgendaRoute
   '/avisos': typeof AvisosRoute
+  '/caixa': typeof CaixaRoute
   '/estudo': typeof EstudoRoute
+  '/mais': typeof MaisRoute
   '/ministerios': typeof MinisteriosRouteWithChildren
   '/oracao': typeof OracaoRoute
   '/pastoral': typeof PastoralRoute
@@ -85,9 +106,12 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/administracao': typeof AdministracaoRoute
   '/agenda': typeof AgendaRoute
   '/avisos': typeof AvisosRoute
+  '/caixa': typeof CaixaRoute
   '/estudo': typeof EstudoRoute
+  '/mais': typeof MaisRoute
   '/ministerios': typeof MinisteriosRouteWithChildren
   '/oracao': typeof OracaoRoute
   '/pastoral': typeof PastoralRoute
@@ -98,9 +122,12 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/administracao': typeof AdministracaoRoute
   '/agenda': typeof AgendaRoute
   '/avisos': typeof AvisosRoute
+  '/caixa': typeof CaixaRoute
   '/estudo': typeof EstudoRoute
+  '/mais': typeof MaisRoute
   '/ministerios': typeof MinisteriosRouteWithChildren
   '/oracao': typeof OracaoRoute
   '/pastoral': typeof PastoralRoute
@@ -112,9 +139,12 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/administracao'
     | '/agenda'
     | '/avisos'
+    | '/caixa'
     | '/estudo'
+    | '/mais'
     | '/ministerios'
     | '/oracao'
     | '/pastoral'
@@ -124,9 +154,12 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/administracao'
     | '/agenda'
     | '/avisos'
+    | '/caixa'
     | '/estudo'
+    | '/mais'
     | '/ministerios'
     | '/oracao'
     | '/pastoral'
@@ -136,9 +169,12 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/administracao'
     | '/agenda'
     | '/avisos'
+    | '/caixa'
     | '/estudo'
+    | '/mais'
     | '/ministerios'
     | '/oracao'
     | '/pastoral'
@@ -149,9 +185,12 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdministracaoRoute: typeof AdministracaoRoute
   AgendaRoute: typeof AgendaRoute
   AvisosRoute: typeof AvisosRoute
+  CaixaRoute: typeof CaixaRoute
   EstudoRoute: typeof EstudoRoute
+  MaisRoute: typeof MaisRoute
   MinisteriosRoute: typeof MinisteriosRouteWithChildren
   OracaoRoute: typeof OracaoRoute
   PastoralRoute: typeof PastoralRoute
@@ -168,6 +207,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/administracao': {
+      id: '/administracao'
+      path: '/administracao'
+      fullPath: '/administracao'
+      preLoaderRoute: typeof AdministracaoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/agenda': {
       id: '/agenda'
       path: '/agenda'
@@ -182,11 +228,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AvisosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/caixa': {
+      id: '/caixa'
+      path: '/caixa'
+      fullPath: '/caixa'
+      preLoaderRoute: typeof CaixaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/estudo': {
       id: '/estudo'
       path: '/estudo'
       fullPath: '/estudo'
       preLoaderRoute: typeof EstudoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mais': {
+      id: '/mais'
+      path: '/mais'
+      fullPath: '/mais'
+      preLoaderRoute: typeof MaisRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/ministerios': {
@@ -248,9 +308,12 @@ const MinisteriosRouteWithChildren = MinisteriosRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdministracaoRoute: AdministracaoRoute,
   AgendaRoute: AgendaRoute,
   AvisosRoute: AvisosRoute,
+  CaixaRoute: CaixaRoute,
   EstudoRoute: EstudoRoute,
+  MaisRoute: MaisRoute,
   MinisteriosRoute: MinisteriosRouteWithChildren,
   OracaoRoute: OracaoRoute,
   PastoralRoute: PastoralRoute,
