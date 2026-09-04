@@ -14,16 +14,215 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      familiares: {
+        Row: {
+          created_at: string
+          id: string
+          membro_id: string | null
+          nome: string
+          parentesco: string
+          profile_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          membro_id?: string | null
+          nome: string
+          parentesco: string
+          profile_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          membro_id?: string | null
+          nome?: string
+          parentesco?: string
+          profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "familiares_membro_id_fkey"
+            columns: ["membro_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "familiares_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mural: {
+        Row: {
+          autor_id: string
+          autor_nome: string
+          created_at: string
+          id: string
+          profile_id: string
+          texto: string
+        }
+        Insert: {
+          autor_id: string
+          autor_nome: string
+          created_at?: string
+          id?: string
+          profile_id: string
+          texto: string
+        }
+        Update: {
+          autor_id?: string
+          autor_nome?: string
+          created_at?: string
+          id?: string
+          profile_id?: string
+          texto?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mural_autor_id_fkey"
+            columns: ["autor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mural_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          batismo: string | null
+          bio: string | null
+          cargo: string
+          created_at: string
+          email: string
+          endereco: string | null
+          foto_url: string | null
+          funcao: string | null
+          id: string
+          membro_desde: string
+          ministerio: string | null
+          nascimento: string | null
+          nome: string
+          status: string
+          updated_at: string
+          versiculo: string | null
+          whatsapp: string | null
+        }
+        Insert: {
+          batismo?: string | null
+          bio?: string | null
+          cargo?: string
+          created_at?: string
+          email?: string
+          endereco?: string | null
+          foto_url?: string | null
+          funcao?: string | null
+          id: string
+          membro_desde?: string
+          ministerio?: string | null
+          nascimento?: string | null
+          nome?: string
+          status?: string
+          updated_at?: string
+          versiculo?: string | null
+          whatsapp?: string | null
+        }
+        Update: {
+          batismo?: string | null
+          bio?: string | null
+          cargo?: string
+          created_at?: string
+          email?: string
+          endereco?: string | null
+          foto_url?: string | null
+          funcao?: string | null
+          id?: string
+          membro_desde?: string
+          ministerio?: string | null
+          nascimento?: string | null
+          nome?: string
+          status?: string
+          updated_at?: string
+          versiculo?: string | null
+          whatsapp?: string | null
+        }
+        Relationships: []
+      }
+      proximos_passos: {
+        Row: {
+          concluido: boolean
+          created_at: string
+          id: string
+          passo: string
+          profile_id: string
+        }
+        Insert: {
+          concluido?: boolean
+          created_at?: string
+          id?: string
+          passo: string
+          profile_id: string
+        }
+        Update: {
+          concluido?: boolean
+          created_at?: string
+          id?: string
+          passo?: string
+          profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "proximos_passos_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "lider" | "membro"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +349,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "lider", "membro"],
+    },
   },
 } as const
