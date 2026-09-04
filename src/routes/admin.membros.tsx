@@ -71,10 +71,7 @@ function AdminMembros() {
     const { data: auth } = await supabase.auth.getUser();
     setMeuId(auth.user?.id ?? null);
     if (auth.user) {
-      const { data: admin } = await supabase.rpc("has_role", {
-        _user_id: auth.user.id,
-        _role: "admin",
-      });
+      const { data: admin } = await supabase.rpc("eh_gestor", { _user_id: auth.user.id });
       setEhAdmin(Boolean(admin));
     }
     const { data } = await supabase
@@ -114,8 +111,7 @@ function AdminMembros() {
   const pendentes = contas.filter((c) => c.status === "Pendente").length;
   const gestor = ehAdmin || podeAprovarCadastros(permissao);
   const podeExcluir =
-    podeExcluirMembros(permissao) &&
-    ehAdmin &&
+    (podeExcluirMembros(permissao) || ehAdmin) &&
     emEdicao != null &&
     emEdicao.id !== meuId &&
     (emEdicao.email ?? "").toLowerCase() !== FUNDADOR;

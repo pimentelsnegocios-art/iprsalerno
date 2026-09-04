@@ -9,11 +9,10 @@ export const excluirUsuario = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) => z.object({ targetId: z.string().uuid() }).parse(data))
   .handler(async ({ data, context }) => {
-    const { data: ehAdmin, error: erroPapel } = await context.supabase.rpc("has_role", {
+    const { data: ehGestor, error: erroPapel } = await context.supabase.rpc("eh_gestor", {
       _user_id: context.userId,
-      _role: "admin",
     });
-    if (erroPapel || !ehAdmin) throw new Error("Sem permissão.");
+    if (erroPapel || !ehGestor) throw new Error("Sem permissão.");
     if (data.targetId === context.userId) throw new Error("Você não pode excluir a si mesmo.");
 
     const { data: alvo } = await context.supabase
