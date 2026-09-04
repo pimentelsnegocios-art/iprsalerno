@@ -20,6 +20,8 @@ import { Route as MinisteriosRouteImport } from './routes/ministerios'
 import { Route as OracaoRouteImport } from './routes/oracao'
 import { Route as PastoralRouteImport } from './routes/pastoral'
 import { Route as PerfilRouteImport } from './routes/perfil'
+import { Route as AdminAvisosRouteImport } from './routes/admin.avisos'
+import { Route as AdminMembrosRouteImport } from './routes/admin.membros'
 import { Route as CultoDiaRouteImport } from './routes/culto.$dia'
 import { Route as MinisteriosIndexRouteImport } from './routes/ministerios.index'
 import { Route as MinisteriosSlugIndexRouteImport } from './routes/ministerios.$slug.index'
@@ -80,6 +82,16 @@ const PerfilRoute = PerfilRouteImport.update({
   path: '/perfil',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminAvisosRoute = AdminAvisosRouteImport.update({
+  id: '/admin/avisos',
+  path: '/admin/avisos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminMembrosRoute = AdminMembrosRouteImport.update({
+  id: '/admin/membros',
+  path: '/admin/membros',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CultoDiaRoute = CultoDiaRouteImport.update({
   id: '/culto/$dia',
   path: '/culto/$dia',
@@ -113,6 +125,8 @@ export interface FileRoutesByFullPath {
   '/oracao': typeof OracaoRoute
   '/pastoral': typeof PastoralRoute
   '/perfil': typeof PerfilRoute
+  '/admin/avisos': typeof AdminAvisosRoute
+  '/admin/membros': typeof AdminMembrosRoute
   '/culto/$dia': typeof CultoDiaRoute
   '/ministerios/': typeof MinisteriosIndexRoute
   '/ministerios/$slug/$secao': typeof MinisteriosSlugSecaoRoute
@@ -129,6 +143,8 @@ export interface FileRoutesByTo {
   '/oracao': typeof OracaoRoute
   '/pastoral': typeof PastoralRoute
   '/perfil': typeof PerfilRoute
+  '/admin/avisos': typeof AdminAvisosRoute
+  '/admin/membros': typeof AdminMembrosRoute
   '/culto/$dia': typeof CultoDiaRoute
   '/ministerios': typeof MinisteriosIndexRoute
   '/ministerios/$slug/$secao': typeof MinisteriosSlugSecaoRoute
@@ -147,6 +163,8 @@ export interface FileRoutesById {
   '/oracao': typeof OracaoRoute
   '/pastoral': typeof PastoralRoute
   '/perfil': typeof PerfilRoute
+  '/admin/avisos': typeof AdminAvisosRoute
+  '/admin/membros': typeof AdminMembrosRoute
   '/culto/$dia': typeof CultoDiaRoute
   '/ministerios/': typeof MinisteriosIndexRoute
   '/ministerios/$slug/$secao': typeof MinisteriosSlugSecaoRoute
@@ -166,6 +184,8 @@ export interface FileRouteTypes {
     | '/oracao'
     | '/pastoral'
     | '/perfil'
+    | '/admin/avisos'
+    | '/admin/membros'
     | '/culto/$dia'
     | '/ministerios/'
     | '/ministerios/$slug/$secao'
@@ -182,6 +202,8 @@ export interface FileRouteTypes {
     | '/oracao'
     | '/pastoral'
     | '/perfil'
+    | '/admin/avisos'
+    | '/admin/membros'
     | '/culto/$dia'
     | '/ministerios'
     | '/ministerios/$slug/$secao'
@@ -199,6 +221,8 @@ export interface FileRouteTypes {
     | '/oracao'
     | '/pastoral'
     | '/perfil'
+    | '/admin/avisos'
+    | '/admin/membros'
     | '/culto/$dia'
     | '/ministerios/'
     | '/ministerios/$slug/$secao'
@@ -217,6 +241,8 @@ export interface RootRouteChildren {
   OracaoRoute: typeof OracaoRoute
   PastoralRoute: typeof PastoralRoute
   PerfilRoute: typeof PerfilRoute
+  AdminAvisosRoute: typeof AdminAvisosRoute
+  AdminMembrosRoute: typeof AdminMembrosRoute
   CultoDiaRoute: typeof CultoDiaRoute
 }
 
@@ -299,6 +325,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PerfilRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/avisos': {
+      id: '/admin/avisos'
+      path: '/admin/avisos'
+      fullPath: '/admin/avisos'
+      preLoaderRoute: typeof AdminAvisosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/membros': {
+      id: '/admin/membros'
+      path: '/admin/membros'
+      fullPath: '/admin/membros'
+      preLoaderRoute: typeof AdminMembrosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/culto/$dia': {
       id: '/culto/$dia'
       path: '/culto/$dia'
@@ -358,6 +398,8 @@ const rootRouteChildren: RootRouteChildren = {
   OracaoRoute: OracaoRoute,
   PastoralRoute: PastoralRoute,
   PerfilRoute: PerfilRoute,
+  AdminAvisosRoute: AdminAvisosRoute,
+  AdminMembrosRoute: AdminMembrosRoute,
   CultoDiaRoute: CultoDiaRoute,
 }
 export const routeTree = rootRouteImport

@@ -106,49 +106,48 @@ function MinisterioPage() {
       </div>
 
       <div className="space-y-5 px-5 pb-6 pt-[90px] md:pt-[100px]" style={{ paddingTop: "calc(90px + env(safe-area-inset-top))" }}>
+        {fixado ? (
+          <div className="surface-card sticky top-2 z-30 border-primary/40 p-4 shadow-[var(--shadow-glow)]">
+            <p className="flex items-center gap-1.5 text-xs font-semibold text-primary">
+              <Pin className="size-3.5" /> Aviso em destaque
+            </p>
+            <p className="mt-1 font-display text-lg">{fixado.titulo}</p>
+            <p className="mt-1 text-sm">{fixado.texto}</p>
+            <p className="mt-2 text-xs text-soft">
+              {fixado.autor} · {fixado.data}
+            </p>
+          </div>
+        ) : null}
+
         {conteudo.frase ? (
           <div className="surface-card px-4 py-3 text-center text-sm italic">{conteudo.frase}</div>
         ) : null}
 
         {temAcesso ? (
-          <>
-            <div className="grid grid-cols-2 gap-3">
-              {conteudo.secoes.map((s) => {
-                const Icon = icones[s.key];
-                return (
-                  <Link
-                    key={s.key}
-                    to="/ministerios/$slug/$secao"
-                    params={{ slug: min.slug, secao: s.key }}
-                    className="surface-card flex flex-col items-center gap-2 px-3 py-5 text-center transition-transform active:scale-95"
-                  >
-                    <span className="flex size-14 items-center justify-center rounded-full border-2 border-accent/60 bg-accent/10">
-                      <Icon className="size-7 text-accent" strokeWidth={1.8} />
-                    </span>
-                    <span className="text-sm font-medium uppercase tracking-wide">
-                      {s.label}
-                      {s.restrito ? <Lock className="ml-1 inline size-3.5 text-primary" /> : null}
-                    </span>
-                    <span className="h-0.5 w-7 bg-primary" />
-                  </Link>
-                );
-              })}
-            </div>
-
-            {fixado ? (
-              <div className="surface-card border-primary/40 p-4">
-                <p className="flex items-center gap-1.5 text-xs font-semibold text-primary">
-                  <Pin className="size-3.5" /> Aviso em destaque
-                </p>
-                <p className="mt-1 font-display text-lg">{fixado.titulo}</p>
-                <p className="mt-1 text-sm">{fixado.texto}</p>
-                <p className="mt-2 text-xs text-soft">
-                  {fixado.autor} · {fixado.data}
-                </p>
-              </div>
-            ) : null}
-          </>
+          <div className="grid grid-cols-2 gap-3">
+            {conteudo.secoes.map((s) => {
+              const Icon = icones[s.key];
+              return (
+                <Link
+                  key={s.key}
+                  to="/ministerios/$slug/$secao"
+                  params={{ slug: min.slug, secao: s.key }}
+                  className="surface-card flex flex-col items-center gap-2 px-3 py-5 text-center transition-transform active:scale-95"
+                >
+                  <span className="flex size-14 items-center justify-center rounded-full border-2 border-accent/60 bg-accent/10">
+                    <Icon className="size-7 text-accent" strokeWidth={1.8} />
+                  </span>
+                  <span className="text-sm font-medium uppercase tracking-wide">
+                    {s.label}
+                    {s.restrito ? <Lock className="ml-1 inline size-3.5 text-primary" /> : null}
+                  </span>
+                  <span className="h-0.5 w-7 bg-primary" />
+                </Link>
+              );
+            })}
+          </div>
         ) : (
+
           <div className="surface-card p-5 text-center">
             <Lock className="mx-auto size-8 text-primary" />
             <p className="mt-3 text-sm">

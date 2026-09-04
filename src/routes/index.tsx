@@ -13,7 +13,9 @@ import {
 } from "lucide-react";
 
 import { AppShell } from "@/components/AppShell";
-import { avisos, cultos, usuarioAtual } from "@/lib/church-data";
+import { cultos, usuarioAtual } from "@/lib/church-data";
+import { useAppStore } from "@/lib/app-store";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -44,7 +46,9 @@ const botoes = [
 ] as const;
 
 function Home() {
-  const aviso = avisos[0]!;
+  const { avisos } = useAppStore();
+  const aviso = avisos.find((a) => a.fixadoHome) ?? avisos[0];
+
 
   return (
     <AppShell>
@@ -69,19 +73,29 @@ function Home() {
       <section className="px-5 pt-4">
         <Link
           to="/avisos"
-          className="relative block overflow-hidden rounded-2xl bg-primary p-4 text-primary-foreground shadow-[var(--shadow-glow)]"
+          className="relative block overflow-hidden rounded-2xl border border-primary bg-background p-4 text-foreground shadow-[var(--shadow-glow)]"
         >
-          <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.2em]">
-            <Megaphone className="size-4" /> Seja bem-vindo, {usuarioAtual.nome.split(" ")[0]}!
+          <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.2em] text-foreground">
+            <Megaphone className="size-4 text-primary" /> Seja bem-vindo,{" "}
+            {usuarioAtual.nome.split(" ")[0]}!
           </div>
-          <h2 className="mt-2 max-w-[80%] font-display text-xl leading-snug">{aviso.titulo}</h2>
-          <p className="mt-1 max-w-[85%] text-sm opacity-90">{aviso.texto}</p>
-          <p className="mt-2 text-xs font-medium opacity-75">
-            {aviso.autor} · {aviso.data} · toque para ver detalhes
-          </p>
-          <Cross className="absolute -right-3 bottom-0 size-24 opacity-15" strokeWidth={1.2} />
+          {aviso ? (
+            <>
+              <h2 className="mt-2 max-w-[80%] font-display text-xl font-bold leading-snug text-foreground">
+                {aviso.titulo}
+              </h2>
+              <p className="mt-1 max-w-[85%] text-sm text-foreground/80">{aviso.texto}</p>
+              <p className="mt-2 text-xs font-medium text-foreground/80">
+                {aviso.autor} · {aviso.data} · toque para ver detalhes
+              </p>
+            </>
+          ) : (
+            <p className="mt-2 text-sm text-foreground/80">Nenhum aviso fixado no momento.</p>
+          )}
+          <Cross className="absolute -right-3 bottom-0 size-24 text-primary opacity-15" strokeWidth={1.2} />
         </Link>
       </section>
+
 
       <section className="grid grid-cols-2 gap-3 px-5 py-5">
         {botoes.map(({ to, label, Icon }) => (

@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Wallet, ShieldCheck, LogOut, Lock } from "lucide-react";
+import { Wallet, ShieldCheck, LogOut, Lock, Users, Megaphone } from "lucide-react";
 
 import { AppShell, PageHeader } from "@/components/AppShell";
 import { usuarioAtual, podeVerCaixa, podeVerAdmin } from "@/lib/church-data";
@@ -46,13 +46,29 @@ function Mais() {
         )}
 
         {admin ? (
-          <Link to="/administracao" className="surface-card flex items-center gap-3 p-4">
-            <ShieldCheck className="size-5 text-primary" />
-            <div>
-              <p className="font-semibold">Administração</p>
-              <p className="text-xs text-soft">Aprovar cadastros, cargos e ministérios</p>
-            </div>
-          </Link>
+          <>
+            <Link to="/administracao" className="surface-card flex items-center gap-3 p-4">
+              <ShieldCheck className="size-5 text-primary" />
+              <div>
+                <p className="font-semibold">Administração</p>
+                <p className="text-xs text-soft">Aprovar cadastros, cargos e ministérios</p>
+              </div>
+            </Link>
+            <Link to="/admin/membros" className="surface-card flex items-center gap-3 p-4">
+              <Users className="size-5 text-primary" />
+              <div>
+                <p className="font-semibold">Hall de Membros</p>
+                <p className="text-xs text-soft">Pendentes, aprovados e bloqueados</p>
+              </div>
+            </Link>
+            <Link to="/admin/avisos" className="surface-card flex items-center gap-3 p-4">
+              <Megaphone className="size-5 text-primary" />
+              <div>
+                <p className="font-semibold">Gestão de Avisos</p>
+                <p className="text-xs text-soft">Criar, editar e fixar avisos na Home</p>
+              </div>
+            </Link>
+          </>
         ) : (
           <div className="surface-card flex items-center gap-3 p-4 opacity-60">
             <Lock className="size-5" />
@@ -62,6 +78,7 @@ function Mais() {
             </div>
           </div>
         )}
+
 
         <button className="surface-card flex w-full items-center gap-3 p-4 text-destructive">
           <LogOut className="size-5" />
