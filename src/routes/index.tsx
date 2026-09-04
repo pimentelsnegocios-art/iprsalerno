@@ -49,6 +49,7 @@ const botoes = [
 ] as const;
 
 function Home() {
+  const { perfil } = usePerfil();
   const { avisos } = useAppStore();
   const aviso = avisos.find((a) => a.fixadoHome) ?? avisos[0];
 

@@ -24,6 +24,7 @@ export const Route = createFileRoute("/estudo")({
 });
 
 function Estudos() {
+  const { permissao } = usePerfil();
   const [busca, setBusca] = useState("");
   const [aberto, setAberto] = useState<string | null>(null);
   const q = busca.toLowerCase();
