@@ -105,6 +105,7 @@ export type Database = {
           id: string
           membro_desde: string
           ministerio: string | null
+          ministerios: string[]
           nascimento: string | null
           nome: string
           status: string
@@ -124,6 +125,7 @@ export type Database = {
           id: string
           membro_desde?: string
           ministerio?: string | null
+          ministerios?: string[]
           nascimento?: string | null
           nome?: string
           status?: string
@@ -143,6 +145,7 @@ export type Database = {
           id?: string
           membro_desde?: string
           ministerio?: string | null
+          ministerios?: string[]
           nascimento?: string | null
           nome?: string
           status?: string

@@ -3,14 +3,8 @@ import { Cross, Lock, Mail, Phone, User, Users } from "lucide-react";
 import { useState } from "react";
 
 import dove from "@/assets/dove.png";
-import { acoes, type Membro } from "@/lib/app-store";
 import { supabase } from "@/integrations/supabase/client";
-
-const OPCOES_MINISTERIO: { valor: Membro["ministerio"]; nome: string }[] = [
-  { valor: "louvor", nome: "Ministério de Louvor" },
-  { valor: "jovens", nome: "Ministério de Jovens" },
-  { valor: "irmas", nome: "Ministério de Irmãs" },
-];
+import { OPCOES_MINISTERIOS } from "@/lib/ministerios-opcoes";
 
 export const Route = createFileRoute("/cadastro")({
   head: () => ({
@@ -29,7 +23,7 @@ function CadastroPage() {
   const [senha, setSenha] = useState("");
   const [confirmar, setConfirmar] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
-  const [ministerio, setMinisterio] = useState<Membro["ministerio"]>("nenhum");
+  const [ministeriosEscolhidos, setMinisteriosEscolhidos] = useState<string[]>([]);
   const [concordo, setConcordo] = useState(false);
   const [erro, setErro] = useState("");
   const [sucesso, setSucesso] = useState(false);
@@ -56,15 +50,16 @@ function CadastroPage() {
       return;
     }
     setEnviando(true);
-    const nomeMinisterio =
-      OPCOES_MINISTERIO.find((m) => m.valor === ministerio)?.nome.replace("Ministério de ", "") ??
-      null;
     const { error } = await supabase.auth.signUp({
       email: email.trim().toLowerCase(),
       password: senha,
       options: {
         emailRedirectTo: window.location.origin,
-        data: { nome: nome.trim(), whatsapp: whatsapp || null, ministerio: nomeMinisterio },
+        data: {
+          nome: nome.trim(),
+          whatsapp: whatsapp || null,
+          ministerios: ministeriosEscolhidos,
+        },
       },
     });
     setEnviando(false);
@@ -76,7 +71,6 @@ function CadastroPage() {
       );
       return;
     }
-    acoes.cadastrarMembro({ nome: nome.trim(), email: email.trim(), ministerio });
     setSucesso(true);
   }
 
@@ -174,21 +168,36 @@ function CadastroPage() {
                   className={inputCls}
                 />
               </label>
-              <label className={fieldCls}>
-                <Users className="h-4 w-4 shrink-0 text-[#B89B5E]" />
-                <select
-                  value={ministerio}
-                  onChange={(e) => setMinisterio(e.target.value as Membro["ministerio"])}
-                  className="w-full bg-transparent text-sm text-[#1E3A5F] outline-none"
-                >
-                  <option value="nenhum">Qual ministério frequenta?</option>
-                  {OPCOES_MINISTERIO.map((m) => (
-                    <option key={m.valor} value={m.valor}>
-                      {m.nome}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <div className="rounded-2xl border border-[#1E3A5F]/10 bg-[#F8F5F0] px-4 py-3">
+                <p className="flex items-center gap-2 text-xs font-medium text-[#1E3A5F]/70">
+                  <Users className="h-4 w-4 shrink-0 text-[#B89B5E]" />
+                  Quais ministérios você frequenta? (pode marcar vários)
+                </p>
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {OPCOES_MINISTERIOS.map((m) => {
+                    const marcado = ministeriosEscolhidos.includes(m);
+                    return (
+                      <button
+                        type="button"
+                        key={m}
+                        onClick={() =>
+                          setMinisteriosEscolhidos((atual) =>
+                            marcado ? atual.filter((x) => x !== m) : [...atual, m],
+                          )
+                        }
+                        className={`rounded-full px-3 py-1 text-xs font-medium ${
+                          marcado
+                            ? "bg-[#1E3A5F] text-white"
+                            : "border border-[#1E3A5F]/15 text-[#1E3A5F]/70"
+                        }`}
+                      >
+                        {marcado ? "✓ " : ""}
+                        {m}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
 
               <label className="flex items-start gap-3 px-1 pt-1">
                 <input
