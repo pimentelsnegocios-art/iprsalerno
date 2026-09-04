@@ -1,20 +1,24 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Wallet, ShieldCheck, LogOut, Lock, Users, Megaphone } from "lucide-react";
+import { Wallet, ShieldCheck, LogOut, Users, Megaphone } from "lucide-react";
 
 import { AppShell, PageHeader } from "@/components/AppShell";
+import { usePerfil } from "@/hooks/usePerfil";
 import { supabase } from "@/integrations/supabase/client";
-import { usuarioAtual, podeVerCaixa, podeVerAdmin } from "@/lib/church-data";
+import { podeAprovarCadastros, podeVerCaixaPerfil } from "@/lib/permissoes";
 
 export const Route = createFileRoute("/mais")({
+  ssr: false,
   head: () => ({
     meta: [
-      { title: "Mais — IPR" },
+      { title: "Mais — IPRB Renovada" },
       {
         name: "description",
         content: "Livro Caixa, Administração e sair da conta na Igreja Presbiteriana Renovada.",
       },
-      { property: "og:title", content: "Mais — IPR" },
+      { property: "og:title", content: "Mais — IPRB Renovada" },
       { property: "og:description", content: "Menu expandido do aplicativo da igreja." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: Mais,
@@ -22,18 +26,22 @@ export const Route = createFileRoute("/mais")({
 
 function Mais() {
   const navigate = useNavigate();
+  const { perfil, permissao } = usePerfil();
 
   async function sair() {
     await supabase.auth.signOut();
     navigate({ to: "/login", replace: true });
   }
 
-  const caixa = podeVerCaixa(usuarioAtual.cargo);
-  const admin = podeVerAdmin(usuarioAtual.cargo);
+  const caixa = podeVerCaixaPerfil(permissao);
+  const admin = podeAprovarCadastros(permissao);
 
   return (
     <AppShell>
-      <PageHeader title="Mais" subtitle={`${usuarioAtual.nome} · ${usuarioAtual.cargo}`} />
+      <PageHeader
+        title="Mais"
+        subtitle={perfil ? `${perfil.nome} · ${perfil.cargo}` : "Menu do aplicativo"}
+      />
       <div className="space-y-3 px-5 py-5">
         {caixa ? (
           <Link to="/caixa" className="surface-card flex items-center gap-3 p-4">
@@ -43,15 +51,7 @@ function Mais() {
               <p className="text-xs text-soft">Entradas, saídas, saldo e relatórios</p>
             </div>
           </Link>
-        ) : (
-          <div className="surface-card flex items-center gap-3 p-4 opacity-60">
-            <Lock className="size-5" />
-            <div>
-              <p className="font-semibold">Livro Caixa</p>
-              <p className="text-xs text-soft">Acesso restrito à tesouraria e liderança</p>
-            </div>
-          </div>
-        )}
+        ) : null}
 
         {admin ? (
           <>
@@ -59,14 +59,14 @@ function Mais() {
               <ShieldCheck className="size-5 text-primary" />
               <div>
                 <p className="font-semibold">Administração</p>
-                <p className="text-xs text-soft">Aprovar cadastros, cargos e ministérios</p>
+                <p className="text-xs text-soft">Aprovar cadastros pendentes</p>
               </div>
             </Link>
             <Link to="/admin/membros" className="surface-card flex items-center gap-3 p-4">
               <Users className="size-5 text-primary" />
               <div>
                 <p className="font-semibold">Hall de Membros</p>
-                <p className="text-xs text-soft">Pendentes, aprovados e bloqueados</p>
+                <p className="text-xs text-soft">Cargos, ministérios, bloqueio e exclusão</p>
               </div>
             </Link>
             <Link to="/admin/avisos" className="surface-card flex items-center gap-3 p-4">
@@ -77,16 +77,7 @@ function Mais() {
               </div>
             </Link>
           </>
-        ) : (
-          <div className="surface-card flex items-center gap-3 p-4 opacity-60">
-            <Lock className="size-5" />
-            <div>
-              <p className="font-semibold">Administração</p>
-              <p className="text-xs text-soft">Somente Fundador e Admin</p>
-            </div>
-          </div>
-        )}
-
+        ) : null}
 
         <button
           onClick={() => void sair()}
