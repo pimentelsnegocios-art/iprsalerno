@@ -219,6 +219,7 @@ export type Database = {
         }[]
       }
       check_aniversariantes_hoje: { Args: never; Returns: number }
+      eh_gestor: { Args: { _user_id: string }; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

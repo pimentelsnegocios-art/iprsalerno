@@ -3,7 +3,8 @@ import { Pin, Settings2 } from "lucide-react";
 
 import { AppShell, PageHeader } from "@/components/AppShell";
 import { useAppStore } from "@/lib/app-store";
-import { ehLideranca, usuarioAtual } from "@/lib/church-data";
+import { usePerfil } from "@/hooks/usePerfil";
+import { ehAdmin } from "@/lib/permissoes";
 
 export const Route = createFileRoute("/avisos")({
   head: () => ({
@@ -19,7 +20,8 @@ export const Route = createFileRoute("/avisos")({
 
 function Avisos() {
   const { avisos } = useAppStore();
-  const admin = ehLideranca(usuarioAtual.cargo);
+  const { permissao } = usePerfil();
+  const admin = ehAdmin(permissao);
 
   return (
     <AppShell>

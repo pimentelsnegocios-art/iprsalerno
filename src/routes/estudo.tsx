@@ -4,7 +4,9 @@ import { Search } from "lucide-react";
 
 import { AppShell, PageHeader } from "@/components/AppShell";
 import { Input } from "@/components/ui/input";
-import { estudos, ehLideranca, usuarioAtual } from "@/lib/church-data";
+import { estudos } from "@/lib/church-data";
+import { usePerfil } from "@/hooks/usePerfil";
+import { ehAdmin } from "@/lib/permissoes";
 
 export const Route = createFileRoute("/estudo")({
   head: () => ({
@@ -22,6 +24,7 @@ export const Route = createFileRoute("/estudo")({
 });
 
 function Estudos() {
+  const { permissao } = usePerfil();
   const [busca, setBusca] = useState("");
   const [aberto, setAberto] = useState<string | null>(null);
   const q = busca.toLowerCase();
@@ -44,7 +47,7 @@ function Estudos() {
           />
         </div>
 
-        {ehLideranca(usuarioAtual.cargo) ? (
+        {ehAdmin(permissao) ? (
           <p className="mt-3 rounded-lg bg-secondary px-3 py-2 text-xs text-soft">
             Você é liderança e pode publicar novos estudos. O autor fica sempre visível.
           </p>

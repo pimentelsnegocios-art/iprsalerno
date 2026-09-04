@@ -15,7 +15,8 @@ import {
 
 import { AniversariantesHoje } from "@/components/AniversariantesHoje";
 import { AppShell } from "@/components/AppShell";
-import { cultos, usuarioAtual } from "@/lib/church-data";
+import { cultos } from "@/lib/church-data";
+import { usePerfil } from "@/hooks/usePerfil";
 import { useAppStore } from "@/lib/app-store";
 
 
@@ -48,6 +49,7 @@ const botoes = [
 ] as const;
 
 function Home() {
+  const { perfil } = usePerfil();
   const { avisos } = useAppStore();
   const aviso = avisos.find((a) => a.fixadoHome) ?? avisos[0];
 
@@ -87,7 +89,7 @@ function Home() {
         >
           <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.2em] text-white">
             <Megaphone className="size-4 text-white" /> Seja bem-vindo,{" "}
-            {usuarioAtual.nome.split(" ")[0]}!
+            {(perfil?.nome ?? "Irmão(ã)").split(" ")[0]}!
           </div>
           {aviso ? (
             <>
