@@ -10,6 +10,7 @@ import {
   Megaphone,
   MapPin,
   CalendarCheck,
+  ExternalLink,
 } from "lucide-react";
 
 import { AppShell } from "@/components/AppShell";
@@ -59,40 +60,46 @@ function Home() {
           </div>
           <div className="min-w-0">
             <p className="text-[10px] font-semibold tracking-[0.3em] text-soft">IGREJA</p>
-            <h1 className="font-display text-lg leading-tight">
+            <h1 className="font-display text-xl leading-tight font-extrabold md:text-2xl">
               Presbiteriana <span className="text-primary">Renovada</span>
             </h1>
           </div>
         </div>
-        <p className="mt-3 flex items-start gap-1.5 border-l-2 border-primary/60 pl-2.5 text-xs text-soft">
+        <a
+          href="https://maps.app.goo.gl/yuVVKkDf6Sh6ieoV6?g_st=ac"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-3 flex items-start gap-1.5 border-l-2 border-primary/60 pl-2.5 text-xs text-soft transition hover:text-primary"
+        >
           <MapPin className="mt-0.5 size-3.5 shrink-0 text-primary" />
           Rua José Finoteli, 730 — Città di Salerno (Jardim Explanada), Campinas / SP
-        </p>
+          <ExternalLink className="mt-0.5 size-3 shrink-0 text-primary/70" />
+        </a>
       </header>
 
       <section className="px-5 pt-4">
         <Link
           to="/avisos"
-          className="relative block overflow-hidden rounded-2xl border border-primary bg-background p-4 text-foreground shadow-[var(--shadow-glow)]"
+          className="relative block overflow-hidden rounded-2xl border border-[#D4B678] bg-[#C9A86A] p-4 text-white shadow-[var(--shadow-glow)]"
         >
-          <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.2em] text-foreground">
-            <Megaphone className="size-4 text-primary" /> Seja bem-vindo,{" "}
+          <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.2em] text-white">
+            <Megaphone className="size-4 text-white" /> Seja bem-vindo,{" "}
             {usuarioAtual.nome.split(" ")[0]}!
           </div>
           {aviso ? (
             <>
-              <h2 className="mt-2 max-w-[80%] font-display text-xl font-bold leading-snug text-foreground">
+              <h2 className="mt-2 max-w-[80%] font-display text-2xl font-bold leading-snug text-white">
                 {aviso.titulo}
               </h2>
-              <p className="mt-1 max-w-[85%] text-sm text-foreground/80">{aviso.texto}</p>
-              <p className="mt-2 text-xs font-medium text-foreground/80">
+              <p className="mt-1 max-w-[85%] text-sm text-white/90">{aviso.texto}</p>
+              <p className="mt-2 text-xs font-medium text-white/90">
                 {aviso.autor} · {aviso.data} · toque para ver detalhes
               </p>
             </>
           ) : (
-            <p className="mt-2 text-sm text-foreground/80">Nenhum aviso fixado no momento.</p>
+            <p className="mt-2 text-sm text-white/90">Nenhum aviso fixado no momento.</p>
           )}
-          <Cross className="absolute -right-3 bottom-0 size-24 text-primary opacity-15" strokeWidth={1.2} />
+          <Cross className="absolute -right-3 bottom-0 size-24 text-white opacity-40" strokeWidth={1.2} />
         </Link>
       </section>
 

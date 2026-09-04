@@ -9,7 +9,7 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/login")({
   head: () => ({
     meta: [
-      { title: "Entrar — Família PIB" },
+      { title: "Entrar — Família IPRB Renovada" },
       { name: "description", content: "Acesse sua conta da Igreja Presbiteriana Renovada." },
     ],
   }),
@@ -70,7 +70,7 @@ function LoginPage() {
             <Cross className="h-7 w-7 text-[#D4B678]" />
           </div>
           <h1 className="mt-4 font-serif text-2xl font-semibold text-[#1E3A5F]">
-            Bem-vindo à Família PIB
+            Bem-vindo à Família IPRB Renovada
           </h1>
           <p className="mt-1 text-sm text-[#1E3A5F]/60">Que bom ter você aqui</p>
         </div>
