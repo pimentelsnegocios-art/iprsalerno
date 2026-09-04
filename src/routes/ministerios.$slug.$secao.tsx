@@ -602,11 +602,50 @@ function VisitasView({ c }: { c: MinisterioConteudo }) {
 
 /* ---------- Cifras (só Louvor) ---------- */
 function CifrasView({ c }: { c: MinisterioConteudo }) {
+  const cifras = c.cifras ?? [];
+  const [abertaId, setAbertaId] = useState<string | null>(null);
+  const aberta = cifras.find((x) => x.id === abertaId);
+
+  if (aberta) {
+    return (
+      <div className="space-y-3">
+        <button
+          onClick={() => setAbertaId(null)}
+          className="inline-flex items-center gap-1 text-sm font-semibold text-primary"
+        >
+          ← Voltar para a lista
+        </button>
+        <CifraViewer cifra={aberta} />
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-4">
-      {(c.cifras ?? []).map((cf) => (
-        <CifraViewer key={cf.id} cifra={cf} />
+    <div className="space-y-3">
+      <p className="text-xs text-soft">
+        Toque em um louvor para abrir a letra completa com cifras e trocar o tom.
+      </p>
+      {cifras.map((cf) => (
+        <button
+          key={cf.id}
+          onClick={() => setAbertaId(cf.id)}
+          className="surface-card flex w-full items-center justify-between gap-3 p-4 text-left transition-transform active:scale-[0.98]"
+        >
+          <span className="flex items-center gap-3">
+            <span className="flex size-10 items-center justify-center rounded-full border border-primary/60 text-primary">
+              <Music2 className="size-5" />
+            </span>
+            <span>
+              <span className="block font-display text-lg leading-tight">{cf.titulo}</span>
+              <span className="block text-xs text-soft">{cf.artista}</span>
+            </span>
+          </span>
+          <span className="rounded-lg bg-primary px-2.5 py-1 text-xs font-bold text-primary-foreground">
+            {cf.tom}
+          </span>
+        </button>
       ))}
+      {cifras.length === 0 ? <p className="text-sm text-soft">Nenhuma cifra cadastrada.</p> : null}
     </div>
   );
 }
