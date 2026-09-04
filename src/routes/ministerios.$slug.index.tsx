@@ -126,8 +126,8 @@ function MinisterioPage() {
                     params={{ slug: min.slug, secao: s.key }}
                     className="surface-card flex flex-col items-center gap-2 px-3 py-5 text-center transition-transform active:scale-95"
                   >
-                    <span className="flex size-14 items-center justify-center rounded-full border-2 border-primary/70 bg-primary/10">
-                      <Icon className="size-7 text-primary" strokeWidth={1.8} />
+                    <span className="flex size-14 items-center justify-center rounded-full border-2 border-accent/60 bg-accent/10">
+                      <Icon className="size-7 text-accent" strokeWidth={1.8} />
                     </span>
                     <span className="text-sm font-bold uppercase tracking-wide">
                       {s.label}
