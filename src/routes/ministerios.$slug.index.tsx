@@ -3,7 +3,6 @@ import {
   Bell,
   BookOpen,
   CalendarDays,
-  ChevronLeft,
   Guitar,
   HandHeart,
   HeartHandshake,
@@ -106,7 +105,7 @@ function MinisterioPage() {
         </div>
       </div>
 
-      <div className="-mt-4 space-y-5 px-5 pb-6">
+      <div className="space-y-5 px-5 pb-6 pt-[90px] md:pt-[100px]" style={{ paddingTop: "calc(90px + env(safe-area-inset-top))" }}>
         {conteudo.frase ? (
           <div className="surface-card px-4 py-3 text-center text-sm italic">{conteudo.frase}</div>
         ) : null}
@@ -126,7 +125,7 @@ function MinisterioPage() {
                     <span className="flex size-14 items-center justify-center rounded-full border-2 border-accent/60 bg-accent/10">
                       <Icon className="size-7 text-accent" strokeWidth={1.8} />
                     </span>
-                    <span className="text-sm font-bold uppercase tracking-wide">
+                    <span className="text-sm font-medium uppercase tracking-wide">
                       {s.label}
                       {s.restrito ? <Lock className="ml-1 inline size-3.5 text-primary" /> : null}
                     </span>
