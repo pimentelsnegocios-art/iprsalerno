@@ -83,8 +83,10 @@ function AdminMembros() {
     void carregar();
   }, [carregar]);
 
-  async function atualizar(id: string, campos: Partial<Conta>) {
-    const { error } = await supabase.from("profiles").update(campos).eq("id", id);
+  type Campos = Partial<Omit<Conta, "ministerios">> & { ministerios?: string[] };
+
+  async function atualizar(id: string, campos: Campos) {
+
     if (error) {
       toast.error("Você não tem permissão para essa alteração.");
       return;
