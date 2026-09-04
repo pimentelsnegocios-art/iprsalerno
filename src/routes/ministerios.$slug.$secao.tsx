@@ -222,7 +222,7 @@ function RepertorioView({ c }: { c: MinisterioConteudo }) {
       ) : null}
 
       <div className="space-y-3">
-        {atual.louvores.map((l) => (
+        {(atual?.louvores ?? []).map((l) => (
           <div key={l.id} className="surface-card p-4">
             <button
               onClick={() => setAberto(aberto === l.id ? null : l.id)}
