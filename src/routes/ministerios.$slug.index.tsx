@@ -15,7 +15,9 @@ import {
 } from "lucide-react";
 
 import { AppShell } from "@/components/AppShell";
-import { ministerios, usuarioAtual, ehLideranca } from "@/lib/church-data";
+import { ministerios } from "@/lib/church-data";
+import { usePerfil } from "@/hooks/usePerfil";
+import { podeVerMinisterio, type SlugMinisterio } from "@/lib/permissoes";
 import { ministeriosConteudo, type SecaoKey } from "@/lib/ministerio-data";
 import heroJovens from "@/assets/hero-jovens.jpg";
 import heroIrmas from "@/assets/hero-irmas.jpg";
@@ -63,13 +65,14 @@ const titulos = {
 } as const;
 
 function MinisterioPage() {
+  const { permissao } = usePerfil();
   const { slug } = Route.useParams();
   const min = ministerios.find((m) => m.slug === slug);
   if (!min) throw notFound();
   const conteudo = ministeriosConteudo[min.slug];
   const titulo = titulos[min.slug];
 
-  const temAcesso = ehLideranca(usuarioAtual.cargo) || usuarioAtual.ministerio === min.slug;
+  const temAcesso = podeVerMinisterio(permissao, min.slug as SlugMinisterio);
   const fixado = conteudo.avisos.find((a) => a.fixado) ?? conteudo.avisos[0];
 
   return (

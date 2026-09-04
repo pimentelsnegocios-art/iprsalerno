@@ -4,7 +4,10 @@ import { useState } from "react";
 
 import { AppShell, PageHeader } from "@/components/AppShell";
 import { CifraViewer } from "@/components/CifraViewer";
-import { usuarioAtual, ehLideranca } from "@/lib/church-data";
+import { usuarioAtual } from "@/lib/church-data";
+import { usePerfil } from "@/hooks/usePerfil";
+import { podeVerMinisterio, type SlugMinisterio } from "@/lib/permissoes";
+import { BloqueioMinisterio } from "@/components/BloqueioMinisterio";
 import {
   ministeriosConteudo,
   podeEditarEstudo,
@@ -34,13 +37,14 @@ export const Route = createFileRoute("/ministerios/$slug/$secao")({
 });
 
 function SecaoPage() {
+  const { permissao } = usePerfil();
   const { slug, secao } = Route.useParams();
   const conteudo = ministeriosConteudo[slug as MinisterioSlug];
   if (!conteudo) throw notFound();
   const meta = conteudo.secoes.find((s) => s.key === secao);
   if (!meta) throw notFound();
 
-  const temAcesso = ehLideranca(usuarioAtual.cargo) || usuarioAtual.ministerio === conteudo.slug;
+  const temAcesso = podeVerMinisterio(permissao, conteudo.slug as SlugMinisterio);
 
   return (
     <AppShell theme={conteudo.slug}>
@@ -50,10 +54,7 @@ function SecaoPage() {
       />
       <div className="px-5 py-5">
         {!temAcesso ? (
-          <div className="surface-card p-5 text-center">
-            <Lock className="mx-auto size-8 text-primary" />
-            <p className="mt-3 text-sm">Conteúdo exclusivo dos membros deste ministério.</p>
-          </div>
+          <BloqueioMinisterio slug={conteudo.slug as SlugMinisterio} />
         ) : (
           <Conteudo secao={secao as SecaoKey} c={conteudo} />
         )}
