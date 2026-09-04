@@ -276,6 +276,7 @@ export const conversaPastoral: MensagemPastoral[] = [
 ];
 
 export type TipoLancamento = "entrada" | "saida";
+export type FormaPagamento = "Dinheiro" | "Pix" | "Cartão";
 
 export interface Lancamento {
   id: string;
@@ -284,11 +285,34 @@ export interface Lancamento {
   descricao: string;
   valor: number;
   data: string;
+  /** ISO yyyy-mm-dd — usado em gráficos, filtros e fechamento de mês */
+  dataISO: string;
   responsavel: string;
+  forma: FormaPagamento;
+  observacao?: string;
+  comprovante?: string | null;
 }
 
-export const categoriasEntrada = ["Dízimo", "Oferta", "Doações"];
-export const categoriasSaida = ["Gastos", "Repasse Sede"];
+export const categoriasEntrada = ["Dízimo", "Oferta", "Doação", "Evento"];
+export const categoriasSaida = [
+  "Conta Luz",
+  "Água",
+  "Aluguel",
+  "Manutenção",
+  "Repasse Sede",
+  "Evento",
+];
+
+const hoje = new Date();
+const diasAtras = (n: number) => {
+  const d = new Date(hoje);
+  d.setDate(d.getDate() - n);
+  return d.toISOString().slice(0, 10);
+};
+export const formatarData = (iso: string) => {
+  const [a, m, d] = iso.split("-");
+  return `${d}/${m}/${a}`;
+};
 
 export const lancamentos: Lancamento[] = [
   {
@@ -297,8 +321,10 @@ export const lancamentos: Lancamento[] = [
     categoria: "Dízimo",
     descricao: "Dízimos do culto de domingo",
     valor: 4820,
-    data: "31/08/2026",
+    data: formatarData(diasAtras(3)),
+    dataISO: diasAtras(3),
     responsavel: "Auxiliar Joana Reis",
+    forma: "Pix",
   },
   {
     id: "l2",
@@ -306,17 +332,22 @@ export const lancamentos: Lancamento[] = [
     categoria: "Oferta",
     descricao: "Oferta de gratidão",
     valor: 1230.5,
-    data: "31/08/2026",
+    data: formatarData(diasAtras(3)),
+    dataISO: diasAtras(3),
     responsavel: "Auxiliar Joana Reis",
+    forma: "Dinheiro",
   },
   {
     id: "l3",
     tipo: "saida",
-    categoria: "Gastos",
-    descricao: "Conta de luz — agosto",
+    categoria: "Conta Luz",
+    descricao: "Conta de luz — mês anterior",
     valor: 742.9,
-    data: "29/08/2026",
+    data: formatarData(diasAtras(6)),
+    dataISO: diasAtras(6),
     responsavel: "Presb. Sérgio Lima",
+    forma: "Cartão",
+    observacao: "Vencimento dia 10.",
   },
   {
     id: "l4",
@@ -324,10 +355,57 @@ export const lancamentos: Lancamento[] = [
     categoria: "Repasse Sede",
     descricao: "Repasse mensal à sede",
     valor: 1500,
-    data: "28/08/2026",
+    data: formatarData(diasAtras(9)),
+    dataISO: diasAtras(9),
     responsavel: "Pr. Marcos Andrade",
+    forma: "Pix",
+  },
+  {
+    id: "l5",
+    tipo: "entrada",
+    categoria: "Doação",
+    descricao: "Doação para cestas básicas",
+    valor: 600,
+    data: formatarData(diasAtras(14)),
+    dataISO: diasAtras(14),
+    responsavel: "Auxiliar Joana Reis",
+    forma: "Pix",
+  },
+  {
+    id: "l6",
+    tipo: "saida",
+    categoria: "Manutenção",
+    descricao: "Reparo do ar-condicionado do templo",
+    valor: 980,
+    data: formatarData(diasAtras(18)),
+    dataISO: diasAtras(18),
+    responsavel: "Presb. Sérgio Lima",
+    forma: "Dinheiro",
+  },
+  {
+    id: "l7",
+    tipo: "entrada",
+    categoria: "Dízimo",
+    descricao: "Dízimos do culto de quinta",
+    valor: 2140,
+    data: formatarData(diasAtras(24)),
+    dataISO: diasAtras(24),
+    responsavel: "Auxiliar Joana Reis",
+    forma: "Dinheiro",
+  },
+  {
+    id: "l8",
+    tipo: "saida",
+    categoria: "Água",
+    descricao: "Conta de água",
+    valor: 318.4,
+    data: formatarData(diasAtras(27)),
+    dataISO: diasAtras(27),
+    responsavel: "Auxiliar Joana Reis",
+    forma: "Cartão",
   },
 ];
+
 
 export const brl = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
