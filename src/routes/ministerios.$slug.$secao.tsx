@@ -1,5 +1,5 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
-import { CalendarPlus, ExternalLink, Lock, Music2, Pin } from "lucide-react";
+import { CalendarPlus, ExternalLink, Music2, Pin } from "lucide-react";
 import { useState } from "react";
 
 import { AppShell, PageHeader } from "@/components/AppShell";
