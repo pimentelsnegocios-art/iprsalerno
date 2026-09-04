@@ -289,8 +289,8 @@ export interface Lancamento {
   dataISO: string;
   responsavel: string;
   forma: FormaPagamento;
-  observacao?: string;
-  comprovante?: string | null;
+  observacao?: string | undefined;
+  comprovante?: string | null | undefined;
 }
 
 export const categoriasEntrada = ["Dízimo", "Oferta", "Doação", "Evento"];
