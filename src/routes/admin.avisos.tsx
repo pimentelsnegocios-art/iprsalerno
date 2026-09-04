@@ -4,7 +4,8 @@ import { Lock, Pencil, Plus, Trash2, X } from "lucide-react";
 
 import { AppShell, PageHeader } from "@/components/AppShell";
 import { acoes, hojeBR, useAppStore, type Aviso } from "@/lib/app-store";
-import { ehLideranca, usuarioAtual } from "@/lib/church-data";
+import { usePerfil } from "@/hooks/usePerfil";
+import { ehAdmin } from "@/lib/permissoes";
 
 export const Route = createFileRoute("/admin/avisos")({
   head: () => ({
@@ -29,7 +30,9 @@ function AdminAvisos() {
   const [editando, setEditando] = useState<Aviso | null>(null);
   const [form, setForm] = useState(vazio);
 
-  const admin = ehLideranca(usuarioAtual.cargo);
+  const { perfil, permissao } = usePerfil();
+  const admin = ehAdmin(permissao);
+  const meuNome = perfil?.nome ?? "Liderança";
   if (!admin) {
     return (
       <AppShell>
@@ -73,7 +76,7 @@ function AdminAvisos() {
         titulo: form.titulo,
         texto: form.texto,
         data,
-        autor: usuarioAtual.nome,
+        autor: meuNome,
         fixadoHome: form.fixadoHome,
       });
     }
@@ -171,7 +174,7 @@ function AdminAvisos() {
               Autor
               <input
                 readOnly
-                value={editando ? editando.autor : usuarioAtual.nome}
+                value={editando ? editando.autor : meuNome}
                 className="mt-1 w-full rounded-lg border border-border bg-secondary px-3 py-2 text-sm font-normal normal-case tracking-normal text-soft"
               />
             </label>
