@@ -14,6 +14,59 @@ export type Database = {
   }
   public: {
     Tables: {
+      agenda_cultos: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          data: string
+          descricao: string
+          dirigente: string
+          horario: string
+          id: string
+          pregador: string
+          tema: string
+          tipo: string
+          titulo: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          data?: string
+          descricao?: string
+          dirigente?: string
+          horario?: string
+          id?: string
+          pregador?: string
+          tema?: string
+          tipo?: string
+          titulo: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          data?: string
+          descricao?: string
+          dirigente?: string
+          horario?: string
+          id?: string
+          pregador?: string
+          tema?: string
+          tipo?: string
+          titulo?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agenda_cultos_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       avisos: {
         Row: {
           autor: string
@@ -49,6 +102,62 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      livro_caixa: {
+        Row: {
+          categoria: string
+          comprovante_url: string | null
+          created_at: string
+          created_by: string | null
+          data: string
+          descricao: string
+          forma: string
+          id: string
+          observacao: string
+          responsavel: string
+          tipo: string
+          updated_at: string
+          valor: number
+        }
+        Insert: {
+          categoria?: string
+          comprovante_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          data?: string
+          descricao?: string
+          forma?: string
+          id?: string
+          observacao?: string
+          responsavel?: string
+          tipo: string
+          updated_at?: string
+          valor?: number
+        }
+        Update: {
+          categoria?: string
+          comprovante_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          data?: string
+          descricao?: string
+          forma?: string
+          id?: string
+          observacao?: string
+          responsavel?: string
+          tipo?: string
+          updated_at?: string
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "livro_caixa_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       mural: {
         Row: {
@@ -220,6 +329,8 @@ export type Database = {
       }
       check_aniversariantes_hoje: { Args: never; Returns: number }
       eh_gestor: { Args: { _user_id: string }; Returns: boolean }
+      eh_gestor_agenda: { Args: { _user_id: string }; Returns: boolean }
+      eh_gestor_caixa: { Args: { _user_id: string }; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
