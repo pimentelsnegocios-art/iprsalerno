@@ -1,13 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
-import { Ban, Check, Lock, MoreHorizontal, Search, UserRound, X } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Ban, Check, Loader2, Lock, MoreHorizontal, Search, Trash2, UserRound, X } from "lucide-react";
+import { toast } from "sonner";
 
 import { AppShell, PageHeader } from "@/components/AppShell";
 import { PainelAcessos } from "@/components/PainelAcessos";
-import { acoes, useAppStore, type Membro, type StatusMembro } from "@/lib/app-store";
-import { ministerios, podeVerAdmin, usuarioAtual, type Cargo } from "@/lib/church-data";
+import { supabase } from "@/integrations/supabase/client";
+import { excluirUsuario } from "@/lib/admin.functions";
+import { OPCOES_MINISTERIOS, listaMinisterios } from "@/lib/ministerios-opcoes";
 
 export const Route = createFileRoute("/admin/membros")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Hall de Membros — IPR" },
@@ -17,44 +21,121 @@ export const Route = createFileRoute("/admin/membros")({
       },
       { property: "og:title", content: "Hall de Membros — IPR" },
       { property: "og:description", content: "Gestão de membros e permissões." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: AdminMembros,
 });
 
-const cargos: Cargo[] = [
-  "Membro",
-  "Auxiliar de Caixa",
-  "Presbítero",
-  "Pastor",
-  "Admin",
-  "Fundador",
-];
+interface Conta {
+  id: string;
+  nome: string;
+  email: string;
+  cargo: string;
+  status: string;
+  ministerios: string[] | null;
+  foto_url: string | null;
+}
 
-const tabs: { key: StatusMembro; label: string }[] = [
-  { key: "pendente", label: "Pendentes" },
-  { key: "aprovado", label: "Aprovados" },
-  { key: "bloqueado", label: "Bloqueados" },
-];
+const cargos = ["Membro", "Auxiliar de Caixa", "Presbítero", "Pastor", "Admin", "Fundador"];
+
+const tabs = [
+  { key: "Pendente", label: "Pendentes" },
+  { key: "Aprovado", label: "Aprovados" },
+  { key: "Bloqueado", label: "Bloqueados" },
+] as const;
+
+const FUNDADOR = "louvoriprb7@gmail.com";
 
 function AdminMembros() {
-  const { membros } = useAppStore();
-  const [tab, setTab] = useState<StatusMembro>("pendente");
+  const [contas, setContas] = useState<Conta[]>([]);
+  const [carregando, setCarregando] = useState(true);
+  const [ehAdmin, setEhAdmin] = useState(false);
+  const [meuId, setMeuId] = useState<string | null>(null);
+  const [tab, setTab] = useState<(typeof tabs)[number]["key"]>("Pendente");
   const [busca, setBusca] = useState("");
   const [aberto, setAberto] = useState<string | null>(null);
+  const [confirmar, setConfirmar] = useState("");
+  const [excluindo, setExcluindo] = useState(false);
+
+  const apagarConta = useServerFn(excluirUsuario);
+
+  const carregar = useCallback(async () => {
+    const { data: auth } = await supabase.auth.getUser();
+    setMeuId(auth.user?.id ?? null);
+    if (auth.user) {
+      const { data: admin } = await supabase.rpc("has_role", {
+        _user_id: auth.user.id,
+        _role: "admin",
+      });
+      setEhAdmin(Boolean(admin));
+    }
+    const { data } = await supabase
+      .from("profiles")
+      .select("id, nome, email, cargo, status, ministerios, foto_url")
+      .order("nome");
+    setContas((data as Conta[] | null) ?? []);
+    setCarregando(false);
+  }, []);
+
+  useEffect(() => {
+    void carregar();
+  }, [carregar]);
+
+  async function atualizar(id: string, campos: Partial<Conta>) {
+    const { error } = await supabase.from("profiles").update(campos).eq("id", id);
+    if (error) {
+      toast.error("Você não tem permissão para essa alteração.");
+      return;
+    }
+    setContas((atual) => atual.map((c) => (c.id === id ? { ...c, ...campos } : c)));
+  }
 
   const lista = useMemo(
     () =>
-      membros.filter(
-        (m) => m.status === tab && m.nome.toLowerCase().includes(busca.trim().toLowerCase()),
+      contas.filter(
+        (c) =>
+          c.status === tab && (c.nome ?? "").toLowerCase().includes(busca.trim().toLowerCase()),
       ),
-    [membros, tab, busca],
+    [contas, tab, busca],
   );
 
-  const emEdicao = membros.find((m) => m.id === aberto) ?? null;
-  const pendentes = membros.filter((m) => m.status === "pendente").length;
+  const emEdicao = contas.find((c) => c.id === aberto) ?? null;
+  const pendentes = contas.filter((c) => c.status === "Pendente").length;
+  const podeExcluir =
+    ehAdmin &&
+    emEdicao != null &&
+    emEdicao.id !== meuId &&
+    (emEdicao.email ?? "").toLowerCase() !== FUNDADOR;
 
-  if (!podeVerAdmin(usuarioAtual.cargo)) {
+  async function excluir() {
+    if (!emEdicao) return;
+    setExcluindo(true);
+    try {
+      await apagarConta({ data: { targetId: emEdicao.id } });
+      setContas((atual) => atual.filter((c) => c.id !== emEdicao.id));
+      setAberto(null);
+      setConfirmar("");
+      toast.success("Conta excluída do banco.");
+    } catch {
+      toast.error("Não foi possível excluir essa conta.");
+    }
+    setExcluindo(false);
+  }
+
+  if (carregando) {
+    return (
+      <AppShell>
+        <PageHeader title="Hall de Membros" />
+        <div className="flex justify-center py-16">
+          <Loader2 className="size-6 animate-spin text-primary" />
+        </div>
+      </AppShell>
+    );
+  }
+
+  if (!ehAdmin) {
     return (
       <AppShell>
         <PageHeader title="Hall de Membros" />
@@ -68,10 +149,7 @@ function AdminMembros() {
 
   return (
     <AppShell>
-      <PageHeader
-        title="Hall de Membros"
-        subtitle={`Total de Membros: ${membros.length}`}
-      />
+      <PageHeader title="Hall de Membros" subtitle={`Total de Membros: ${contas.length}`} />
       <PainelAcessos />
 
       <div className="px-5 py-5">
@@ -95,7 +173,7 @@ function AdminMembros() {
               }`}
             >
               {t.label}
-              {t.key === "pendente" && pendentes > 0 ? (
+              {t.key === "Pendente" && pendentes > 0 ? (
                 <span className="rounded-full bg-destructive px-1.5 py-0.5 text-[10px] font-bold text-destructive-foreground">
                   {pendentes}
                 </span>
@@ -108,8 +186,8 @@ function AdminMembros() {
           {lista.map((m) => (
             <div key={m.id} className="surface-card flex items-center gap-3 p-4">
               <span className="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-primary/50 bg-secondary">
-                {m.foto ? (
-                  <img src={m.foto} alt={m.nome} className="size-full object-cover" />
+                {m.foto_url ? (
+                  <img src={m.foto_url} alt={m.nome} className="size-full object-cover" />
                 ) : (
                   <UserRound className="size-5 text-primary" />
                 )}
@@ -117,39 +195,53 @@ function AdminMembros() {
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold">{m.nome}</p>
                 <p className="truncate text-[11px] text-soft">
-                  {m.cargo} · {m.ministerio === "nenhum" ? "Sem ministério" : m.ministerio} ·{" "}
-                  {m.acesso}
+                  {m.cargo} · {listaMinisterios(m.ministerios)}
                 </p>
               </div>
 
-              {m.status === "pendente" ? (
+              {m.status === "Pendente" ? (
                 <div className="flex gap-1.5">
                   <button
                     aria-label={`Aprovar ${m.nome}`}
-                    onClick={() => acoes.atualizarMembro(m.id, { status: "aprovado" })}
+                    onClick={() => atualizar(m.id, { status: "Aprovado" })}
                     className="rounded-lg bg-primary p-2 text-primary-foreground"
                   >
                     <Check className="size-4" />
                   </button>
                   <button
                     aria-label={`Bloquear ${m.nome}`}
-                    onClick={() => acoes.atualizarMembro(m.id, { status: "bloqueado" })}
+                    onClick={() => atualizar(m.id, { status: "Bloqueado" })}
                     className="rounded-lg bg-secondary p-2 text-destructive"
                   >
                     <X className="size-4" />
                   </button>
                 </div>
-              ) : m.status === "bloqueado" ? (
-                <button
-                  onClick={() => acoes.atualizarMembro(m.id, { status: "aprovado" })}
-                  className="rounded-lg bg-secondary px-3 py-2 text-xs font-semibold text-primary"
-                >
-                  Desbloquear
-                </button>
+              ) : m.status === "Bloqueado" ? (
+                <div className="flex gap-1.5">
+                  <button
+                    onClick={() => atualizar(m.id, { status: "Aprovado" })}
+                    className="rounded-lg bg-secondary px-3 py-2 text-xs font-semibold text-primary"
+                  >
+                    Desbloquear
+                  </button>
+                  <button
+                    aria-label={`Opções de ${m.nome}`}
+                    onClick={() => {
+                      setConfirmar("");
+                      setAberto(m.id);
+                    }}
+                    className="rounded-lg bg-secondary p-2 text-soft"
+                  >
+                    <MoreHorizontal className="size-4" />
+                  </button>
+                </div>
               ) : (
                 <button
                   aria-label={`Opções de ${m.nome}`}
-                  onClick={() => setAberto(m.id)}
+                  onClick={() => {
+                    setConfirmar("");
+                    setAberto(m.id);
+                  }}
                   className="rounded-lg bg-secondary p-2 text-soft"
                 >
                   <MoreHorizontal className="size-4" />
@@ -177,7 +269,7 @@ function AdminMembros() {
               Editar nome
               <input
                 value={emEdicao.nome}
-                onChange={(e) => acoes.atualizarMembro(emEdicao.id, { nome: e.target.value })}
+                onChange={(e) => atualizar(emEdicao.id, { nome: e.target.value })}
                 className="mt-1 w-full rounded-lg border border-border bg-secondary px-3 py-2 text-sm font-normal normal-case tracking-normal text-foreground"
               />
             </label>
@@ -189,7 +281,7 @@ function AdminMembros() {
               {cargos.map((c) => (
                 <button
                   key={c}
-                  onClick={() => acoes.atualizarMembro(emEdicao.id, { cargo: c })}
+                  onClick={() => atualizar(emEdicao.id, { cargo: c })}
                   className={`rounded-full px-2.5 py-1 text-[11px] font-medium ${
                     emEdicao.cargo === c
                       ? "bg-primary text-primary-foreground"
@@ -202,56 +294,73 @@ function AdminMembros() {
             </div>
 
             <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-soft">
-              Trocar ministério
+              Ministérios (pode marcar vários)
             </p>
             <div className="mt-1 flex flex-wrap gap-1.5">
-              {["nenhum", ...ministerios.map((m) => m.slug)].map((slug) => (
-                <button
-                  key={slug}
-                  onClick={() =>
-                    acoes.atualizarMembro(emEdicao.id, {
-                      ministerio: slug as Membro["ministerio"],
-                    })
-                  }
-                  className={`rounded-full px-2.5 py-1 text-[11px] font-medium capitalize ${
-                    emEdicao.ministerio === slug
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-secondary text-soft"
-                  }`}
-                >
-                  {slug}
-                </button>
-              ))}
-            </div>
-
-            <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-soft">
-              Alterar acesso
-            </p>
-            <div className="mt-1 flex gap-1.5">
-              {(["Admin", "Membro"] as const).map((a) => (
-                <button
-                  key={a}
-                  onClick={() => acoes.atualizarMembro(emEdicao.id, { acesso: a })}
-                  className={`rounded-full px-3 py-1 text-[11px] font-medium ${
-                    emEdicao.acesso === a
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-secondary text-soft"
-                  }`}
-                >
-                  {a}
-                </button>
-              ))}
+              {OPCOES_MINISTERIOS.map((nome) => {
+                const marcado = (emEdicao.ministerios ?? []).includes(nome);
+                return (
+                  <button
+                    key={nome}
+                    onClick={() => {
+                      const atuais = emEdicao.ministerios ?? [];
+                      const novos = marcado
+                        ? atuais.filter((m) => m !== nome)
+                        : [...atuais, nome];
+                      void atualizar(emEdicao.id, { ministerios: novos });
+                    }}
+                    className={`rounded-full px-2.5 py-1 text-[11px] font-medium ${
+                      marcado ? "bg-primary text-primary-foreground" : "bg-secondary text-soft"
+                    }`}
+                  >
+                    {marcado ? "✓ " : ""}
+                    {nome}
+                  </button>
+                );
+              })}
+              <button
+                onClick={() => void atualizar(emEdicao.id, { ministerios: [] })}
+                className="rounded-full bg-secondary px-2.5 py-1 text-[11px] font-medium text-soft"
+              >
+                Nenhum
+              </button>
             </div>
 
             <button
               onClick={() => {
-                acoes.atualizarMembro(emEdicao.id, { status: "bloqueado" });
+                void atualizar(emEdicao.id, { status: "Bloqueado" });
                 setAberto(null);
               }}
               className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-secondary px-4 py-2.5 text-sm font-semibold text-destructive"
             >
               <Ban className="size-4" /> Bloquear usuário
             </button>
+
+            {podeExcluir ? (
+              <div className="mt-3 rounded-lg border border-destructive/50 p-3">
+                <p className="text-xs text-soft">
+                  Para apagar do banco definitivamente, digite <strong>EXCLUIR</strong>.
+                </p>
+                <input
+                  value={confirmar}
+                  onChange={(e) => setConfirmar(e.target.value)}
+                  placeholder="EXCLUIR"
+                  className="mt-2 w-full rounded-lg border border-border bg-secondary px-3 py-2 text-sm"
+                />
+                <button
+                  disabled={confirmar !== "EXCLUIR" || excluindo}
+                  onClick={() => void excluir()}
+                  className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-lg border border-destructive px-4 py-2.5 text-sm font-semibold text-destructive disabled:opacity-40"
+                >
+                  {excluindo ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <Trash2 className="size-4" />
+                  )}
+                  Excluir de vez (Apagar do banco)
+                </button>
+              </div>
+            ) : null}
 
             <button
               onClick={() => setAberto(null)}
