@@ -1,7 +1,8 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Wallet, ShieldCheck, LogOut, Lock, Users, Megaphone } from "lucide-react";
 
 import { AppShell, PageHeader } from "@/components/AppShell";
+import { supabase } from "@/integrations/supabase/client";
 import { usuarioAtual, podeVerCaixa, podeVerAdmin } from "@/lib/church-data";
 
 export const Route = createFileRoute("/mais")({
@@ -20,6 +21,13 @@ export const Route = createFileRoute("/mais")({
 });
 
 function Mais() {
+  const navigate = useNavigate();
+
+  async function sair() {
+    await supabase.auth.signOut();
+    navigate({ to: "/login", replace: true });
+  }
+
   const caixa = podeVerCaixa(usuarioAtual.cargo);
   const admin = podeVerAdmin(usuarioAtual.cargo);
 
@@ -80,7 +88,10 @@ function Mais() {
         )}
 
 
-        <button className="surface-card flex w-full items-center gap-3 p-4 text-destructive">
+        <button
+          onClick={() => void sair()}
+          className="surface-card flex w-full items-center gap-3 p-4 text-destructive"
+        >
           <LogOut className="size-5" />
           <span className="font-semibold">Sair</span>
         </button>
