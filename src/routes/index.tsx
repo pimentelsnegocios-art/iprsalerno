@@ -13,7 +13,9 @@ import {
 } from "lucide-react";
 
 import { AppShell } from "@/components/AppShell";
-import { avisos, cultos, usuarioAtual } from "@/lib/church-data";
+import { cultos, usuarioAtual } from "@/lib/church-data";
+import { useAppStore } from "@/lib/app-store";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
