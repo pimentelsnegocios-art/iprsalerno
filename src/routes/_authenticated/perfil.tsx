@@ -737,9 +737,8 @@ function ModalSenha({ onClose }: { onClose: () => void }) {
     }
     const { error } = await supabase.auth.updateUser({
       password: nova,
-      // @ts-expect-error current_password é aceito pelo Cloud Auth
       current_password: atual,
-    });
+    } as Parameters<typeof supabase.auth.updateUser>[0]);
     if (error) {
       toast.error("Não conseguimos trocar a senha. Confira a senha atual.");
       return;
