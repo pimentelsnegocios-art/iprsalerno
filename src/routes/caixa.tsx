@@ -166,7 +166,7 @@ function Caixa() {
   if (!podeVerCaixa(usuarioAtual.cargo)) {
     return (
       <AppShell>
-        <PageHeader title="Livro Caixa" back="/mais" />
+        <PageHeader title="Livro Caixa" />
         <div className="surface-card mx-5 mt-5 p-5 text-center">
           <Lock className="mx-auto size-8 text-primary" />
           <p className="mt-3 text-sm">
@@ -261,7 +261,7 @@ ${linhas
 
   return (
     <AppShell>
-      <PageHeader title="Livro Caixa" subtitle="Saldo em tempo real" back="/mais" />
+      <PageHeader title="Livro Caixa" subtitle="Saldo em tempo real" />
       <div className="px-5 py-5">
         {/* Saldo + gráfico */}
         <div className="surface-card p-4">

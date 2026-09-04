@@ -76,7 +76,7 @@ function Administracao() {
   if (!podeVerAdmin(usuarioAtual.cargo)) {
     return (
       <AppShell>
-        <PageHeader title="Administração" back="/mais" />
+        <PageHeader title="Administração" />
         <div className="surface-card mx-5 mt-5 p-5 text-center">
           <Lock className="mx-auto size-8 text-primary" />
           <p className="mt-3 text-sm">Área exclusiva do Fundador e dos Admins.</p>
@@ -93,7 +93,7 @@ function Administracao() {
       <PageHeader
         title="Administração"
         subtitle="Aprovação dinâmica — cargo, ministério e função"
-        back="/mais"
+       
       />
       <div className="px-5 py-5">
         <h2 className="font-display text-lg">Cadastros pendentes</h2>

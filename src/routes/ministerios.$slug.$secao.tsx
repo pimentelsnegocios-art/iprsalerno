@@ -28,7 +28,7 @@ export const Route = createFileRoute("/ministerios/$slug/$secao")({
   component: SecaoPage,
   notFoundComponent: () => (
     <AppShell>
-      <PageHeader title="Seção não encontrada" back="/ministerios" />
+      <PageHeader title="Seção não encontrada" />
     </AppShell>
   ),
 });
