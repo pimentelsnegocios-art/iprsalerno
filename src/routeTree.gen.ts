@@ -10,33 +10,90 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AgendaRouteImport } from './routes/agenda'
+import { Route as AvisosRouteImport } from './routes/avisos'
+import { Route as EstudoRouteImport } from './routes/estudo'
+import { Route as OracaoRouteImport } from './routes/oracao'
+import { Route as CultoDiaRouteImport } from './routes/culto.$dia'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AgendaRoute = AgendaRouteImport.update({
+  id: '/agenda',
+  path: '/agenda',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AvisosRoute = AvisosRouteImport.update({
+  id: '/avisos',
+  path: '/avisos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EstudoRoute = EstudoRouteImport.update({
+  id: '/estudo',
+  path: '/estudo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OracaoRoute = OracaoRouteImport.update({
+  id: '/oracao',
+  path: '/oracao',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CultoDiaRoute = CultoDiaRouteImport.update({
+  id: '/culto/$dia',
+  path: '/culto/$dia',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/agenda': typeof AgendaRoute
+  '/avisos': typeof AvisosRoute
+  '/estudo': typeof EstudoRoute
+  '/oracao': typeof OracaoRoute
+  '/culto/$dia': typeof CultoDiaRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/agenda': typeof AgendaRoute
+  '/avisos': typeof AvisosRoute
+  '/estudo': typeof EstudoRoute
+  '/oracao': typeof OracaoRoute
+  '/culto/$dia': typeof CultoDiaRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/agenda': typeof AgendaRoute
+  '/avisos': typeof AvisosRoute
+  '/estudo': typeof EstudoRoute
+  '/oracao': typeof OracaoRoute
+  '/culto/$dia': typeof CultoDiaRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/agenda' | '/avisos' | '/estudo' | '/oracao' | '/culto/$dia'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/agenda' | '/avisos' | '/estudo' | '/oracao' | '/culto/$dia'
+  id:
+    | '__root__'
+    | '/'
+    | '/agenda'
+    | '/avisos'
+    | '/estudo'
+    | '/oracao'
+    | '/culto/$dia'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AgendaRoute: typeof AgendaRoute
+  AvisosRoute: typeof AvisosRoute
+  EstudoRoute: typeof EstudoRoute
+  OracaoRoute: typeof OracaoRoute
+  CultoDiaRoute: typeof CultoDiaRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +105,51 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/agenda': {
+      id: '/agenda'
+      path: '/agenda'
+      fullPath: '/agenda'
+      preLoaderRoute: typeof AgendaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/avisos': {
+      id: '/avisos'
+      path: '/avisos'
+      fullPath: '/avisos'
+      preLoaderRoute: typeof AvisosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/estudo': {
+      id: '/estudo'
+      path: '/estudo'
+      fullPath: '/estudo'
+      preLoaderRoute: typeof EstudoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/oracao': {
+      id: '/oracao'
+      path: '/oracao'
+      fullPath: '/oracao'
+      preLoaderRoute: typeof OracaoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/culto/$dia': {
+      id: '/culto/$dia'
+      path: '/culto/$dia'
+      fullPath: '/culto/$dia'
+      preLoaderRoute: typeof CultoDiaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AgendaRoute: AgendaRoute,
+  AvisosRoute: AvisosRoute,
+  EstudoRoute: EstudoRoute,
+  OracaoRoute: OracaoRoute,
+  CultoDiaRoute: CultoDiaRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
