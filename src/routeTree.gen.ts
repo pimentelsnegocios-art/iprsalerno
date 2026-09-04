@@ -21,7 +21,9 @@ import { Route as OracaoRouteImport } from './routes/oracao'
 import { Route as PastoralRouteImport } from './routes/pastoral'
 import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as CultoDiaRouteImport } from './routes/culto.$dia'
-import { Route as MinisteriosSlugRouteImport } from './routes/ministerios.$slug'
+import { Route as MinisteriosIndexRouteImport } from './routes/ministerios.index'
+import { Route as MinisteriosSlugIndexRouteImport } from './routes/ministerios.$slug.index'
+import { Route as MinisteriosSlugSecaoRouteImport } from './routes/ministerios.$slug.$secao'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -83,9 +85,19 @@ const CultoDiaRoute = CultoDiaRouteImport.update({
   path: '/culto/$dia',
   getParentRoute: () => rootRouteImport,
 } as any)
-const MinisteriosSlugRoute = MinisteriosSlugRouteImport.update({
-  id: '/$slug',
-  path: '/$slug',
+const MinisteriosIndexRoute = MinisteriosIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => MinisteriosRoute,
+} as any)
+const MinisteriosSlugIndexRoute = MinisteriosSlugIndexRouteImport.update({
+  id: '/$slug/',
+  path: '/$slug/',
+  getParentRoute: () => MinisteriosRoute,
+} as any)
+const MinisteriosSlugSecaoRoute = MinisteriosSlugSecaoRouteImport.update({
+  id: '/$slug/$secao',
+  path: '/$slug/$secao',
   getParentRoute: () => MinisteriosRoute,
 } as any)
 
@@ -102,7 +114,9 @@ export interface FileRoutesByFullPath {
   '/pastoral': typeof PastoralRoute
   '/perfil': typeof PerfilRoute
   '/culto/$dia': typeof CultoDiaRoute
-  '/ministerios/$slug': typeof MinisteriosSlugRoute
+  '/ministerios/': typeof MinisteriosIndexRoute
+  '/ministerios/$slug/$secao': typeof MinisteriosSlugSecaoRoute
+  '/ministerios/$slug/': typeof MinisteriosSlugIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -112,12 +126,13 @@ export interface FileRoutesByTo {
   '/caixa': typeof CaixaRoute
   '/estudo': typeof EstudoRoute
   '/mais': typeof MaisRoute
-  '/ministerios': typeof MinisteriosRouteWithChildren
   '/oracao': typeof OracaoRoute
   '/pastoral': typeof PastoralRoute
   '/perfil': typeof PerfilRoute
   '/culto/$dia': typeof CultoDiaRoute
-  '/ministerios/$slug': typeof MinisteriosSlugRoute
+  '/ministerios': typeof MinisteriosIndexRoute
+  '/ministerios/$slug/$secao': typeof MinisteriosSlugSecaoRoute
+  '/ministerios/$slug': typeof MinisteriosSlugIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -133,7 +148,9 @@ export interface FileRoutesById {
   '/pastoral': typeof PastoralRoute
   '/perfil': typeof PerfilRoute
   '/culto/$dia': typeof CultoDiaRoute
-  '/ministerios/$slug': typeof MinisteriosSlugRoute
+  '/ministerios/': typeof MinisteriosIndexRoute
+  '/ministerios/$slug/$secao': typeof MinisteriosSlugSecaoRoute
+  '/ministerios/$slug/': typeof MinisteriosSlugIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -150,7 +167,9 @@ export interface FileRouteTypes {
     | '/pastoral'
     | '/perfil'
     | '/culto/$dia'
-    | '/ministerios/$slug'
+    | '/ministerios/'
+    | '/ministerios/$slug/$secao'
+    | '/ministerios/$slug/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -160,11 +179,12 @@ export interface FileRouteTypes {
     | '/caixa'
     | '/estudo'
     | '/mais'
-    | '/ministerios'
     | '/oracao'
     | '/pastoral'
     | '/perfil'
     | '/culto/$dia'
+    | '/ministerios'
+    | '/ministerios/$slug/$secao'
     | '/ministerios/$slug'
   id:
     | '__root__'
@@ -180,7 +200,9 @@ export interface FileRouteTypes {
     | '/pastoral'
     | '/perfil'
     | '/culto/$dia'
-    | '/ministerios/$slug'
+    | '/ministerios/'
+    | '/ministerios/$slug/$secao'
+    | '/ministerios/$slug/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -284,22 +306,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CultoDiaRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/ministerios/$slug': {
-      id: '/ministerios/$slug'
+    '/ministerios/': {
+      id: '/ministerios/'
+      path: '/'
+      fullPath: '/ministerios/'
+      preLoaderRoute: typeof MinisteriosIndexRouteImport
+      parentRoute: typeof MinisteriosRoute
+    }
+    '/ministerios/$slug/': {
+      id: '/ministerios/$slug/'
       path: '/$slug'
-      fullPath: '/ministerios/$slug'
-      preLoaderRoute: typeof MinisteriosSlugRouteImport
+      fullPath: '/ministerios/$slug/'
+      preLoaderRoute: typeof MinisteriosSlugIndexRouteImport
+      parentRoute: typeof MinisteriosRoute
+    }
+    '/ministerios/$slug/$secao': {
+      id: '/ministerios/$slug/$secao'
+      path: '/$slug/$secao'
+      fullPath: '/ministerios/$slug/$secao'
+      preLoaderRoute: typeof MinisteriosSlugSecaoRouteImport
       parentRoute: typeof MinisteriosRoute
     }
   }
 }
 
 interface MinisteriosRouteChildren {
-  MinisteriosSlugRoute: typeof MinisteriosSlugRoute
+  MinisteriosIndexRoute: typeof MinisteriosIndexRoute
+  MinisteriosSlugSecaoRoute: typeof MinisteriosSlugSecaoRoute
+  MinisteriosSlugIndexRoute: typeof MinisteriosSlugIndexRoute
 }
 
 const MinisteriosRouteChildren: MinisteriosRouteChildren = {
-  MinisteriosSlugRoute: MinisteriosSlugRoute,
+  MinisteriosIndexRoute: MinisteriosIndexRoute,
+  MinisteriosSlugSecaoRoute: MinisteriosSlugSecaoRoute,
+  MinisteriosSlugIndexRoute: MinisteriosSlugIndexRoute,
 }
 
 const MinisteriosRouteWithChildren = MinisteriosRoute._addFileChildren(
