@@ -158,8 +158,8 @@ function CadastroPage() {
                   className="w-full bg-transparent text-sm text-[#1E3A5F] outline-none"
                 >
                   <option value="nenhum">Qual ministério frequenta?</option>
-                  {ministerios.map((m) => (
-                    <option key={m.slug} value={m.slug}>
+                  {OPCOES_MINISTERIO.map((m) => (
+                    <option key={m.valor} value={m.valor}>
                       {m.nome}
                     </option>
                   ))}
