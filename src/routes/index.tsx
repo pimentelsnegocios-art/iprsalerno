@@ -77,8 +77,10 @@ function Home() {
         </a>
       </header>
 
-      <section className="px-5 pt-4">
+      <section className="space-y-3 px-5 pt-4">
+        <AniversariantesHoje />
         <Link
+
           to="/avisos"
           className="relative block overflow-hidden rounded-2xl border border-[#D4B678] bg-[#C9A86A] p-4 text-white shadow-[var(--shadow-glow)]"
         >
