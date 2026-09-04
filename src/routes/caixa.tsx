@@ -8,7 +8,9 @@ import {
   Lock,
   LockKeyhole,
   Paperclip,
+  Pencil,
   Search,
+  Trash2,
   X,
 } from "lucide-react";
 import {
