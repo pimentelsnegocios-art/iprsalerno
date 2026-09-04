@@ -109,7 +109,7 @@ function MinisterioPage() {
         </div>
       </div>
 
-      <div className="-mt-10 space-y-5 px-5 pb-6">
+      <div className="-mt-4 space-y-5 px-5 pb-6">
         {conteudo.frase ? (
           <div className="surface-card px-4 py-3 text-center text-sm italic">{conteudo.frase}</div>
         ) : null}
