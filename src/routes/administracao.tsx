@@ -53,7 +53,9 @@ function Administracao() {
     void carregar();
   }, [carregar]);
 
-  async function atualizar(id: string, campos: Partial<Pendente> & { status?: string }) {
+  type Campos = { cargo?: string; ministerios?: string[]; status?: string };
+
+  async function atualizar(id: string, campos: Campos) {
     const { error } = await supabase.from("profiles").update(campos).eq("id", id);
     if (error) {
       toast.error("Você não tem permissão para essa alteração.");
