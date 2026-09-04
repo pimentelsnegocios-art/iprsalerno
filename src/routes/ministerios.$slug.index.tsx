@@ -3,7 +3,6 @@ import {
   Bell,
   BookOpen,
   CalendarDays,
-  ChevronLeft,
   Guitar,
   HandHeart,
   HeartHandshake,
@@ -81,17 +80,14 @@ function MinisterioPage() {
           alt={`Capa do ${conteudo.nome}`}
           width={1024}
           height={1024}
-          className="h-[300px] w-full object-cover"
+          className="h-[300px] w-full object-contain object-top"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-background/85 via-background/25 to-background" />
 
-        <div className="absolute inset-x-0 top-0 flex items-center justify-between px-4 pt-4">
-          <Link
-            to="/ministerios"
-            className="inline-flex items-center gap-1 rounded-full bg-background/50 px-2.5 py-1.5 text-xs backdrop-blur"
-          >
-            <ChevronLeft className="size-4" /> Voltar
-          </Link>
+        <div
+          className="absolute inset-x-0 top-0 flex items-center justify-end px-4 pt-4"
+          style={{ paddingTop: "calc(1rem + env(safe-area-inset-top))" }}
+        >
           <Bell className="size-5 text-primary" />
         </div>
 
@@ -109,7 +105,7 @@ function MinisterioPage() {
         </div>
       </div>
 
-      <div className="-mt-4 space-y-5 px-5 pb-6">
+      <div className="space-y-5 px-5 pb-6 pt-[90px] md:pt-[100px]" style={{ paddingTop: "calc(90px + env(safe-area-inset-top))" }}>
         {conteudo.frase ? (
           <div className="surface-card px-4 py-3 text-center text-sm italic">{conteudo.frase}</div>
         ) : null}
@@ -129,7 +125,7 @@ function MinisterioPage() {
                     <span className="flex size-14 items-center justify-center rounded-full border-2 border-accent/60 bg-accent/10">
                       <Icon className="size-7 text-accent" strokeWidth={1.8} />
                     </span>
-                    <span className="text-sm font-bold uppercase tracking-wide">
+                    <span className="text-sm font-medium uppercase tracking-wide">
                       {s.label}
                       {s.restrito ? <Lock className="ml-1 inline size-3.5 text-primary" /> : null}
                     </span>

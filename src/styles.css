@@ -36,38 +36,34 @@
   --font-display: "Fraunces", ui-serif, Georgia, serif;
 }
 
-/* Tema geral da Igreja — azul marinho / dourado */
+/* Tema geral da Igreja — azul suave / champagne (premium bancário) */
 :root {
   --radius: 0.875rem;
-  --background: oklch(0.213 0.081 264.5);
+  --background: #1e3a5f;
   --foreground: oklch(1 0 0);
-  --surface: oklch(0.268 0.079 264.2);
+  --surface: #2c4e7a;
   --surface-foreground: oklch(1 0 0);
-  --card: oklch(0.268 0.079 264.2);
+  --card: #2c4e7a;
   --card-foreground: oklch(1 0 0);
-  --popover: oklch(0.243 0.079 264.3);
+  --popover: #254369;
   --popover-foreground: oklch(1 0 0);
-  --primary: oklch(0.815 0.161 79.5);
-  --primary-foreground: oklch(0.19 0.07 264.5);
-  --secondary: oklch(0.32 0.072 263);
+  --primary: oklch(0.79 0.09 87 / 90%);
+  --primary-foreground: #1e3a5f;
+  --secondary: #3a5f8c;
   --secondary-foreground: oklch(1 0 0);
-  --muted: oklch(0.32 0.072 263);
-  --muted-foreground: oklch(0.82 0.02 264 / 70%);
-  --accent: oklch(0.815 0.161 79.5);
-  --accent-foreground: oklch(0.19 0.07 264.5);
+  --muted: #3a5f8c;
+  --muted-foreground: oklch(0.88 0.02 252 / 75%);
+  --accent: oklch(0.79 0.09 87 / 90%);
+  --accent-foreground: #1e3a5f;
   --destructive: oklch(0.62 0.22 25);
   --destructive-foreground: oklch(1 0 0);
-  --border: oklch(1 0 0 / 12%);
+  --border: #3a5f8c1a;
   --input: oklch(1 0 0 / 14%);
-  --ring: oklch(0.815 0.161 79.5);
+  --ring: oklch(0.79 0.09 87);
 
-  --gradient-header: linear-gradient(
-    160deg,
-    oklch(0.3 0.09 264.5) 0%,
-    oklch(0.213 0.081 264.5) 70%
-  );
-  --shadow-soft: 0 12px 30px -14px oklch(0 0 0 / 65%);
-  --shadow-glow: 0 0 0 1px oklch(0.815 0.161 79.5 / 25%), 0 10px 28px -12px oklch(0.815 0.161 79.5 / 40%);
+  --gradient-header: linear-gradient(160deg, #2c4e7a 0%, #1e3a5f 70%);
+  --shadow-soft: 0 12px 30px -14px oklch(0 0 0 / 55%);
+  --shadow-glow: 0 0 0 1px oklch(0.79 0.09 87 / 25%), 0 10px 28px -12px oklch(0.79 0.09 87 / 35%);
 }
 
 /* Ministério de Louvor — preto profundo / dourado / branco */

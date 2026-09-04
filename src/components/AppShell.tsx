@@ -1,42 +1,42 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { ChevronLeft, CalendarDays, Music, Church, MoreHorizontal } from "lucide-react";
+import { Home, Book, CalendarDays, Sun, MoreHorizontal } from "lucide-react";
 import type { ReactNode } from "react";
 
-const tabs = [
-  { dia: "quinta", label: "Quinta", Icon: CalendarDays },
-  { dia: "sabado", label: "Sábado", Icon: Music },
-  { dia: "domingo", label: "Domingo", Icon: Church },
+const cultoTabs = [
+  { dia: "quinta", label: "Quinta", Icon: Book },
+  { dia: "sabado", label: "Sábado", Icon: CalendarDays },
+  { dia: "domingo", label: "Domingo", Icon: Sun },
 ] as const;
+
+const linkClass = (active: boolean) =>
+  `flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium transition-colors ${
+    active ? "text-primary" : "text-soft"
+  }`;
 
 export function BottomNav() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-popover/95 backdrop-blur">
+    <nav
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-popover/95 backdrop-blur"
+      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+    >
       <div className="mx-auto flex max-w-lg items-stretch">
-        {tabs.map(({ dia, label, Icon }) => {
+        <Link to="/" className={linkClass(pathname === "/")}>
+          <Home className="size-5" strokeWidth={pathname === "/" ? 2.4 : 1.8} />
+          Início
+        </Link>
+        {cultoTabs.map(({ dia, label, Icon }) => {
           const active = pathname === `/culto/${dia}`;
           return (
-            <Link
-              key={dia}
-              to="/culto/$dia"
-              params={{ dia }}
-              className={`flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium transition-colors ${
-                active ? "text-primary" : "text-soft"
-              }`}
-            >
+            <Link key={dia} to="/culto/$dia" params={{ dia }} className={linkClass(active)}>
               <Icon className="size-5" strokeWidth={active ? 2.4 : 1.8} />
               {label}
             </Link>
           );
         })}
-        <Link
-          to="/mais"
-          className={`flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium transition-colors ${
-            pathname === "/mais" ? "text-primary" : "text-soft"
-          }`}
-        >
-          <MoreHorizontal className="size-5" />
+        <Link to="/mais" className={linkClass(pathname === "/mais")}>
+          <MoreHorizontal className="size-5" strokeWidth={pathname === "/mais" ? 2.4 : 1.8} />
           Mais
         </Link>
       </div>
@@ -44,21 +44,12 @@ export function BottomNav() {
   );
 }
 
-
-export function PageHeader({
-  title,
-  subtitle,
-  back = "/",
-}: {
-  title: string;
-  subtitle?: string;
-  back?: string;
-}) {
+export function PageHeader({ title, subtitle }: { title: string; subtitle?: string }) {
   return (
-    <header className="header-gradient px-5 pt-8 pb-6">
-      <Link to={back} className="mb-3 inline-flex items-center gap-1 text-sm text-soft">
-        <ChevronLeft className="size-4" /> Voltar
-      </Link>
+    <header
+      className="header-gradient px-5 pb-6"
+      style={{ paddingTop: "calc(2rem + env(safe-area-inset-top))" }}
+    >
       <h1 className="font-display text-3xl leading-tight">{title}</h1>
       {subtitle ? <p className="mt-1 text-sm text-soft">{subtitle}</p> : null}
     </header>

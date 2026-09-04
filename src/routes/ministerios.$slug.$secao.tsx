@@ -28,7 +28,7 @@ export const Route = createFileRoute("/ministerios/$slug/$secao")({
   component: SecaoPage,
   notFoundComponent: () => (
     <AppShell>
-      <PageHeader title="Seção não encontrada" back="/ministerios" />
+      <PageHeader title="Seção não encontrada" />
     </AppShell>
   ),
 });
@@ -47,7 +47,6 @@ function SecaoPage() {
       <PageHeader
         title={`${meta.emoji} ${meta.label}`}
         subtitle={`${conteudo.nome} · ${conteudo.subtitulo}`}
-        back={`/ministerios/${conteudo.slug}`}
       />
       <div className="px-5 py-5">
         {!temAcesso ? (

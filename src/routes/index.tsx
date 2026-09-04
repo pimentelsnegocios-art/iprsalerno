@@ -93,7 +93,7 @@ function Home() {
             <span className="flex size-14 items-center justify-center rounded-full border-2 border-primary/70 bg-primary/10">
               <Icon className="size-7 text-primary" strokeWidth={1.8} />
             </span>
-            <span className="text-sm font-bold uppercase tracking-wide">{label}</span>
+            <span className="text-sm font-medium uppercase tracking-wide">{label}</span>
             <span className="h-0.5 w-7 bg-primary" />
           </Link>
         ))}
@@ -114,7 +114,7 @@ function Home() {
             {cultos.map((c) => (
               <li key={c.slug} className="flex items-center justify-between gap-3 px-4 py-3.5">
                 <div>
-                  <p className="text-sm font-bold uppercase tracking-wide">{c.dia}</p>
+                  <p className="text-sm font-medium uppercase tracking-wide">{c.dia}</p>
                   <p className="text-xs text-soft">{c.tema}</p>
                 </div>
                 <span className="rounded-lg bg-primary/15 px-2.5 py-1 text-sm font-bold text-primary">
