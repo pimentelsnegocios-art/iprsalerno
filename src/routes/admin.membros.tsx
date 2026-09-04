@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { Ban, Check, Lock, MoreHorizontal, Search, UserRound, X } from "lucide-react";
 
 import { AppShell, PageHeader } from "@/components/AppShell";
+import { PainelAcessos } from "@/components/PainelAcessos";
 import { acoes, useAppStore, type Membro, type StatusMembro } from "@/lib/app-store";
 import { ministerios, podeVerAdmin, usuarioAtual, type Cargo } from "@/lib/church-data";
 
@@ -71,6 +72,7 @@ function AdminMembros() {
         title="Hall de Membros"
         subtitle={`Total de Membros: ${membros.length}`}
       />
+      <PainelAcessos />
 
       <div className="px-5 py-5">
         <label className="surface-card flex items-center gap-2 px-3 py-2.5">

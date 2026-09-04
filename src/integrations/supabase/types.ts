@@ -14,51 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
-      familiares: {
+      avisos: {
         Row: {
+          autor: string
           created_at: string
+          data_publicacao: string
+          descricao: string
+          fixado_home: boolean
           id: string
-          membro_id: string | null
-          nome: string
-          parentesco: string
-          profile_id: string
+          tipo: string
+          titulo: string
+          updated_at: string
         }
         Insert: {
+          autor?: string
           created_at?: string
+          data_publicacao?: string
+          descricao?: string
+          fixado_home?: boolean
           id?: string
-          membro_id?: string | null
-          nome: string
-          parentesco: string
-          profile_id: string
+          tipo?: string
+          titulo: string
+          updated_at?: string
         }
         Update: {
+          autor?: string
           created_at?: string
+          data_publicacao?: string
+          descricao?: string
+          fixado_home?: boolean
           id?: string
-          membro_id?: string | null
-          nome?: string
-          parentesco?: string
-          profile_id?: string
+          tipo?: string
+          titulo?: string
+          updated_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "familiares_membro_id_fkey"
-            columns: ["membro_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "familiares_profile_id_fkey"
-            columns: ["profile_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       mural: {
         Row: {
-          autor_id: string
+          autor_id: string | null
           autor_nome: string
           created_at: string
           id: string
@@ -66,7 +60,7 @@ export type Database = {
           texto: string
         }
         Insert: {
-          autor_id: string
+          autor_id?: string | null
           autor_nome: string
           created_at?: string
           id?: string
@@ -74,7 +68,7 @@ export type Database = {
           texto: string
         }
         Update: {
-          autor_id?: string
+          autor_id?: string | null
           autor_nome?: string
           created_at?: string
           id?: string
@@ -213,12 +207,25 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      aniversariantes_hoje: {
+        Args: never
+        Returns: {
+          foto_url: string
+          id: string
+          nome: string
+        }[]
+      }
+      check_aniversariantes_hoje: { Args: never; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
         Returns: boolean
+      }
+      promote_user: {
+        Args: { new_role: string; target_id: string }
+        Returns: undefined
       }
     }
     Enums: {

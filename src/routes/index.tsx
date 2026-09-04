@@ -13,6 +13,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 
+import { AniversariantesHoje } from "@/components/AniversariantesHoje";
 import { AppShell } from "@/components/AppShell";
 import { cultos, usuarioAtual } from "@/lib/church-data";
 import { useAppStore } from "@/lib/app-store";
@@ -77,8 +78,10 @@ function Home() {
         </a>
       </header>
 
-      <section className="px-5 pt-4">
+      <section className="space-y-3 px-5 pt-4">
+        <AniversariantesHoje />
         <Link
+
           to="/avisos"
           className="relative block overflow-hidden rounded-2xl border border-[#D4B678] bg-[#C9A86A] p-4 text-white shadow-[var(--shadow-glow)]"
         >

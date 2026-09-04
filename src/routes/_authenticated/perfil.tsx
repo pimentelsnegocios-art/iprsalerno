@@ -11,9 +11,7 @@ import {
   LogOut,
   MessageSquare,
   Pencil,
-  Plus,
   Trash2,
-  Users,
   X,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
@@ -30,10 +28,10 @@ export const Route = createFileRoute("/_authenticated/perfil")({
       {
         name: "description",
         content:
-          "Seus dados de reino, família na igreja, próximos passos, mural e engajamento na Igreja Presbiteriana Renovada.",
+          "Seus dados de reino, próximos passos, mural e engajamento na Igreja Presbiteriana Renovada.",
       },
       { property: "og:title", content: "Meu Perfil — IPR Renovada" },
-      { property: "og:description", content: "Sua caminhada e sua família na igreja." },
+      { property: "og:description", content: "Sua caminhada na Igreja Presbiteriana Renovada." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -49,7 +47,6 @@ const MINISTERIOS = [
   "Infantil",
   "Recepção",
 ] as const;
-const STATUS = ["Membro", "Visitante", "Liderança"] as const;
 const PASSOS = ["Batismo", "Curso de Membros", "Voluntariado"] as const;
 
 interface Profile {
@@ -70,11 +67,6 @@ interface Profile {
   membro_desde: string;
 }
 
-interface Familiar {
-  id: string;
-  nome: string;
-  parentesco: string;
-}
 interface Passo {
   id: string;
   passo: string;
@@ -104,13 +96,11 @@ function Perfil() {
 
   const [perfil, setPerfil] = useState<Profile | null>(null);
   const [fotoUrl, setFotoUrl] = useState<string | null>(null);
-  const [familia, setFamilia] = useState<Familiar[]>([]);
   const [passos, setPassos] = useState<Passo[]>([]);
   const [mural, setMural] = useState<Recado[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [modalEditar, setModalEditar] = useState(false);
   const [modalSenha, setModalSenha] = useState(false);
-  const [modalFamiliar, setModalFamiliar] = useState(false);
   const [novoRecado, setNovoRecado] = useState("");
   const [confirmados, setConfirmados] = useState<string[]>([]);
 
@@ -119,9 +109,8 @@ function Perfil() {
     const uid = auth.user?.id;
     if (!uid) return;
 
-    const [p, f, pa, m] = await Promise.all([
+    const [p, pa, m] = await Promise.all([
       supabase.from("profiles").select("*").eq("id", uid).maybeSingle(),
-      supabase.from("familiares").select("id, nome, parentesco").eq("profile_id", uid),
       supabase.from("proximos_passos").select("id, passo, concluido").eq("profile_id", uid),
       supabase
         .from("mural")
@@ -132,7 +121,6 @@ function Perfil() {
 
     const prof = (p.data as Profile | null) ?? null;
     setPerfil(prof);
-    setFamilia((f.data as Familiar[]) ?? []);
     setPassos((pa.data as Passo[]) ?? []);
     setMural((m.data as Recado[]) ?? []);
 
@@ -233,10 +221,6 @@ function Perfil() {
     void carregar();
   }
 
-  async function excluirFamiliar(id: string) {
-    await supabase.from("familiares").delete().eq("id", id);
-    void carregar();
-  }
 
   if (carregando) {
     return (
@@ -345,40 +329,6 @@ function Perfil() {
           <p className="mt-1 text-sm italic">{perfil.versiculo || "—"}</p>
         </div>
 
-        {/* Família */}
-        <div className="surface-card p-4">
-          <div className="flex items-center justify-between">
-            <h3 className="flex items-center gap-2 font-display text-lg">
-              <Users className="size-4 text-primary" /> Minha Família na Igreja
-            </h3>
-            <button
-              onClick={() => setModalFamiliar(true)}
-              className="flex items-center gap-1 text-xs font-semibold text-primary"
-            >
-              <Plus className="size-3.5" /> Adicionar
-            </button>
-          </div>
-          {familia.length === 0 ? (
-            <p className="mt-2 text-sm text-soft">
-              Nenhum familiar cadastrado ainda. Ligue sua esposa, filhos ou pais que também
-              congregam aqui.
-            </p>
-          ) : (
-            <ul className="mt-3 divide-y divide-border">
-              {familia.map((f) => (
-                <li key={f.id} className="flex items-center justify-between gap-3 py-2.5">
-                  <div>
-                    <p className="text-sm font-medium">{f.nome}</p>
-                    <p className="text-xs text-soft">{f.parentesco}</p>
-                  </div>
-                  <button onClick={() => void excluirFamiliar(f.id)} className="text-destructive">
-                    <Trash2 className="size-4" />
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
 
         {/* Próximos passos */}
         <div className="surface-card p-4">
@@ -545,16 +495,6 @@ function Perfil() {
         />
       )}
       {modalSenha && <ModalSenha onClose={() => setModalSenha(false)} />}
-      {modalFamiliar && (
-        <ModalFamiliar
-          profileId={perfil.id}
-          onClose={() => setModalFamiliar(false)}
-          onSaved={() => {
-            setModalFamiliar(false);
-            void carregar();
-          }}
-        />
-      )}
     </AppShell>
   );
 }
@@ -602,7 +542,6 @@ function ModalEditar({
     nascimento: perfil.nascimento ?? "",
     batismo: perfil.batismo ?? "",
     ministerio: perfil.ministerio ?? "",
-    status: perfil.status,
     versiculo: perfil.versiculo ?? "",
     bio: perfil.bio ?? "",
   });
@@ -620,7 +559,6 @@ function ModalEditar({
         nascimento: form.nascimento || null,
         batismo: form.batismo || null,
         ministerio: form.ministerio || null,
-        status: form.status,
         versiculo: form.versiculo || null,
         bio: form.bio || null,
       })
@@ -687,17 +625,6 @@ function ModalEditar({
           {MINISTERIOS.map((m) => (
             <option key={m} value={m}>
               {m}
-            </option>
-          ))}
-        </select>
-        <select
-          value={form.status}
-          onChange={(e) => setForm({ ...form, status: e.target.value })}
-          className={campoCls}
-        >
-          {STATUS.map((s) => (
-            <option key={s} value={s}>
-              {s}
             </option>
           ))}
         </select>
@@ -772,55 +699,3 @@ function ModalSenha({ onClose }: { onClose: () => void }) {
   );
 }
 
-function ModalFamiliar({
-  profileId,
-  onClose,
-  onSaved,
-}: {
-  profileId: string;
-  onClose: () => void;
-  onSaved: () => void;
-}) {
-  const [nome, setNome] = useState("");
-  const [parentesco, setParentesco] = useState("Esposa(o)");
-
-  async function salvar(e: React.FormEvent) {
-    e.preventDefault();
-    if (!nome.trim()) return;
-    const { error } = await supabase
-      .from("familiares")
-      .insert({ profile_id: profileId, nome: nome.trim(), parentesco });
-    if (error) {
-      toast.error("Não conseguimos adicionar agora.");
-      return;
-    }
-    onSaved();
-  }
-
-  return (
-    <Modal titulo="Adicionar familiar" onClose={onClose}>
-      <form onSubmit={salvar} className="mt-4 space-y-3">
-        <input
-          value={nome}
-          onChange={(e) => setNome(e.target.value)}
-          placeholder="Nome do familiar"
-          className={campoCls}
-        />
-        <select
-          value={parentesco}
-          onChange={(e) => setParentesco(e.target.value)}
-          className={campoCls}
-        >
-          {["Esposa(o)", "Filho(a)", "Pai", "Mãe", "Irmão(ã)", "Outro"].map((p) => (
-            <option key={p} value={p}>
-              {p}
-            </option>
-          ))}
-        </select>
-        <button className="w-full rounded-2xl bg-primary py-3 text-sm font-semibold text-primary-foreground">
-          Adicionar
-        </button>
-      </form>
-    </Modal>
-  );
-}
