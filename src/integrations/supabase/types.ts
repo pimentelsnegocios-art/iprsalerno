@@ -14,51 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
-      familiares: {
+      avisos: {
         Row: {
+          autor: string
           created_at: string
+          data_publicacao: string
+          descricao: string
+          fixado_home: boolean
           id: string
-          membro_id: string | null
-          nome: string
-          parentesco: string
-          profile_id: string
+          tipo: string
+          titulo: string
+          updated_at: string
         }
         Insert: {
+          autor?: string
           created_at?: string
+          data_publicacao?: string
+          descricao?: string
+          fixado_home?: boolean
           id?: string
-          membro_id?: string | null
-          nome: string
-          parentesco: string
-          profile_id: string
+          tipo?: string
+          titulo: string
+          updated_at?: string
         }
         Update: {
+          autor?: string
           created_at?: string
+          data_publicacao?: string
+          descricao?: string
+          fixado_home?: boolean
           id?: string
-          membro_id?: string | null
-          nome?: string
-          parentesco?: string
-          profile_id?: string
+          tipo?: string
+          titulo?: string
+          updated_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "familiares_membro_id_fkey"
-            columns: ["membro_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "familiares_profile_id_fkey"
-            columns: ["profile_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       mural: {
         Row: {
-          autor_id: string
+          autor_id: string | null
           autor_nome: string
           created_at: string
           id: string
@@ -66,7 +60,7 @@ export type Database = {
           texto: string
         }
         Insert: {
-          autor_id: string
+          autor_id?: string | null
           autor_nome: string
           created_at?: string
           id?: string
@@ -74,7 +68,7 @@ export type Database = {
           texto: string
         }
         Update: {
-          autor_id?: string
+          autor_id?: string | null
           autor_nome?: string
           created_at?: string
           id?: string
@@ -90,10 +84,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "mural_autor_id_fkey"
+            columns: ["autor_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "mural_profile_id_fkey"
             columns: ["profile_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mural_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -188,6 +196,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "proximos_passos_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       user_roles: {
@@ -210,15 +225,46 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_profiles: {
+        Row: {
+          dia_aniversario: number | null
+          foto_url: string | null
+          id: string | null
+          mes_aniversario: number | null
+          ministerio: string | null
+          nome: string | null
+        }
+        Insert: {
+          dia_aniversario?: never
+          foto_url?: string | null
+          id?: string | null
+          mes_aniversario?: never
+          ministerio?: string | null
+          nome?: string | null
+        }
+        Update: {
+          dia_aniversario?: never
+          foto_url?: string | null
+          id?: string | null
+          mes_aniversario?: never
+          ministerio?: string | null
+          nome?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
+      check_aniversariantes_hoje: { Args: never; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
         Returns: boolean
+      }
+      promote_user: {
+        Args: { new_role: string; target_id: string }
+        Returns: undefined
       }
     }
     Enums: {
