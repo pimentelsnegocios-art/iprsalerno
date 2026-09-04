@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AdministracaoRouteImport } from './routes/administracao'
 import { Route as AgendaRouteImport } from './routes/agenda'
 import { Route as AvisosRouteImport } from './routes/avisos'
@@ -21,7 +22,7 @@ import { Route as MaisRouteImport } from './routes/mais'
 import { Route as MinisteriosRouteImport } from './routes/ministerios'
 import { Route as OracaoRouteImport } from './routes/oracao'
 import { Route as PastoralRouteImport } from './routes/pastoral'
-import { Route as PerfilRouteImport } from './routes/perfil'
+import { Route as AuthenticatedPerfilRouteImport } from './routes/_authenticated/perfil'
 import { Route as AdminAvisosRouteImport } from './routes/admin.avisos'
 import { Route as AdminMembrosRouteImport } from './routes/admin.membros'
 import { Route as CultoDiaRouteImport } from './routes/culto.$dia'
@@ -32,6 +33,10 @@ import { Route as MinisteriosSlugSecaoRouteImport } from './routes/ministerios.$
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdministracaoRoute = AdministracaoRouteImport.update({
@@ -89,10 +94,10 @@ const PastoralRoute = PastoralRouteImport.update({
   path: '/pastoral',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PerfilRoute = PerfilRouteImport.update({
+const AuthenticatedPerfilRoute = AuthenticatedPerfilRouteImport.update({
   id: '/perfil',
   path: '/perfil',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AdminAvisosRoute = AdminAvisosRouteImport.update({
   id: '/admin/avisos',
@@ -138,7 +143,7 @@ export interface FileRoutesByFullPath {
   '/ministerios': typeof MinisteriosRouteWithChildren
   '/oracao': typeof OracaoRoute
   '/pastoral': typeof PastoralRoute
-  '/perfil': typeof PerfilRoute
+  '/perfil': typeof AuthenticatedPerfilRoute
   '/admin/avisos': typeof AdminAvisosRoute
   '/admin/membros': typeof AdminMembrosRoute
   '/culto/$dia': typeof CultoDiaRoute
@@ -158,7 +163,7 @@ export interface FileRoutesByTo {
   '/mais': typeof MaisRoute
   '/oracao': typeof OracaoRoute
   '/pastoral': typeof PastoralRoute
-  '/perfil': typeof PerfilRoute
+  '/perfil': typeof AuthenticatedPerfilRoute
   '/admin/avisos': typeof AdminAvisosRoute
   '/admin/membros': typeof AdminMembrosRoute
   '/culto/$dia': typeof CultoDiaRoute
@@ -169,6 +174,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/administracao': typeof AdministracaoRoute
   '/agenda': typeof AgendaRoute
   '/avisos': typeof AvisosRoute
@@ -180,7 +186,7 @@ export interface FileRoutesById {
   '/ministerios': typeof MinisteriosRouteWithChildren
   '/oracao': typeof OracaoRoute
   '/pastoral': typeof PastoralRoute
-  '/perfil': typeof PerfilRoute
+  '/_authenticated/perfil': typeof AuthenticatedPerfilRoute
   '/admin/avisos': typeof AdminAvisosRoute
   '/admin/membros': typeof AdminMembrosRoute
   '/culto/$dia': typeof CultoDiaRoute
@@ -233,6 +239,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/_authenticated'
     | '/administracao'
     | '/agenda'
     | '/avisos'
@@ -244,7 +251,7 @@ export interface FileRouteTypes {
     | '/ministerios'
     | '/oracao'
     | '/pastoral'
-    | '/perfil'
+    | '/_authenticated/perfil'
     | '/admin/avisos'
     | '/admin/membros'
     | '/culto/$dia'
@@ -255,6 +262,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AdministracaoRoute: typeof AdministracaoRoute
   AgendaRoute: typeof AgendaRoute
   AvisosRoute: typeof AvisosRoute
@@ -266,7 +274,6 @@ export interface RootRouteChildren {
   MinisteriosRoute: typeof MinisteriosRouteWithChildren
   OracaoRoute: typeof OracaoRoute
   PastoralRoute: typeof PastoralRoute
-  PerfilRoute: typeof PerfilRoute
   AdminAvisosRoute: typeof AdminAvisosRoute
   AdminMembrosRoute: typeof AdminMembrosRoute
   CultoDiaRoute: typeof CultoDiaRoute
@@ -279,6 +286,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/administracao': {
@@ -358,12 +372,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PastoralRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/perfil': {
-      id: '/perfil'
+    '/_authenticated/perfil': {
+      id: '/_authenticated/perfil'
       path: '/perfil'
       fullPath: '/perfil'
-      preLoaderRoute: typeof PerfilRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthenticatedPerfilRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/admin/avisos': {
       id: '/admin/avisos'
@@ -410,6 +424,17 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedPerfilRoute: typeof AuthenticatedPerfilRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedPerfilRoute: AuthenticatedPerfilRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 interface MinisteriosRouteChildren {
   MinisteriosIndexRoute: typeof MinisteriosIndexRoute
   MinisteriosSlugSecaoRoute: typeof MinisteriosSlugSecaoRoute
@@ -428,6 +453,7 @@ const MinisteriosRouteWithChildren = MinisteriosRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AdministracaoRoute: AdministracaoRoute,
   AgendaRoute: AgendaRoute,
   AvisosRoute: AvisosRoute,
@@ -439,7 +465,6 @@ const rootRouteChildren: RootRouteChildren = {
   MinisteriosRoute: MinisteriosRouteWithChildren,
   OracaoRoute: OracaoRoute,
   PastoralRoute: PastoralRoute,
-  PerfilRoute: PerfilRoute,
   AdminAvisosRoute: AdminAvisosRoute,
   AdminMembrosRoute: AdminMembrosRoute,
   CultoDiaRoute: CultoDiaRoute,

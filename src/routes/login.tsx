@@ -1,16 +1,21 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Cross, Lock, Mail } from "lucide-react";
-import { useState } from "react";
-
-import dove from "@/assets/dove.png";
-import { useAppStore } from "@/lib/app-store";
+import { Cross, Loader2, Lock, Mail } from "lucide-react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
+import dove from "@/assets/dove.png";
+import { supabase } from "@/integrations/supabase/client";
+
 export const Route = createFileRoute("/login")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Entrar — Família IPRB Renovada" },
       { name: "description", content: "Acesse sua conta da Igreja Presbiteriana Renovada." },
+      { property: "og:title", content: "Entrar — Família IPRB Renovada" },
+      { property: "og:description", content: "Entre para acompanhar a vida da igreja." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: LoginPage,
@@ -18,41 +23,49 @@ export const Route = createFileRoute("/login")({
 
 function LoginPage() {
   const navigate = useNavigate();
-  const { membros } = useAppStore();
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [erro, setErro] = useState("");
+  const [entrando, setEntrando] = useState(false);
   const [modalRecuperar, setModalRecuperar] = useState(false);
   const [emailRecuperar, setEmailRecuperar] = useState("");
   const [recuperarEnviado, setRecuperarEnviado] = useState(false);
 
-  function entrar(e: React.FormEvent) {
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) navigate({ to: "/", replace: true });
+    });
+  }, [navigate]);
+
+  async function entrar(e: React.FormEvent) {
     e.preventDefault();
     setErro("");
-    if (!email.trim() || !senha.trim()) {
+    if (!email.trim() || !senha) {
       setErro("Preencha seu e-mail e senha para continuar.");
       return;
     }
-    const membro = membros.find((m) => m.email.toLowerCase() === email.trim().toLowerCase());
-    if (!membro) {
-      setErro("Não encontramos esse e-mail. Verifique ou crie sua conta.");
+    setEntrando(true);
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: email.trim().toLowerCase(),
+      password: senha,
+    });
+    setEntrando(false);
+    if (error || !data.user) {
+      setErro("E-mail ou senha não conferem. Tente de novo ou crie sua conta.");
       return;
     }
-    if (membro.status === "pendente") {
-      setErro("Seu cadastro ainda está em aprovação pela liderança. Em breve você entra!");
-      return;
-    }
-    if (membro.status === "bloqueado") {
-      setErro("Seu acesso está bloqueado. Fale com a liderança da igreja.");
-      return;
-    }
-    toast.success(`Bem-vindo de volta, ${membro.nome.split(" ")[0]}!`);
-    navigate({ to: "/" });
+    const nome =
+      (data.user.user_metadata?.["nome"] as string | undefined) ?? data.user.email ?? "irmão(ã)";
+    toast.success(`Bem-vindo de volta, ${nome.split(" ")[0]}!`);
+    navigate({ to: "/", replace: true });
   }
 
-  function enviarRecuperacao(e: React.FormEvent) {
+  async function enviarRecuperacao(e: React.FormEvent) {
     e.preventDefault();
     if (!emailRecuperar.trim()) return;
+    await supabase.auth.resetPasswordForEmail(emailRecuperar.trim().toLowerCase(), {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
     setRecuperarEnviado(true);
   }
 
@@ -83,6 +96,7 @@ function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Seu e-mail"
+              autoComplete="email"
               className="w-full bg-transparent text-sm text-[#1E3A5F] outline-none placeholder:text-[#1E3A5F]/40"
             />
           </label>
@@ -93,19 +107,19 @@ function LoginPage() {
               value={senha}
               onChange={(e) => setSenha(e.target.value)}
               placeholder="Sua senha"
+              autoComplete="current-password"
               className="w-full bg-transparent text-sm text-[#1E3A5F] outline-none placeholder:text-[#1E3A5F]/40"
             />
           </label>
 
-          {erro && (
-            <p className="rounded-xl bg-red-50 px-4 py-2.5 text-xs text-red-700">{erro}</p>
-          )}
+          {erro && <p className="rounded-xl bg-red-50 px-4 py-2.5 text-xs text-red-700">{erro}</p>}
 
           <button
             type="submit"
-            className="w-full rounded-2xl bg-[#1E3A5F] py-3.5 text-sm font-semibold text-white transition hover:bg-[#1E3A5F]/90"
+            disabled={entrando}
+            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#1E3A5F] py-3.5 text-sm font-semibold text-white transition hover:bg-[#1E3A5F]/90 disabled:opacity-70"
           >
-            Entrar
+            {entrando && <Loader2 className="h-4 w-4 animate-spin" />} Entrar
           </button>
         </form>
 
