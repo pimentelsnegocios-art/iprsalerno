@@ -6,7 +6,11 @@ import { AppShell, PageHeader } from "@/components/AppShell";
 import { CifraViewer } from "@/components/CifraViewer";
 import { usuarioAtual } from "@/lib/church-data";
 import { usePerfil } from "@/hooks/usePerfil";
-import { podeVerMinisterio, type SlugMinisterio } from "@/lib/permissoes";
+import {
+  podeAdministrarMinisterio,
+  podeVerMinisterio,
+  type SlugMinisterio,
+} from "@/lib/permissoes";
 import { BloqueioMinisterio } from "@/components/BloqueioMinisterio";
 import {
   ministeriosConteudo,
@@ -283,7 +287,8 @@ function RepertorioView({ c }: { c: MinisterioConteudo }) {
 
 /* ---------- Avisos ---------- */
 function AvisosView({ c }: { c: MinisterioConteudo }) {
-  const podePublicar = ehLideranca(usuarioAtual.cargo) || usuarioAtual.nome === c.lider;
+  const { permissao } = usePerfil();
+  const podePublicar = podeAdministrarMinisterio(permissao, c.slug as SlugMinisterio);
   return (
     <div className="space-y-3">
       {podePublicar ? (
