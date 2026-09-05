@@ -14,7 +14,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-import { AppShell } from "@/components/AppShell";
+import { AppShell, BackButton } from "@/components/AppShell";
 import { ministerios } from "@/lib/church-data";
 import { BloqueioMinisterio } from "@/components/BloqueioMinisterio";
 import { usePerfil } from "@/hooks/usePerfil";
