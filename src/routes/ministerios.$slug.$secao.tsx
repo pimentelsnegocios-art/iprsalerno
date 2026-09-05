@@ -1,6 +1,7 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
-import { CalendarPlus, ExternalLink, Music2, Pin } from "lucide-react";
-import { useState } from "react";
+import { CalendarPlus, ExternalLink, Music2, Pencil, Pin, Plus, Trash2 } from "lucide-react";
+import { useState, type ReactNode } from "react";
+
 
 import { AppShell, PageHeader } from "@/components/AppShell";
 import { CifraViewer } from "@/components/CifraViewer";
