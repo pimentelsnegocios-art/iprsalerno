@@ -171,8 +171,12 @@ function EnsaioView({ c }: { c: MinisterioConteudo }) {
 
 /* ---------- Oração ---------- */
 function OracaoView({ c }: { c: MinisterioConteudo }) {
+  const { perfil, permissao } = usePerfil();
+  const nome = perfil?.nome ?? usuarioAtual.nome;
+  const lider = podeAdministrarMinisterio(permissao, c.slug as SlugMinisterio);
   const [lista, setLista] = useState(c.oracao.checkins);
   const [texto, setTexto] = useState("");
+  const [editando, setEditando] = useState<number | null>(null);
 
   return (
     <div className="space-y-4">
@@ -186,15 +190,17 @@ function OracaoView({ c }: { c: MinisterioConteudo }) {
         onSubmit={(ev) => {
           ev.preventDefault();
           if (!texto.trim()) return;
-          setLista((l) => [
-            { autor: usuarioAtual.nome, texto: texto.trim(), quando: "agora" },
-            ...l,
-          ]);
+          if (editando !== null) {
+            setLista((l) => l.map((p, i) => (i === editando ? { ...p, texto: texto.trim() } : p)));
+            setEditando(null);
+          } else {
+            setLista((l) => [{ autor: nome, texto: texto.trim(), quando: "agora" }, ...l]);
+          }
           setTexto("");
         }}
       >
         <h3 className="font-display text-lg">Check-in de oração</h3>
-        <p className="text-xs text-soft">Identificado como {usuarioAtual.nome} — sem anonimato.</p>
+        <p className="text-xs text-soft">Identificado como {nome} — sem anonimato.</p>
         <textarea
           value={texto}
           onChange={(ev) => setTexto(ev.target.value)}
@@ -203,7 +209,7 @@ function OracaoView({ c }: { c: MinisterioConteudo }) {
           className="mt-3 w-full rounded-xl border border-border bg-transparent p-3 text-sm outline-none focus:ring-2 focus:ring-ring"
         />
         <button className="mt-3 w-full rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground">
-          Registrar
+          {editando !== null ? "Salvar alteração" : "Registrar"}
         </button>
       </form>
 
@@ -214,12 +220,34 @@ function OracaoView({ c }: { c: MinisterioConteudo }) {
             <p className="mt-2 text-xs text-soft">
               {p.autor} · {p.quando}
             </p>
+            {lider || p.autor === nome ? (
+              <div className="mt-3 flex gap-2 border-t border-border pt-3">
+                <AcaoBtn
+                  onClick={() => {
+                    setEditando(i);
+                    setTexto(p.texto);
+                  }}
+                >
+                  <Pencil className="size-3.5" /> Editar
+                </AcaoBtn>
+                <AcaoBtn
+                  perigo
+                  onClick={() => {
+                    if (window.confirm("Excluir este pedido?"))
+                      setLista((l) => l.filter((_, idx) => idx !== i));
+                  }}
+                >
+                  <Trash2 className="size-3.5" /> Excluir
+                </AcaoBtn>
+              </div>
+            ) : null}
           </div>
         ))}
       </div>
     </div>
   );
 }
+
 
 /* ---------- Repertório / Letras ---------- */
 function RepertorioView({ c }: { c: MinisterioConteudo }) {
