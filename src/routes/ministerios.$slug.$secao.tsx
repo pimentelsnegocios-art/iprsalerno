@@ -644,10 +644,7 @@ function EstudoView({ c }: { c: MinisterioConteudo }) {
           onSubmit={(ev) => {
             ev.preventDefault();
             if (!pergunta.trim()) return;
-            setMural((m) => [
-              { autor: usuarioAtual.nome, papel: usuarioAtual.cargo, texto: pergunta.trim() },
-              ...m,
-            ]);
+            setMural((m) => [{ autor: nome, papel: cargo, texto: pergunta.trim() }, ...m]);
             setPergunta("");
           }}
         >
@@ -659,7 +656,7 @@ function EstudoView({ c }: { c: MinisterioConteudo }) {
             className="w-full rounded-xl border border-border bg-transparent p-3 text-sm outline-none focus:ring-2 focus:ring-ring"
           />
           <button className="mt-2 w-full rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground">
-            Perguntar como {usuarioAtual.nome}
+            Perguntar como {nome}
           </button>
         </form>
 
@@ -676,9 +673,38 @@ function EstudoView({ c }: { c: MinisterioConteudo }) {
                   <p className="text-sm">{q.resposta.texto}</p>
                 </div>
               ) : null}
+              <div className="mt-2 flex gap-2">
+                {podeEditar ? (
+                  <AcaoBtn
+                    onClick={() => {
+                      const texto = window.prompt("Resposta da liderança:", q.resposta?.texto ?? "");
+                      if (!texto?.trim()) return;
+                      setMural((m) =>
+                        m.map((x, idx) =>
+                          idx === i ? { ...x, resposta: { autor: nome, texto: texto.trim() } } : x,
+                        ),
+                      );
+                    }}
+                  >
+                    <Pencil className="size-3.5" /> Responder
+                  </AcaoBtn>
+                ) : null}
+                {podeEditar || q.autor === nome ? (
+                  <AcaoBtn
+                    perigo
+                    onClick={() => {
+                      if (window.confirm("Excluir esta pergunta?"))
+                        setMural((m) => m.filter((_, idx) => idx !== i));
+                    }}
+                  >
+                    <Trash2 className="size-3.5" /> Excluir
+                  </AcaoBtn>
+                ) : null}
+              </div>
             </div>
           ))}
         </div>
+
       </div>
     </div>
   );
