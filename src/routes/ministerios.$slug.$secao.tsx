@@ -251,16 +251,53 @@ function OracaoView({ c }: { c: MinisterioConteudo }) {
 
 /* ---------- Repertório / Letras ---------- */
 function RepertorioView({ c }: { c: MinisterioConteudo }) {
+  const { permissao } = usePerfil();
+  const lider = podeAdministrarMinisterio(permissao, c.slug as SlugMinisterio);
+  const [abas, setAbas] = useState(c.abas);
   const [aba, setAba] = useState(c.abas[0]?.id ?? "");
   const [aberto, setAberto] = useState<string | null>(null);
   const [avisoAcao, setAvisoAcao] = useState<string | null>(null);
-  const atual = c.abas.find((a) => a.id === aba) ?? c.abas[0];
+  const [form, setForm] = useState({ titulo: "", artista: "", tom: "", link: "", letra: "" });
+  const [editandoId, setEditandoId] = useState<string | null>(null);
+  const [formAberto, setFormAberto] = useState(false);
+  const atual = abas.find((a) => a.id === aba) ?? abas[0];
   const ehLouvor = c.slug === "louvor";
+
+  const limpar = () => {
+    setForm({ titulo: "", artista: "", tom: "", link: "", letra: "" });
+    setEditandoId(null);
+    setFormAberto(false);
+  };
+
+  const salvar = (ev: React.FormEvent) => {
+    ev.preventDefault();
+    if (!form.titulo.trim() || !atual) return;
+    const dados = {
+      titulo: form.titulo.trim(),
+      artista: form.artista.trim(),
+      tom: form.tom.trim() || "C",
+      link: form.link.trim(),
+      letra: form.letra.split("\n").filter(Boolean),
+    };
+    setAbas((all) =>
+      all.map((a) =>
+        a.id !== atual.id
+          ? a
+          : {
+              ...a,
+              louvores: editandoId
+                ? a.louvores.map((l) => (l.id === editandoId ? { ...l, ...dados } : l))
+                : [...a.louvores, { id: `l${Date.now()}`, ...dados }],
+            },
+      ),
+    );
+    limpar();
+  };
 
   return (
     <div className="space-y-4">
       <div className="flex gap-2 overflow-x-auto">
-        {c.abas.map((a) => (
+        {abas.map((a) => (
           <button
             key={a.id}
             onClick={() => setAba(a.id)}
@@ -279,8 +316,59 @@ function RepertorioView({ c }: { c: MinisterioConteudo }) {
         <p className="rounded-xl border border-primary/50 p-3 text-xs text-primary">{avisoAcao}</p>
       ) : null}
 
+      {lider ? (
+        formAberto ? (
+          <form onSubmit={salvar} className="surface-card space-y-2 p-4">
+            <h3 className="font-display text-lg">{editandoId ? "Editar louvor" : "Novo louvor"}</h3>
+            {(
+              [
+                ["titulo", "Título"],
+                ["artista", "Artista"],
+                ["tom", "Tom"],
+                ["link", "Link de referência"],
+              ] as const
+            ).map(([campo, label]) => (
+              <input
+                key={campo}
+                value={form[campo]}
+                onChange={(ev) => setForm({ ...form, [campo]: ev.target.value })}
+                placeholder={label}
+                className="w-full rounded-xl border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
+              />
+            ))}
+            <textarea
+              value={form.letra}
+              onChange={(ev) => setForm({ ...form, letra: ev.target.value })}
+              rows={4}
+              placeholder="Letra (uma linha por verso)"
+              className="w-full rounded-xl border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
+            />
+            <div className="flex gap-2">
+              <button className="flex-1 rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground">
+                Salvar
+              </button>
+              <button
+                type="button"
+                onClick={limpar}
+                className="rounded-xl border border-border px-4 text-sm font-semibold"
+              >
+                Cancelar
+              </button>
+            </div>
+          </form>
+        ) : (
+          <button
+            onClick={() => setFormAberto(true)}
+            className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
+          >
+            <Plus className="size-4" /> Adicionar louvor
+          </button>
+        )
+      ) : null}
+
       <div className="space-y-3">
         {(atual?.louvores ?? []).map((l) => (
+
           <div key={l.id} className="surface-card p-4">
             <button
               onClick={() => setAberto(aberto === l.id ? null : l.id)}
