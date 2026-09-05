@@ -68,6 +68,28 @@ function SecaoPage() {
   );
 }
 
+function AcaoBtn({
+  children,
+  onClick,
+  perigo,
+}: {
+  children: ReactNode;
+  onClick: () => void;
+  perigo?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`inline-flex items-center gap-1.5 rounded-lg bg-secondary px-3 py-1.5 text-xs font-semibold ${
+        perigo ? "text-destructive" : "text-primary"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
 function Conteudo({ secao, c }: { secao: SecaoKey; c: MinisterioConteudo }) {
   if (secao === "ensaio") return <EnsaioView c={c} />;
   if (secao === "oracao") return <OracaoView c={c} />;
@@ -79,6 +101,7 @@ function Conteudo({ secao, c }: { secao: SecaoKey; c: MinisterioConteudo }) {
   if (secao === "cifras") return <CifrasView c={c} />;
   return null;
 }
+
 
 /* ---------- Ensaio ---------- */
 function EnsaioView({ c }: { c: MinisterioConteudo }) {
