@@ -54,9 +54,11 @@ function SecaoPage() {
   return (
     <AppShell theme={conteudo.slug}>
       <PageHeader
+        back
         title={`${meta.emoji} ${meta.label}`}
         subtitle={`${conteudo.nome} · ${conteudo.subtitulo}`}
       />
+
       <div className="px-5 py-5">
         {!temAcesso ? (
           <BloqueioMinisterio slug={conteudo.slug as SlugMinisterio} />
