@@ -44,17 +44,41 @@ export function BottomNav() {
   );
 }
 
-export function PageHeader({ title, subtitle }: { title: string; subtitle?: string }) {
+export function BackButton({ className = "" }: { className?: string }) {
+  const router = useRouter();
+  return (
+    <button
+      type="button"
+      onClick={() => router.history.back()}
+      aria-label="Voltar"
+      className={`inline-flex items-center gap-1.5 rounded-xl border border-border bg-popover/70 px-3 py-1.5 text-xs font-semibold text-primary backdrop-blur ${className}`}
+    >
+      <ChevronLeft className="size-4" /> Voltar
+    </button>
+  );
+}
+
+export function PageHeader({
+  title,
+  subtitle,
+  back = false,
+}: {
+  title: string;
+  subtitle?: string;
+  back?: boolean;
+}) {
   return (
     <header
       className="header-gradient px-5 pb-6"
       style={{ paddingTop: "calc(2rem + env(safe-area-inset-top))" }}
     >
+      {back ? <BackButton className="mb-3" /> : null}
       <h1 className="font-display text-3xl leading-tight">{title}</h1>
       {subtitle ? <p className="mt-1 text-sm text-soft">{subtitle}</p> : null}
     </header>
   );
 }
+
 
 export function AppShell({
   children,
