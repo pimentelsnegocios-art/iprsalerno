@@ -584,12 +584,17 @@ function AvisosView({ c }: { c: MinisterioConteudo }) {
 
 /* ---------- Estudo mensal (só Jovens) ---------- */
 function EstudoView({ c }: { c: MinisterioConteudo }) {
+  const { perfil, permissao } = usePerfil();
+  const nome = perfil?.nome ?? usuarioAtual.nome;
+  const cargo = perfil?.cargo ?? "Membro";
   const meses = c.estudo ?? [];
   const [sel, setSel] = useState(meses[meses.length - 1]?.id);
   const [pergunta, setPergunta] = useState("");
   const [mural, setMural] = useState(meses.find((m) => m.id === sel)?.mural ?? []);
   const mes = meses.find((m) => m.id === sel);
-  const podeEditar = podeEditarEstudo(usuarioAtual.cargo);
+  const podeEditar =
+    podeEditarEstudo(cargo) || podeAdministrarMinisterio(permissao, c.slug as SlugMinisterio);
+
 
   if (!mes) return <p className="text-sm text-soft">Nenhum estudo publicado ainda.</p>;
 
