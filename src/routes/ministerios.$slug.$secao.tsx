@@ -418,10 +418,45 @@ function RepertorioView({ c }: { c: MinisterioConteudo }) {
                     </button>
                   </div>
                 ) : null}
+                {lider ? (
+                  <div className="flex gap-2 border-t border-border pt-3">
+                    <AcaoBtn
+                      onClick={() => {
+                        setEditandoId(l.id);
+                        setFormAberto(true);
+                        setForm({
+                          titulo: l.titulo,
+                          artista: l.artista,
+                          tom: l.tom,
+                          link: l.link,
+                          letra: l.letra.join("\n"),
+                        });
+                      }}
+                    >
+                      <Pencil className="size-3.5" /> Editar
+                    </AcaoBtn>
+                    <AcaoBtn
+                      perigo
+                      onClick={() => {
+                        if (!window.confirm(`Excluir “${l.titulo}”?`)) return;
+                        setAbas((all) =>
+                          all.map((a) =>
+                            a.id !== atual?.id
+                              ? a
+                              : { ...a, louvores: a.louvores.filter((x) => x.id !== l.id) },
+                          ),
+                        );
+                      }}
+                    >
+                      <Trash2 className="size-3.5" /> Excluir
+                    </AcaoBtn>
+                  </div>
+                ) : null}
               </div>
             ) : null}
           </div>
         ))}
+
       </div>
     </div>
   );
