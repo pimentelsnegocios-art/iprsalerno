@@ -14,7 +14,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-import { AppShell } from "@/components/AppShell";
+import { AppShell, BackButton } from "@/components/AppShell";
 import { ministerios } from "@/lib/church-data";
 import { BloqueioMinisterio } from "@/components/BloqueioMinisterio";
 import { usePerfil } from "@/hooks/usePerfil";
@@ -89,11 +89,13 @@ function MinisterioPage() {
         <div className="absolute inset-0 bg-gradient-to-b from-background/85 via-background/25 to-background" />
 
         <div
-          className="absolute inset-x-0 top-0 flex items-center justify-end px-4 pt-4"
+          className="absolute inset-x-0 top-0 flex items-center justify-between px-4 pt-4"
           style={{ paddingTop: "calc(1rem + env(safe-area-inset-top))" }}
         >
+          <BackButton />
           <Bell className="size-5 text-primary" />
         </div>
+
 
         <div className="absolute inset-x-0 top-14 px-5 text-center">
           <p className="text-[11px] font-semibold tracking-[0.35em] text-foreground/80">

@@ -1,6 +1,7 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
-import { CalendarPlus, ExternalLink, Music2, Pin } from "lucide-react";
-import { useState } from "react";
+import { CalendarPlus, ExternalLink, Music2, Pencil, Pin, Plus, Trash2 } from "lucide-react";
+import { useState, type ReactNode } from "react";
+
 
 import { AppShell, PageHeader } from "@/components/AppShell";
 import { CifraViewer } from "@/components/CifraViewer";
@@ -53,9 +54,11 @@ function SecaoPage() {
   return (
     <AppShell theme={conteudo.slug}>
       <PageHeader
+        back
         title={`${meta.emoji} ${meta.label}`}
         subtitle={`${conteudo.nome} · ${conteudo.subtitulo}`}
       />
+
       <div className="px-5 py-5">
         {!temAcesso ? (
           <BloqueioMinisterio slug={conteudo.slug as SlugMinisterio} />
@@ -64,6 +67,28 @@ function SecaoPage() {
         )}
       </div>
     </AppShell>
+  );
+}
+
+function AcaoBtn({
+  children,
+  onClick,
+  perigo,
+}: {
+  children: ReactNode;
+  onClick: () => void;
+  perigo?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`inline-flex items-center gap-1.5 rounded-lg bg-secondary px-3 py-1.5 text-xs font-semibold ${
+        perigo ? "text-destructive" : "text-primary"
+      }`}
+    >
+      {children}
+    </button>
   );
 }
 
@@ -78,6 +103,7 @@ function Conteudo({ secao, c }: { secao: SecaoKey; c: MinisterioConteudo }) {
   if (secao === "cifras") return <CifrasView c={c} />;
   return null;
 }
+
 
 /* ---------- Ensaio ---------- */
 function EnsaioView({ c }: { c: MinisterioConteudo }) {
@@ -145,8 +171,12 @@ function EnsaioView({ c }: { c: MinisterioConteudo }) {
 
 /* ---------- Oração ---------- */
 function OracaoView({ c }: { c: MinisterioConteudo }) {
+  const { perfil, permissao } = usePerfil();
+  const nome = perfil?.nome ?? usuarioAtual.nome;
+  const lider = podeAdministrarMinisterio(permissao, c.slug as SlugMinisterio);
   const [lista, setLista] = useState(c.oracao.checkins);
   const [texto, setTexto] = useState("");
+  const [editando, setEditando] = useState<number | null>(null);
 
   return (
     <div className="space-y-4">
@@ -160,15 +190,17 @@ function OracaoView({ c }: { c: MinisterioConteudo }) {
         onSubmit={(ev) => {
           ev.preventDefault();
           if (!texto.trim()) return;
-          setLista((l) => [
-            { autor: usuarioAtual.nome, texto: texto.trim(), quando: "agora" },
-            ...l,
-          ]);
+          if (editando !== null) {
+            setLista((l) => l.map((p, i) => (i === editando ? { ...p, texto: texto.trim() } : p)));
+            setEditando(null);
+          } else {
+            setLista((l) => [{ autor: nome, texto: texto.trim(), quando: "agora" }, ...l]);
+          }
           setTexto("");
         }}
       >
         <h3 className="font-display text-lg">Check-in de oração</h3>
-        <p className="text-xs text-soft">Identificado como {usuarioAtual.nome} — sem anonimato.</p>
+        <p className="text-xs text-soft">Identificado como {nome} — sem anonimato.</p>
         <textarea
           value={texto}
           onChange={(ev) => setTexto(ev.target.value)}
@@ -177,7 +209,7 @@ function OracaoView({ c }: { c: MinisterioConteudo }) {
           className="mt-3 w-full rounded-xl border border-border bg-transparent p-3 text-sm outline-none focus:ring-2 focus:ring-ring"
         />
         <button className="mt-3 w-full rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground">
-          Registrar
+          {editando !== null ? "Salvar alteração" : "Registrar"}
         </button>
       </form>
 
@@ -188,6 +220,27 @@ function OracaoView({ c }: { c: MinisterioConteudo }) {
             <p className="mt-2 text-xs text-soft">
               {p.autor} · {p.quando}
             </p>
+            {lider || p.autor === nome ? (
+              <div className="mt-3 flex gap-2 border-t border-border pt-3">
+                <AcaoBtn
+                  onClick={() => {
+                    setEditando(i);
+                    setTexto(p.texto);
+                  }}
+                >
+                  <Pencil className="size-3.5" /> Editar
+                </AcaoBtn>
+                <AcaoBtn
+                  perigo
+                  onClick={() => {
+                    if (window.confirm("Excluir este pedido?"))
+                      setLista((l) => l.filter((_, idx) => idx !== i));
+                  }}
+                >
+                  <Trash2 className="size-3.5" /> Excluir
+                </AcaoBtn>
+              </div>
+            ) : null}
           </div>
         ))}
       </div>
@@ -195,18 +248,56 @@ function OracaoView({ c }: { c: MinisterioConteudo }) {
   );
 }
 
+
 /* ---------- Repertório / Letras ---------- */
 function RepertorioView({ c }: { c: MinisterioConteudo }) {
+  const { permissao } = usePerfil();
+  const lider = podeAdministrarMinisterio(permissao, c.slug as SlugMinisterio);
+  const [abas, setAbas] = useState(c.abas);
   const [aba, setAba] = useState(c.abas[0]?.id ?? "");
   const [aberto, setAberto] = useState<string | null>(null);
   const [avisoAcao, setAvisoAcao] = useState<string | null>(null);
-  const atual = c.abas.find((a) => a.id === aba) ?? c.abas[0];
+  const [form, setForm] = useState({ titulo: "", artista: "", tom: "", link: "", letra: "" });
+  const [editandoId, setEditandoId] = useState<string | null>(null);
+  const [formAberto, setFormAberto] = useState(false);
+  const atual = abas.find((a) => a.id === aba) ?? abas[0];
   const ehLouvor = c.slug === "louvor";
+
+  const limpar = () => {
+    setForm({ titulo: "", artista: "", tom: "", link: "", letra: "" });
+    setEditandoId(null);
+    setFormAberto(false);
+  };
+
+  const salvar = (ev: React.FormEvent) => {
+    ev.preventDefault();
+    if (!form.titulo.trim() || !atual) return;
+    const dados = {
+      titulo: form.titulo.trim(),
+      artista: form.artista.trim(),
+      tom: form.tom.trim() || "C",
+      link: form.link.trim(),
+      letra: form.letra.split("\n").filter(Boolean),
+    };
+    setAbas((all) =>
+      all.map((a) =>
+        a.id !== atual.id
+          ? a
+          : {
+              ...a,
+              louvores: editandoId
+                ? a.louvores.map((l) => (l.id === editandoId ? { ...l, ...dados } : l))
+                : [...a.louvores, { id: `l${Date.now()}`, ...dados }],
+            },
+      ),
+    );
+    limpar();
+  };
 
   return (
     <div className="space-y-4">
       <div className="flex gap-2 overflow-x-auto">
-        {c.abas.map((a) => (
+        {abas.map((a) => (
           <button
             key={a.id}
             onClick={() => setAba(a.id)}
@@ -225,8 +316,59 @@ function RepertorioView({ c }: { c: MinisterioConteudo }) {
         <p className="rounded-xl border border-primary/50 p-3 text-xs text-primary">{avisoAcao}</p>
       ) : null}
 
+      {lider ? (
+        formAberto ? (
+          <form onSubmit={salvar} className="surface-card space-y-2 p-4">
+            <h3 className="font-display text-lg">{editandoId ? "Editar louvor" : "Novo louvor"}</h3>
+            {(
+              [
+                ["titulo", "Título"],
+                ["artista", "Artista"],
+                ["tom", "Tom"],
+                ["link", "Link de referência"],
+              ] as const
+            ).map(([campo, label]) => (
+              <input
+                key={campo}
+                value={form[campo]}
+                onChange={(ev) => setForm({ ...form, [campo]: ev.target.value })}
+                placeholder={label}
+                className="w-full rounded-xl border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
+              />
+            ))}
+            <textarea
+              value={form.letra}
+              onChange={(ev) => setForm({ ...form, letra: ev.target.value })}
+              rows={4}
+              placeholder="Letra (uma linha por verso)"
+              className="w-full rounded-xl border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
+            />
+            <div className="flex gap-2">
+              <button className="flex-1 rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground">
+                Salvar
+              </button>
+              <button
+                type="button"
+                onClick={limpar}
+                className="rounded-xl border border-border px-4 text-sm font-semibold"
+              >
+                Cancelar
+              </button>
+            </div>
+          </form>
+        ) : (
+          <button
+            onClick={() => setFormAberto(true)}
+            className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
+          >
+            <Plus className="size-4" /> Adicionar louvor
+          </button>
+        )
+      ) : null}
+
       <div className="space-y-3">
         {(atual?.louvores ?? []).map((l) => (
+
           <div key={l.id} className="surface-card p-4">
             <button
               onClick={() => setAberto(aberto === l.id ? null : l.id)}
@@ -276,10 +418,45 @@ function RepertorioView({ c }: { c: MinisterioConteudo }) {
                     </button>
                   </div>
                 ) : null}
+                {lider ? (
+                  <div className="flex gap-2 border-t border-border pt-3">
+                    <AcaoBtn
+                      onClick={() => {
+                        setEditandoId(l.id);
+                        setFormAberto(true);
+                        setForm({
+                          titulo: l.titulo,
+                          artista: l.artista,
+                          tom: l.tom,
+                          link: l.link,
+                          letra: l.letra.join("\n"),
+                        });
+                      }}
+                    >
+                      <Pencil className="size-3.5" /> Editar
+                    </AcaoBtn>
+                    <AcaoBtn
+                      perigo
+                      onClick={() => {
+                        if (!window.confirm(`Excluir “${l.titulo}”?`)) return;
+                        setAbas((all) =>
+                          all.map((a) =>
+                            a.id !== atual?.id
+                              ? a
+                              : { ...a, louvores: a.louvores.filter((x) => x.id !== l.id) },
+                          ),
+                        );
+                      }}
+                    >
+                      <Trash2 className="size-3.5" /> Excluir
+                    </AcaoBtn>
+                  </div>
+                ) : null}
               </div>
             ) : null}
           </div>
         ))}
+
       </div>
     </div>
   );
@@ -287,16 +464,77 @@ function RepertorioView({ c }: { c: MinisterioConteudo }) {
 
 /* ---------- Avisos ---------- */
 function AvisosView({ c }: { c: MinisterioConteudo }) {
-  const { permissao } = usePerfil();
+  const { perfil, permissao } = usePerfil();
   const podePublicar = podeAdministrarMinisterio(permissao, c.slug as SlugMinisterio);
+  const autor = perfil?.nome ?? "Liderança";
+  const [lista, setLista] = useState(c.avisos);
+  const [form, setForm] = useState({ titulo: "", texto: "" });
+  const [editandoId, setEditandoId] = useState<string | null>(null);
+
+  const salvar = (ev: React.FormEvent) => {
+    ev.preventDefault();
+    if (!form.titulo.trim() || !form.texto.trim()) return;
+    if (editandoId) {
+      setLista((l) =>
+        l.map((a) => (a.id === editandoId ? { ...a, titulo: form.titulo, texto: form.texto } : a)),
+      );
+    } else {
+      setLista((l) => [
+        {
+          id: `a${Date.now()}`,
+          titulo: form.titulo.trim(),
+          texto: form.texto.trim(),
+          autor,
+          data: new Date().toLocaleDateString("pt-BR"),
+          fixado: false,
+        },
+        ...l,
+      ]);
+    }
+    setForm({ titulo: "", texto: "" });
+    setEditandoId(null);
+  };
+
   return (
     <div className="space-y-3">
       {podePublicar ? (
-        <p className="rounded-xl border border-primary/50 p-3 text-xs text-primary">
-          Você pode publicar e fixar avisos deste ministério.
-        </p>
+        <form onSubmit={salvar} className="surface-card space-y-2 p-4">
+          <h2 className="font-display text-lg">
+            {editandoId ? "Editar aviso" : "Novo aviso do ministério"}
+          </h2>
+          <input
+            value={form.titulo}
+            onChange={(ev) => setForm({ ...form, titulo: ev.target.value })}
+            placeholder="Título"
+            className="w-full rounded-xl border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
+          />
+          <textarea
+            value={form.texto}
+            onChange={(ev) => setForm({ ...form, texto: ev.target.value })}
+            rows={2}
+            placeholder="Mensagem"
+            className="w-full rounded-xl border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
+          />
+          <div className="flex gap-2">
+            <button className="flex-1 rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground">
+              {editandoId ? "Salvar" : "Publicar"}
+            </button>
+            {editandoId ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setEditandoId(null);
+                  setForm({ titulo: "", texto: "" });
+                }}
+                className="rounded-xl border border-border px-4 text-sm font-semibold"
+              >
+                Cancelar
+              </button>
+            ) : null}
+          </div>
+        </form>
       ) : null}
-      {c.avisos.map((a) => (
+      {lista.map((a) => (
         <article key={a.id} className={`surface-card p-4 ${a.fixado ? "border-primary/50" : ""}`}>
           {a.fixado ? (
             <p className="flex items-center gap-1.5 text-xs font-semibold text-primary">
@@ -308,20 +546,55 @@ function AvisosView({ c }: { c: MinisterioConteudo }) {
           <p className="mt-2 text-xs text-soft">
             {a.autor} · {a.data}
           </p>
+          {podePublicar ? (
+            <div className="mt-3 flex flex-wrap gap-2 border-t border-border pt-3">
+              <AcaoBtn
+                onClick={() => {
+                  setEditandoId(a.id);
+                  setForm({ titulo: a.titulo, texto: a.texto });
+                }}
+              >
+                <Pencil className="size-3.5" /> Editar
+              </AcaoBtn>
+              <AcaoBtn
+                onClick={() =>
+                  setLista((l) => l.map((x) => (x.id === a.id ? { ...x, fixado: !x.fixado } : x)))
+                }
+              >
+                <Pin className="size-3.5" /> {a.fixado ? "Desafixar" : "Fixar"}
+              </AcaoBtn>
+              <AcaoBtn
+                perigo
+                onClick={() => {
+                  if (window.confirm("Excluir este aviso?"))
+                    setLista((l) => l.filter((x) => x.id !== a.id));
+                }}
+              >
+                <Trash2 className="size-3.5" /> Excluir
+              </AcaoBtn>
+            </div>
+          ) : null}
         </article>
       ))}
+      {lista.length === 0 ? <p className="text-sm text-soft">Nenhum aviso publicado.</p> : null}
     </div>
   );
 }
 
+
 /* ---------- Estudo mensal (só Jovens) ---------- */
 function EstudoView({ c }: { c: MinisterioConteudo }) {
+  const { perfil, permissao } = usePerfil();
+  const nome = perfil?.nome ?? usuarioAtual.nome;
+  const cargo = perfil?.cargo ?? "Membro";
   const meses = c.estudo ?? [];
   const [sel, setSel] = useState(meses[meses.length - 1]?.id);
   const [pergunta, setPergunta] = useState("");
   const [mural, setMural] = useState(meses.find((m) => m.id === sel)?.mural ?? []);
   const mes = meses.find((m) => m.id === sel);
-  const podeEditar = podeEditarEstudo(usuarioAtual.cargo);
+  const podeEditar =
+    podeEditarEstudo(cargo) || podeAdministrarMinisterio(permissao, c.slug as SlugMinisterio);
+
 
   if (!mes) return <p className="text-sm text-soft">Nenhum estudo publicado ainda.</p>;
 
@@ -371,10 +644,7 @@ function EstudoView({ c }: { c: MinisterioConteudo }) {
           onSubmit={(ev) => {
             ev.preventDefault();
             if (!pergunta.trim()) return;
-            setMural((m) => [
-              { autor: usuarioAtual.nome, papel: usuarioAtual.cargo, texto: pergunta.trim() },
-              ...m,
-            ]);
+            setMural((m) => [{ autor: nome, papel: cargo, texto: pergunta.trim() }, ...m]);
             setPergunta("");
           }}
         >
@@ -386,7 +656,7 @@ function EstudoView({ c }: { c: MinisterioConteudo }) {
             className="w-full rounded-xl border border-border bg-transparent p-3 text-sm outline-none focus:ring-2 focus:ring-ring"
           />
           <button className="mt-2 w-full rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground">
-            Perguntar como {usuarioAtual.nome}
+            Perguntar como {nome}
           </button>
         </form>
 
@@ -403,9 +673,38 @@ function EstudoView({ c }: { c: MinisterioConteudo }) {
                   <p className="text-sm">{q.resposta.texto}</p>
                 </div>
               ) : null}
+              <div className="mt-2 flex gap-2">
+                {podeEditar ? (
+                  <AcaoBtn
+                    onClick={() => {
+                      const texto = window.prompt("Resposta da liderança:", q.resposta?.texto ?? "");
+                      if (!texto?.trim()) return;
+                      setMural((m) =>
+                        m.map((x, idx) =>
+                          idx === i ? { ...x, resposta: { autor: nome, texto: texto.trim() } } : x,
+                        ),
+                      );
+                    }}
+                  >
+                    <Pencil className="size-3.5" /> Responder
+                  </AcaoBtn>
+                ) : null}
+                {podeEditar || q.autor === nome ? (
+                  <AcaoBtn
+                    perigo
+                    onClick={() => {
+                      if (window.confirm("Excluir esta pergunta?"))
+                        setMural((m) => m.filter((_, idx) => idx !== i));
+                    }}
+                  >
+                    <Trash2 className="size-3.5" /> Excluir
+                  </AcaoBtn>
+                ) : null}
+              </div>
             </div>
           ))}
         </div>
+
       </div>
     </div>
   );
