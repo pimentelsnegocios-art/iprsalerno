@@ -928,8 +928,10 @@ function VisitasView({ c }: { c: MinisterioConteudo }) {
           setForm({ nome: "", endereco: "", data: "", hora: "", irmas: "" });
         }}
       >
+        <h2 className="font-display text-lg">
+          {editandoId ? "Editar visita" : "Agendar visita"}
+        </h2>
 
-        <h2 className="font-display text-lg">Agendar visita</h2>
         {(
           [
             ["nome", "Nome da pessoa a visitar", "text"],
