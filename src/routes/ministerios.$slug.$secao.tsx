@@ -979,7 +979,35 @@ function VisitasView({ c }: { c: MinisterioConteudo }) {
               >
                 Marcar como realizada
               </button>
+              {lider ? (
+                <div className="mt-3 flex gap-2 border-t border-border pt-3">
+                  <AcaoBtn
+                    onClick={() => {
+                      setEditandoId(v.id);
+                      setForm({
+                        nome: v.nome,
+                        endereco: v.endereco,
+                        data: v.data,
+                        hora: v.hora,
+                        irmas: v.irmas.join(", "),
+                      });
+                    }}
+                  >
+                    <Pencil className="size-3.5" /> Editar
+                  </AcaoBtn>
+                  <AcaoBtn
+                    perigo
+                    onClick={() => {
+                      if (window.confirm(`Excluir a visita a ${v.nome}?`))
+                        setVisitas((all) => all.filter((x) => x.id !== v.id));
+                    }}
+                  >
+                    <Trash2 className="size-3.5" /> Excluir
+                  </AcaoBtn>
+                </div>
+              ) : null}
             </div>
+
           ))}
           {agendadas.length === 0 ? (
             <p className="text-sm text-soft">Nenhuma visita agendada.</p>
