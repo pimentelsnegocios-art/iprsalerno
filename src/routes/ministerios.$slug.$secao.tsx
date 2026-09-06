@@ -1076,7 +1076,12 @@ function CifrasView({ c }: { c: MinisterioConteudo }) {
                 titulo: form.titulo.trim(),
                 artista: form.artista.trim(),
                 tom: form.tom.trim() || "C",
-                linhas: form.corpo.split("\n"),
+                linhas: form.corpo.split("\n").map((linha) => {
+                  const [acordes, ...resto] = linha.split("|");
+                  return resto.length
+                    ? { acordes: (acordes ?? "").trim(), letra: resto.join("|").trim() }
+                    : { acordes: "", letra: linha };
+                }),
               };
               if (editandoId) {
                 setCifras((all) =>
@@ -1111,7 +1116,7 @@ function CifrasView({ c }: { c: MinisterioConteudo }) {
               value={form.corpo}
               onChange={(ev) => setForm({ ...form, corpo: ev.target.value })}
               rows={5}
-              placeholder="Letra com cifras (uma linha por verso)"
+              placeholder="Uma linha por verso. Use: acordes | letra"
               className="w-full rounded-xl border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
             />
             <div className="flex gap-2">
@@ -1169,7 +1174,7 @@ function CifrasView({ c }: { c: MinisterioConteudo }) {
                     titulo: cf.titulo,
                     artista: cf.artista,
                     tom: cf.tom,
-                    corpo: cf.linhas.join("\n"),
+                    corpo: cf.linhas.map((l) => (l.acordes ? `${l.acordes} | ${l.letra}` : l.letra)).join("\n"),
                   });
                 }}
               >
