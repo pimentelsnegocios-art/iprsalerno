@@ -106,10 +106,140 @@ function Conteudo({ secao, c }: { secao: SecaoKey; c: MinisterioConteudo }) {
 
 
 /* ---------- Ensaio ---------- */
+interface EnsaioEdit {
+  titulo: string;
+  artista: string;
+  tom: string;
+  link: string;
+  solistas: string;
+  partes: string;
+  observacoes: string;
+}
+
 function EnsaioView({ c }: { c: MinisterioConteudo }) {
-  const e = c.ensaio;
+  const { perfil, permissao } = usePerfil();
+  const nome = perfil?.nome ?? "Liderança";
+  const lider = podeAdministrarMinisterio(permissao, c.slug as SlugMinisterio);
+  const [e, setE] = useState(c.ensaio);
+  const [autor, setAutor] = useState<string | null>(null);
+  const [editando, setEditando] = useState(false);
+  const [form, setForm] = useState<EnsaioEdit>({
+    titulo: e.titulo,
+    artista: e.artista,
+    tom: e.tom,
+    link: e.link,
+    solistas: e.solistas.join(", "),
+    partes: e.partes
+      .map((p) => `${p.quem} | ${p.texto}${p.marcacao ? ` | ${p.marcacao}` : ""}`)
+      .join("\n"),
+    observacoes: (e.observacoes ?? []).join("\n"),
+  });
+
+  const salvar = (ev: React.FormEvent) => {
+    ev.preventDefault();
+    if (!form.titulo.trim()) return;
+    setE({
+      titulo: form.titulo.trim(),
+      artista: form.artista.trim(),
+      tom: form.tom.trim() || "C",
+      link: form.link.trim(),
+      solistas: form.solistas
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean),
+      partes: form.partes
+        .split("\n")
+        .map((linha) => linha.trim())
+        .filter(Boolean)
+        .map((linha) => {
+          const [quem = "Conjunto", texto = "", marcacao] = linha.split("|").map((p) => p.trim());
+          return { quem, texto, marcacao: marcacao || undefined };
+        }),
+      observacoes: form.observacoes
+        .split("\n")
+        .map((o) => o.trim())
+        .filter(Boolean),
+    });
+    setAutor(nome);
+    setEditando(false);
+  };
+
+  if (editando) {
+    return (
+      <form onSubmit={salvar} className="surface-card space-y-3 p-4">
+        <h2 className="font-display text-lg">Editar ensaio da semana</h2>
+        <p className="text-xs text-soft">Será salvo como alteração de {nome}.</p>
+        {(
+          [
+            ["titulo", "Louvor da semana"],
+            ["artista", "Artista / versão"],
+            ["tom", "Tom"],
+            ["link", "Referência (link do vídeo/áudio)"],
+          ] as const
+        ).map(([campo, label]) => (
+          <input
+            key={campo}
+            value={form[campo]}
+            onChange={(ev) => setForm({ ...form, [campo]: ev.target.value })}
+            placeholder={label}
+            className="w-full rounded-xl border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
+          />
+        ))}
+        <input
+          value={form.solistas}
+          onChange={(ev) => setForm({ ...form, solistas: ev.target.value })}
+          placeholder="Solistas / ministros (separados por vírgula)"
+          className="w-full rounded-xl border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
+        />
+        <div>
+          <label className="text-xs font-semibold text-soft">
+            Letra com as partes — uma por linha: Quem canta | trecho | marcação (opcional)
+          </label>
+          <textarea
+            value={form.partes}
+            onChange={(ev) => setForm({ ...form, partes: ev.target.value })}
+            rows={7}
+            className="mt-1 w-full rounded-xl border border-border bg-transparent p-3 text-sm outline-none focus:ring-2 focus:ring-ring"
+          />
+        </div>
+        <textarea
+          value={form.observacoes}
+          onChange={(ev) => setForm({ ...form, observacoes: ev.target.value })}
+          rows={3}
+          placeholder="Observações de dinâmica (uma por linha)"
+          className="w-full rounded-xl border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
+        />
+        <div className="flex gap-2">
+          <button className="flex-1 rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground">
+            Salvar ensaio
+          </button>
+          <button
+            type="button"
+            onClick={() => setEditando(false)}
+            className="rounded-xl border border-border px-4 text-sm font-semibold"
+          >
+            Cancelar
+          </button>
+        </div>
+      </form>
+    );
+  }
+
   return (
     <div className="space-y-4">
+      {lider ? (
+        <button
+          onClick={() => setEditando(true)}
+          className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
+        >
+          <Pencil className="size-4" /> Editar ensaio
+        </button>
+      ) : null}
+      {autor ? (
+        <p className="rounded-xl border border-primary/50 p-3 text-xs text-primary">
+          Última atualização por {autor}.
+        </p>
+      ) : null}
       <div className="surface-card p-4">
         <div className="flex items-start justify-between gap-3">
           <div>
@@ -121,14 +251,16 @@ function EnsaioView({ c }: { c: MinisterioConteudo }) {
             Tom {e.tom}
           </span>
         </div>
-        <a
-          href={e.link}
-          target="_blank"
-          rel="noreferrer"
-          className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-primary"
-        >
-          <ExternalLink className="size-4" /> Referência (vídeo/áudio)
-        </a>
+        {e.link ? (
+          <a
+            href={e.link}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-primary"
+          >
+            <ExternalLink className="size-4" /> Referência (vídeo/áudio)
+          </a>
+        ) : null}
       </div>
 
       <div className="surface-card p-4">
