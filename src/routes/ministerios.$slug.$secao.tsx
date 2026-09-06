@@ -712,7 +712,13 @@ function EstudoView({ c }: { c: MinisterioConteudo }) {
 
 /* ---------- Agenda ---------- */
 function AgendaView({ c }: { c: MinisterioConteudo }) {
+  const { permissao } = usePerfil();
+  const lider = podeAdministrarMinisterio(permissao, c.slug as SlugMinisterio);
   const [eventos, setEventos] = useState(c.agenda ?? []);
+  const [form, setForm] = useState({ titulo: "", tipo: "Ensaio", data: "", hora: "" });
+  const [formAberto, setFormAberto] = useState(false);
+  const [editandoId, setEditandoId] = useState<string | null>(null);
+
   const toggle = (idEvento: string, nome: string) =>
     setEventos((evs) =>
       evs.map((e) =>
