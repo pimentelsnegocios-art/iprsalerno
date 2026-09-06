@@ -1037,8 +1037,13 @@ function VisitasView({ c }: { c: MinisterioConteudo }) {
 
 /* ---------- Cifras (só Louvor) ---------- */
 function CifrasView({ c }: { c: MinisterioConteudo }) {
-  const cifras = c.cifras ?? [];
+  const { permissao } = usePerfil();
+  const lider = podeAdministrarMinisterio(permissao, c.slug as SlugMinisterio);
+  const [cifras, setCifras] = useState(c.cifras ?? []);
   const [abertaId, setAbertaId] = useState<string | null>(null);
+  const [formAberto, setFormAberto] = useState(false);
+  const [form, setForm] = useState({ titulo: "", artista: "", tom: "", corpo: "" });
+  const [editandoId, setEditandoId] = useState<string | null>(null);
   const aberta = cifras.find((x) => x.id === abertaId);
 
   if (aberta) {
@@ -1060,27 +1065,131 @@ function CifrasView({ c }: { c: MinisterioConteudo }) {
       <p className="text-xs text-soft">
         Toque em um louvor para abrir a letra completa com cifras e trocar o tom.
       </p>
+
+      {lider ? (
+        formAberto ? (
+          <form
+            onSubmit={(ev) => {
+              ev.preventDefault();
+              if (!form.titulo.trim()) return;
+              const dados = {
+                titulo: form.titulo.trim(),
+                artista: form.artista.trim(),
+                tom: form.tom.trim() || "C",
+                linhas: form.corpo.split("\n"),
+              };
+              if (editandoId) {
+                setCifras((all) =>
+                  all.map((x) => (x.id === editandoId ? { ...x, ...dados } : x)),
+                );
+                setEditandoId(null);
+              } else {
+                setCifras((all) => [...all, { id: `cf${Date.now()}`, ...dados }]);
+              }
+              setForm({ titulo: "", artista: "", tom: "", corpo: "" });
+              setFormAberto(false);
+            }}
+            className="surface-card space-y-2 p-4"
+          >
+            <h3 className="font-display text-lg">{editandoId ? "Editar cifra" : "Nova cifra"}</h3>
+            {(
+              [
+                ["titulo", "Título"],
+                ["artista", "Artista"],
+                ["tom", "Tom"],
+              ] as const
+            ).map(([campo, label]) => (
+              <input
+                key={campo}
+                value={form[campo]}
+                onChange={(ev) => setForm({ ...form, [campo]: ev.target.value })}
+                placeholder={label}
+                className="w-full rounded-xl border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
+              />
+            ))}
+            <textarea
+              value={form.corpo}
+              onChange={(ev) => setForm({ ...form, corpo: ev.target.value })}
+              rows={5}
+              placeholder="Letra com cifras (uma linha por verso)"
+              className="w-full rounded-xl border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
+            />
+            <div className="flex gap-2">
+              <button className="flex-1 rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground">
+                Salvar
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setFormAberto(false);
+                  setEditandoId(null);
+                }}
+                className="rounded-xl border border-border px-4 text-sm font-semibold"
+              >
+                Cancelar
+              </button>
+            </div>
+          </form>
+        ) : (
+          <button
+            onClick={() => setFormAberto(true)}
+            className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
+          >
+            <Plus className="size-4" /> Adicionar cifra
+          </button>
+        )
+      ) : null}
+
       {cifras.map((cf) => (
-        <button
-          key={cf.id}
-          onClick={() => setAbertaId(cf.id)}
-          className="surface-card flex w-full items-center justify-between gap-3 p-4 text-left transition-transform active:scale-[0.98]"
-        >
-          <span className="flex items-center gap-3">
-            <span className="flex size-10 items-center justify-center rounded-full border border-primary/60 text-primary">
-              <Music2 className="size-5" />
+        <div key={cf.id} className="surface-card p-4">
+          <button
+            onClick={() => setAbertaId(cf.id)}
+            className="flex w-full items-center justify-between gap-3 text-left transition-transform active:scale-[0.98]"
+          >
+            <span className="flex items-center gap-3">
+              <span className="flex size-10 items-center justify-center rounded-full border border-primary/60 text-primary">
+                <Music2 className="size-5" />
+              </span>
+              <span>
+                <span className="block font-display text-lg leading-tight">{cf.titulo}</span>
+                <span className="block text-xs text-soft">{cf.artista}</span>
+              </span>
             </span>
-            <span>
-              <span className="block font-display text-lg leading-tight">{cf.titulo}</span>
-              <span className="block text-xs text-soft">{cf.artista}</span>
+            <span className="rounded-lg bg-primary px-2.5 py-1 text-xs font-bold text-primary-foreground">
+              {cf.tom}
             </span>
-          </span>
-          <span className="rounded-lg bg-primary px-2.5 py-1 text-xs font-bold text-primary-foreground">
-            {cf.tom}
-          </span>
-        </button>
+          </button>
+          {lider ? (
+            <div className="mt-3 flex gap-2 border-t border-border pt-3">
+              <AcaoBtn
+                onClick={() => {
+                  setEditandoId(cf.id);
+                  setFormAberto(true);
+                  setForm({
+                    titulo: cf.titulo,
+                    artista: cf.artista,
+                    tom: cf.tom,
+                    corpo: cf.linhas.join("\n"),
+                  });
+                }}
+              >
+                <Pencil className="size-3.5" /> Editar
+              </AcaoBtn>
+              <AcaoBtn
+                perigo
+                onClick={() => {
+                  if (window.confirm(`Excluir “${cf.titulo}”?`))
+                    setCifras((all) => all.filter((x) => x.id !== cf.id));
+                }}
+              >
+                <Trash2 className="size-3.5" /> Excluir
+              </AcaoBtn>
+            </div>
+          ) : null}
+        </div>
       ))}
       {cifras.length === 0 ? <p className="text-sm text-soft">Nenhuma cifra cadastrada.</p> : null}
+
     </div>
   );
 }
