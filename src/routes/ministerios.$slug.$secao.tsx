@@ -895,8 +895,12 @@ function AgendaView({ c }: { c: MinisterioConteudo }) {
 
 /* ---------- Visitas (só Irmãs) ---------- */
 function VisitasView({ c }: { c: MinisterioConteudo }) {
+  const { perfil, permissao } = usePerfil();
+  const nome = perfil?.nome ?? usuarioAtual.nome;
+  const lider = podeAdministrarMinisterio(permissao, c.slug as SlugMinisterio);
   const [visitas, setVisitas] = useState(c.visitas ?? []);
   const [form, setForm] = useState({ nome: "", endereco: "", data: "", hora: "", irmas: "" });
+  const [editandoId, setEditandoId] = useState<string | null>(null);
 
   const agendadas = visitas.filter((v) => !v.realizada);
   const historico = visitas.filter((v) => v.realizada);
@@ -908,21 +912,23 @@ function VisitasView({ c }: { c: MinisterioConteudo }) {
         onSubmit={(ev) => {
           ev.preventDefault();
           if (!form.nome.trim() || !form.data) return;
-          setVisitas((v) => [
-            ...v,
-            {
-              id: `v${Date.now()}`,
-              nome: form.nome,
-              endereco: form.endereco,
-              data: form.data,
-              hora: form.hora || "—",
-              irmas: form.irmas ? form.irmas.split(",").map((s) => s.trim()) : [usuarioAtual.nome],
-              realizada: false,
-            },
-          ]);
+          const dados = {
+            nome: form.nome,
+            endereco: form.endereco,
+            data: form.data,
+            hora: form.hora || "—",
+            irmas: form.irmas ? form.irmas.split(",").map((s) => s.trim()) : [nome],
+          };
+          if (editandoId) {
+            setVisitas((v) => v.map((x) => (x.id === editandoId ? { ...x, ...dados } : x)));
+            setEditandoId(null);
+          } else {
+            setVisitas((v) => [...v, { id: `v${Date.now()}`, ...dados, realizada: false }]);
+          }
           setForm({ nome: "", endereco: "", data: "", hora: "", irmas: "" });
         }}
       >
+
         <h2 className="font-display text-lg">Agendar visita</h2>
         {(
           [
