@@ -864,7 +864,30 @@ function AgendaView({ c }: { c: MinisterioConteudo }) {
               </li>
             ))}
           </ul>
+          {lider ? (
+            <div className="mt-3 flex gap-2 border-t border-border pt-3">
+              <AcaoBtn
+                onClick={() => {
+                  setEditandoId(e.id);
+                  setFormAberto(true);
+                  setForm({ titulo: e.titulo, tipo: e.tipo, data: e.data, hora: e.hora });
+                }}
+              >
+                <Pencil className="size-3.5" /> Editar
+              </AcaoBtn>
+              <AcaoBtn
+                perigo
+                onClick={() => {
+                  if (window.confirm(`Excluir “${e.titulo}”?`))
+                    setEventos((evs) => evs.filter((x) => x.id !== e.id));
+                }}
+              >
+                <Trash2 className="size-3.5" /> Excluir
+              </AcaoBtn>
+            </div>
+          ) : null}
         </div>
+
       ))}
     </div>
   );
