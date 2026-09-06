@@ -754,7 +754,73 @@ function AgendaView({ c }: { c: MinisterioConteudo }) {
         </div>
       ) : null}
 
+      {lider ? (
+        formAberto ? (
+          <form
+            onSubmit={(ev) => {
+              ev.preventDefault();
+              if (!form.titulo.trim()) return;
+              if (editandoId) {
+                setEventos((evs) =>
+                  evs.map((e) => (e.id === editandoId ? { ...e, ...form } : e)),
+                );
+              } else {
+                setEventos((evs) => [
+                  ...evs,
+                  { id: `ev${Date.now()}`, ...form, presencas: [], louvoresDoDia: [] },
+                ]);
+              }
+              setForm({ titulo: "", tipo: "Ensaio", data: "", hora: "" });
+              setEditandoId(null);
+              setFormAberto(false);
+            }}
+            className="surface-card space-y-2 p-4"
+          >
+            <h3 className="font-display text-lg">{editandoId ? "Editar evento" : "Novo evento"}</h3>
+            {(
+              [
+                ["titulo", "Título"],
+                ["tipo", "Tipo"],
+                ["data", "Data"],
+                ["hora", "Hora"],
+              ] as const
+            ).map(([campo, label]) => (
+              <input
+                key={campo}
+                value={form[campo]}
+                onChange={(ev) => setForm({ ...form, [campo]: ev.target.value })}
+                placeholder={label}
+                className="w-full rounded-xl border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
+              />
+            ))}
+            <div className="flex gap-2">
+              <button className="flex-1 rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground">
+                Salvar
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setFormAberto(false);
+                  setEditandoId(null);
+                }}
+                className="rounded-xl border border-border px-4 text-sm font-semibold"
+              >
+                Cancelar
+              </button>
+            </div>
+          </form>
+        ) : (
+          <button
+            onClick={() => setFormAberto(true)}
+            className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
+          >
+            <Plus className="size-4" /> Adicionar evento
+          </button>
+        )
+      ) : null}
+
       {eventos.map((e) => (
+
         <div key={e.id} className="surface-card p-4">
           <div className="flex items-baseline justify-between">
             <h2 className="font-display text-lg">{e.titulo}</h2>
