@@ -715,7 +715,7 @@ function AgendaView({ c }: { c: MinisterioConteudo }) {
   const { permissao } = usePerfil();
   const lider = podeAdministrarMinisterio(permissao, c.slug as SlugMinisterio);
   const [eventos, setEventos] = useState(c.agenda ?? []);
-  const [form, setForm] = useState({ titulo: "", tipo: "Ensaio", data: "", hora: "" });
+  const [form, setForm] = useState<{ titulo: string; tipo: "Culto" | "Ensaio" | "Evento"; data: string; hora: string }>({ titulo: "", tipo: "Ensaio", data: "", hora: "" });
   const [formAberto, setFormAberto] = useState(false);
   const [editandoId, setEditandoId] = useState<string | null>(null);
 
@@ -788,7 +788,7 @@ function AgendaView({ c }: { c: MinisterioConteudo }) {
               <input
                 key={campo}
                 value={form[campo]}
-                onChange={(ev) => setForm({ ...form, [campo]: ev.target.value })}
+                onChange={(ev) => setForm({ ...form, [campo]: ev.target.value as never })}
                 placeholder={label}
                 className="w-full rounded-xl border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
               />
