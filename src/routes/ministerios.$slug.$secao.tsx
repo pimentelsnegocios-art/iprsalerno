@@ -841,19 +841,23 @@ function EstudoView({ c }: { c: MinisterioConteudo }) {
           : "🔒 Somente Pastor, Presbítero, Admin e Fundador criam ou editam o estudo. Você pode ler e perguntar."}
       </p>
 
-      <div className="surface-card p-4">
-        <h2 className="font-display text-xl">📝 Resumo — {mes.livro}</h2>
-        <p className="mt-2 text-sm">{mes.resumo}</p>
-      </div>
+      {mes ? (
+        <>
+          <div className="surface-card p-4">
+            <h2 className="font-display text-xl">📝 Resumo — {mes.livro}</h2>
+            <p className="mt-2 text-sm">{mes.resumo}</p>
+          </div>
 
-      <div className="surface-card p-4">
-        <h2 className="font-display text-xl">💡 Curiosidades</h2>
-        <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-soft">
-          {mes.curiosidades.map((x) => (
-            <li key={x}>{x}</li>
-          ))}
-        </ul>
-      </div>
+          <div className="surface-card p-4">
+            <h2 className="font-display text-xl">💡 Curiosidades</h2>
+            <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-soft">
+              {mes.curiosidades.map((x) => (
+                <li key={x}>{x}</li>
+              ))}
+            </ul>
+          </div>
+        </>
+      ) : null}
 
       <div className="surface-card p-4">
         <h2 className="font-display text-xl">💬 Mural de dúvidas</h2>
