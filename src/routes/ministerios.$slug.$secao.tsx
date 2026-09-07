@@ -1,13 +1,15 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { CalendarPlus, ExternalLink, Music2, Pencil, Pin, Plus, Trash2 } from "lucide-react";
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 
 import { AppShell, PageHeader } from "@/components/AppShell";
 import { CifraViewer } from "@/components/CifraViewer";
 import { usuarioAtual } from "@/lib/church-data";
+import { supabase } from "@/integrations/supabase/client";
 import { usePerfil } from "@/hooks/usePerfil";
 import {
+  ehSuperAdmin,
   podeAdministrarMinisterio,
   podeVerMinisterio,
   type SlugMinisterio,
@@ -727,11 +729,95 @@ function EstudoView({ c }: { c: MinisterioConteudo }) {
   const podeEditar =
     podeEditarEstudo(cargo) || podeAdministrarMinisterio(permissao, c.slug as SlugMinisterio);
 
+  const podeGerir =
+    ehSuperAdmin(permissao) || podeAdministrarMinisterio(permissao, c.slug as SlugMinisterio);
+  const [estudosDb, setEstudosDb] = useState<
+    { id: string; mes: string; titulo: string; conteudo: string; autor_nome: string }[]
+  >([]);
+  const carregarEstudos = () => {
+    void (async () => {
+      const { data } = await (supabase.from as (t: string) => ReturnType<typeof supabase.from>)(
+        "estudos_mensais",
+      )
+        .select("id,mes,titulo,conteudo,autor_nome")
+        .eq("ministerio_slug", c.slug)
+        .order("created_at", { ascending: false });
+      setEstudosDb((data as typeof estudosDb | null) ?? []);
+    })();
+  };
+  useEffect(carregarEstudos, [c.slug]);
 
-  if (!mes) return <p className="text-sm text-soft">Nenhum estudo publicado ainda.</p>;
+  const novoEstudo = async () => {
+    const mesTxt = window.prompt("Mês do estudo (ex.: Setembro/2026):");
+    if (!mesTxt?.trim()) return;
+    const titulo = window.prompt("Título do estudo:");
+    if (!titulo?.trim()) return;
+    const conteudo = window.prompt("Conteúdo do estudo:");
+    if (!conteudo?.trim()) return;
+    await (supabase.from as (t: string) => ReturnType<typeof supabase.from>)(
+      "estudos_mensais",
+    ).insert({
+      ministerio_slug: c.slug,
+      mes: mesTxt.trim(),
+      titulo: titulo.trim(),
+      conteudo: conteudo.trim(),
+      autor_id: perfil?.id ?? null,
+      autor_nome: nome,
+    } as never);
+    carregarEstudos();
+  };
+
+  const editarEstudo = async (x: (typeof estudosDb)[number]) => {
+    const mesTxt = window.prompt("Mês do estudo:", x.mes);
+    if (!mesTxt?.trim()) return;
+    const titulo = window.prompt("Título do estudo:", x.titulo);
+    if (!titulo?.trim()) return;
+    const conteudo = window.prompt("Conteúdo do estudo:", x.conteudo);
+    if (!conteudo?.trim()) return;
+    await (supabase.from as (t: string) => ReturnType<typeof supabase.from>)("estudos_mensais")
+      .update({ mes: mesTxt.trim(), titulo: titulo.trim(), conteudo: conteudo.trim() } as never)
+      .eq("id", x.id);
+    carregarEstudos();
+  };
+
+  const excluirEstudo = async (x: (typeof estudosDb)[number]) => {
+    if (!window.confirm(`Excluir o estudo "${x.titulo}"?`)) return;
+    await (supabase.from as (t: string) => ReturnType<typeof supabase.from>)("estudos_mensais")
+      .delete()
+      .eq("id", x.id);
+    carregarEstudos();
+  };
 
   return (
     <div className="space-y-4">
+      {podeGerir ? (
+        <button
+          type="button"
+          onClick={() => void novoEstudo()}
+          className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
+        >
+          <Plus className="size-4" /> Novo
+        </button>
+      ) : null}
+
+      {estudosDb.map((x) => (
+        <article key={x.id} className="surface-card p-4">
+          <p className="text-xs font-semibold text-primary">📅 {x.mes}</p>
+          <h2 className="mt-1 font-display text-lg">{x.titulo}</h2>
+          <p className="mt-2 text-sm">{x.conteudo}</p>
+          <p className="mt-2 text-xs text-soft">Por {x.autor_nome}</p>
+          {podeGerir ? (
+            <div className="mt-3 flex gap-2">
+              <AcaoBtn onClick={() => void editarEstudo(x)}>
+                <Pencil className="size-3.5" /> Editar
+              </AcaoBtn>
+              <AcaoBtn perigo onClick={() => void excluirEstudo(x)}>
+                <Trash2 className="size-3.5" /> Excluir
+              </AcaoBtn>
+            </div>
+          ) : null}
+        </article>
+      ))}
       <div className="flex gap-2 overflow-x-auto">
         {meses.map((m) => (
           <button
@@ -755,19 +841,23 @@ function EstudoView({ c }: { c: MinisterioConteudo }) {
           : "🔒 Somente Pastor, Presbítero, Admin e Fundador criam ou editam o estudo. Você pode ler e perguntar."}
       </p>
 
-      <div className="surface-card p-4">
-        <h2 className="font-display text-xl">📝 Resumo — {mes.livro}</h2>
-        <p className="mt-2 text-sm">{mes.resumo}</p>
-      </div>
+      {mes ? (
+        <>
+          <div className="surface-card p-4">
+            <h2 className="font-display text-xl">📝 Resumo — {mes.livro}</h2>
+            <p className="mt-2 text-sm">{mes.resumo}</p>
+          </div>
 
-      <div className="surface-card p-4">
-        <h2 className="font-display text-xl">💡 Curiosidades</h2>
-        <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-soft">
-          {mes.curiosidades.map((x) => (
-            <li key={x}>{x}</li>
-          ))}
-        </ul>
-      </div>
+          <div className="surface-card p-4">
+            <h2 className="font-display text-xl">💡 Curiosidades</h2>
+            <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-soft">
+              {mes.curiosidades.map((x) => (
+                <li key={x}>{x}</li>
+              ))}
+            </ul>
+          </div>
+        </>
+      ) : null}
 
       <div className="surface-card p-4">
         <h2 className="font-display text-xl">💬 Mural de dúvidas</h2>

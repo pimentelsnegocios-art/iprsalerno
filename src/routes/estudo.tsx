@@ -1,12 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { Search } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Pencil, Plus, Search, Trash2 } from "lucide-react";
 
 import { AppShell, PageHeader } from "@/components/AppShell";
 import { Input } from "@/components/ui/input";
 import { estudos } from "@/lib/church-data";
+import { supabase } from "@/integrations/supabase/client";
 import { usePerfil } from "@/hooks/usePerfil";
-import { ehAdmin } from "@/lib/permissoes";
+import { ehAdmin, ehSuperAdmin } from "@/lib/permissoes";
 
 export const Route = createFileRoute("/estudo")({
   head: () => ({
@@ -24,7 +25,7 @@ export const Route = createFileRoute("/estudo")({
 });
 
 function Estudos() {
-  const { permissao } = usePerfil();
+  const { perfil, permissao } = usePerfil();
   const [busca, setBusca] = useState("");
   const [aberto, setAberto] = useState<string | null>(null);
   const q = busca.toLowerCase();
@@ -32,6 +33,64 @@ function Estudos() {
   const lista = estudos.filter((e) =>
     [e.titulo, e.livro, e.tema, e.resumo, e.curiosidade].join(" ").toLowerCase().includes(q),
   );
+
+  const superAdmin = ehSuperAdmin(permissao);
+  const [estudosDb, setEstudosDb] = useState<
+    { id: string; titulo: string; categoria: string; conteudo: string; autor_nome: string }[]
+  >([]);
+  const carregar = () => {
+    void (async () => {
+      const { data } = await (supabase.from as (t: string) => ReturnType<typeof supabase.from>)(
+        "estudos_gerais",
+      )
+        .select("id,titulo,categoria,conteudo,autor_nome")
+        .order("created_at", { ascending: false });
+      setEstudosDb((data as typeof estudosDb | null) ?? []);
+    })();
+  };
+  useEffect(carregar, []);
+
+  const novo = async () => {
+    const titulo = window.prompt("Título do estudo:");
+    if (!titulo?.trim()) return;
+    const categoria = window.prompt("Categoria (livro/tema):");
+    const conteudo = window.prompt("Conteúdo do estudo:");
+    if (!conteudo?.trim()) return;
+    await (supabase.from as (t: string) => ReturnType<typeof supabase.from>)(
+      "estudos_gerais",
+    ).insert({
+      titulo: titulo.trim(),
+      categoria: (categoria ?? "").trim(),
+      conteudo: conteudo.trim(),
+      autor_id: perfil?.id ?? null,
+      autor_nome: perfil?.nome ?? "Liderança",
+    } as never);
+    carregar();
+  };
+
+  const editar = async (x: (typeof estudosDb)[number]) => {
+    const titulo = window.prompt("Título do estudo:", x.titulo);
+    if (!titulo?.trim()) return;
+    const categoria = window.prompt("Categoria (livro/tema):", x.categoria);
+    const conteudo = window.prompt("Conteúdo do estudo:", x.conteudo);
+    if (!conteudo?.trim()) return;
+    await (supabase.from as (t: string) => ReturnType<typeof supabase.from>)("estudos_gerais")
+      .update({
+        titulo: titulo.trim(),
+        categoria: (categoria ?? "").trim(),
+        conteudo: conteudo.trim(),
+      } as never)
+      .eq("id", x.id);
+    carregar();
+  };
+
+  const excluir = async (x: (typeof estudosDb)[number]) => {
+    if (!window.confirm(`Excluir o estudo "${x.titulo}"?`)) return;
+    await (supabase.from as (t: string) => ReturnType<typeof supabase.from>)("estudos_gerais")
+      .delete()
+      .eq("id", x.id);
+    carregar();
+  };
 
   return (
     <AppShell>
@@ -56,6 +115,45 @@ function Estudos() {
             Apenas a liderança pode publicar estudos.
           </p>
         )}
+
+        {superAdmin ? (
+          <button
+            type="button"
+            onClick={() => void novo()}
+            className="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
+          >
+            <Plus className="size-4" /> Novo
+          </button>
+        ) : null}
+
+        <div className="mt-4 space-y-3">
+          {estudosDb.map((x) => (
+            <article key={x.id} className="surface-card p-4">
+              <h2 className="font-display text-lg text-primary">{x.titulo}</h2>
+              {x.categoria ? <p className="text-xs text-soft">{x.categoria}</p> : null}
+              <p className="mt-2 text-sm">{x.conteudo}</p>
+              <p className="mt-2 text-xs text-soft">Por {x.autor_nome}</p>
+              {superAdmin ? (
+                <div className="mt-3 flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => void editar(x)}
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-secondary px-3 py-1.5 text-xs font-semibold text-primary"
+                  >
+                    <Pencil className="size-3.5" /> Editar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void excluir(x)}
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-secondary px-3 py-1.5 text-xs font-semibold text-destructive"
+                  >
+                    <Trash2 className="size-3.5" /> Excluir
+                  </button>
+                </div>
+              ) : null}
+            </article>
+          ))}
+        </div>
 
         <div className="mt-4 space-y-3">
           {lista.map((e) => (

@@ -103,6 +103,85 @@ export type Database = {
         }
         Relationships: []
       }
+      estudos_gerais: {
+        Row: {
+          autor_id: string | null
+          autor_nome: string
+          categoria: string
+          conteudo: string
+          created_at: string
+          id: string
+          titulo: string
+        }
+        Insert: {
+          autor_id?: string | null
+          autor_nome?: string
+          categoria?: string
+          conteudo?: string
+          created_at?: string
+          id?: string
+          titulo: string
+        }
+        Update: {
+          autor_id?: string | null
+          autor_nome?: string
+          categoria?: string
+          conteudo?: string
+          created_at?: string
+          id?: string
+          titulo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estudos_gerais_autor_id_fkey"
+            columns: ["autor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      estudos_mensais: {
+        Row: {
+          autor_id: string | null
+          autor_nome: string
+          conteudo: string
+          created_at: string
+          id: string
+          mes: string
+          ministerio_slug: string
+          titulo: string
+        }
+        Insert: {
+          autor_id?: string | null
+          autor_nome?: string
+          conteudo?: string
+          created_at?: string
+          id?: string
+          mes?: string
+          ministerio_slug: string
+          titulo: string
+        }
+        Update: {
+          autor_id?: string | null
+          autor_nome?: string
+          conteudo?: string
+          created_at?: string
+          id?: string
+          mes?: string
+          ministerio_slug?: string
+          titulo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estudos_mensais_autor_id_fkey"
+            columns: ["autor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       livro_caixa: {
         Row: {
           categoria: string
