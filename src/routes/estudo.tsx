@@ -25,7 +25,7 @@ export const Route = createFileRoute("/estudo")({
 });
 
 function Estudos() {
-  const { permissao } = usePerfil();
+  const { perfil, permissao } = usePerfil();
   const [busca, setBusca] = useState("");
   const [aberto, setAberto] = useState<string | null>(null);
   const q = busca.toLowerCase();
@@ -33,6 +33,64 @@ function Estudos() {
   const lista = estudos.filter((e) =>
     [e.titulo, e.livro, e.tema, e.resumo, e.curiosidade].join(" ").toLowerCase().includes(q),
   );
+
+  const superAdmin = ehSuperAdmin(permissao);
+  const [estudosDb, setEstudosDb] = useState<
+    { id: string; titulo: string; categoria: string; conteudo: string; autor_nome: string }[]
+  >([]);
+  const carregar = () => {
+    void (async () => {
+      const { data } = await (supabase.from as (t: string) => ReturnType<typeof supabase.from>)(
+        "estudos_gerais",
+      )
+        .select("id,titulo,categoria,conteudo,autor_nome")
+        .order("created_at", { ascending: false });
+      setEstudosDb((data as typeof estudosDb | null) ?? []);
+    })();
+  };
+  useEffect(carregar, []);
+
+  const novo = async () => {
+    const titulo = window.prompt("Título do estudo:");
+    if (!titulo?.trim()) return;
+    const categoria = window.prompt("Categoria (livro/tema):");
+    const conteudo = window.prompt("Conteúdo do estudo:");
+    if (!conteudo?.trim()) return;
+    await (supabase.from as (t: string) => ReturnType<typeof supabase.from>)(
+      "estudos_gerais",
+    ).insert({
+      titulo: titulo.trim(),
+      categoria: (categoria ?? "").trim(),
+      conteudo: conteudo.trim(),
+      autor_id: perfil?.id ?? null,
+      autor_nome: perfil?.nome ?? "Liderança",
+    } as never);
+    carregar();
+  };
+
+  const editar = async (x: (typeof estudosDb)[number]) => {
+    const titulo = window.prompt("Título do estudo:", x.titulo);
+    if (!titulo?.trim()) return;
+    const categoria = window.prompt("Categoria (livro/tema):", x.categoria);
+    const conteudo = window.prompt("Conteúdo do estudo:", x.conteudo);
+    if (!conteudo?.trim()) return;
+    await (supabase.from as (t: string) => ReturnType<typeof supabase.from>)("estudos_gerais")
+      .update({
+        titulo: titulo.trim(),
+        categoria: (categoria ?? "").trim(),
+        conteudo: conteudo.trim(),
+      } as never)
+      .eq("id", x.id);
+    carregar();
+  };
+
+  const excluir = async (x: (typeof estudosDb)[number]) => {
+    if (!window.confirm(`Excluir o estudo "${x.titulo}"?`)) return;
+    await (supabase.from as (t: string) => ReturnType<typeof supabase.from>)("estudos_gerais")
+      .delete()
+      .eq("id", x.id);
+    carregar();
+  };
 
   return (
     <AppShell>
