@@ -116,6 +116,45 @@ function Estudos() {
           </p>
         )}
 
+        {superAdmin ? (
+          <button
+            type="button"
+            onClick={() => void novo()}
+            className="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
+          >
+            <Plus className="size-4" /> Novo
+          </button>
+        ) : null}
+
+        <div className="mt-4 space-y-3">
+          {estudosDb.map((x) => (
+            <article key={x.id} className="surface-card p-4">
+              <h2 className="font-display text-lg text-primary">{x.titulo}</h2>
+              {x.categoria ? <p className="text-xs text-soft">{x.categoria}</p> : null}
+              <p className="mt-2 text-sm">{x.conteudo}</p>
+              <p className="mt-2 text-xs text-soft">Por {x.autor_nome}</p>
+              {superAdmin ? (
+                <div className="mt-3 flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => void editar(x)}
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-secondary px-3 py-1.5 text-xs font-semibold text-primary"
+                  >
+                    <Pencil className="size-3.5" /> Editar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void excluir(x)}
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-secondary px-3 py-1.5 text-xs font-semibold text-destructive"
+                  >
+                    <Trash2 className="size-3.5" /> Excluir
+                  </button>
+                </div>
+              ) : null}
+            </article>
+          ))}
+        </div>
+
         <div className="mt-4 space-y-3">
           {lista.map((e) => (
             <article key={e.id} className="surface-card p-4">
