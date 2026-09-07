@@ -1,13 +1,15 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { CalendarPlus, ExternalLink, Music2, Pencil, Pin, Plus, Trash2 } from "lucide-react";
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 
 import { AppShell, PageHeader } from "@/components/AppShell";
 import { CifraViewer } from "@/components/CifraViewer";
 import { usuarioAtual } from "@/lib/church-data";
+import { supabase } from "@/integrations/supabase/client";
 import { usePerfil } from "@/hooks/usePerfil";
 import {
+  ehSuperAdmin,
   podeAdministrarMinisterio,
   podeVerMinisterio,
   type SlugMinisterio,
