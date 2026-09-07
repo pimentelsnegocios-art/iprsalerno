@@ -153,7 +153,7 @@ function EnsaioView({ c }: { c: MinisterioConteudo }) {
         .filter(Boolean)
         .map((linha) => {
           const [quem = "Conjunto", texto = "", marcacao] = linha.split("|").map((p) => p.trim());
-          return { quem, texto, marcacao: marcacao || undefined };
+          return marcacao ? { quem, texto, marcacao } : { quem, texto };
         }),
       observacoes: form.observacoes
         .split("\n")
