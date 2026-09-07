@@ -1,12 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { Search } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Pencil, Plus, Search, Trash2 } from "lucide-react";
 
 import { AppShell, PageHeader } from "@/components/AppShell";
 import { Input } from "@/components/ui/input";
 import { estudos } from "@/lib/church-data";
+import { supabase } from "@/integrations/supabase/client";
 import { usePerfil } from "@/hooks/usePerfil";
-import { ehAdmin } from "@/lib/permissoes";
+import { ehAdmin, ehSuperAdmin } from "@/lib/permissoes";
 
 export const Route = createFileRoute("/estudo")({
   head: () => ({
