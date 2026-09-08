@@ -1,3 +1,4 @@
+import { appConfirm, appPrompt } from "@/components/ui/AppDialog";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Lock, Pencil, Plus, Trash2, X } from "lucide-react";
@@ -84,7 +85,7 @@ function AdminAvisos() {
   };
 
   const excluir = (a: Aviso) => {
-    if (window.confirm(`Excluir o aviso "${a.titulo}"?`)) acoes.excluirAviso(a.id);
+    if (await appConfirm(`Excluir o aviso "${a.titulo}"?`)) acoes.excluirAviso(a.id);
   };
 
   return (
