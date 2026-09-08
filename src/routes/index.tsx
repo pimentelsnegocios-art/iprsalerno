@@ -15,7 +15,7 @@ import {
 
 import { AniversariantesHoje } from "@/components/AniversariantesHoje";
 import { AppShell } from "@/components/AppShell";
-import { cultos } from "@/lib/church-data";
+import { useCultos } from "@/lib/agenda-cultos";
 import { useConfigIgreja } from "@/hooks/useConfigIgreja";
 import { usePerfil } from "@/hooks/usePerfil";
 import { useAppStore } from "@/lib/app-store";
@@ -53,6 +53,7 @@ function Home() {
   const { perfil } = usePerfil();
   const { config } = useConfigIgreja();
   const { avisos } = useAppStore();
+  const cultos = useCultos();
   const aviso = avisos.find((a) => a.fixadoHome) ?? avisos[0];
 
 
@@ -139,6 +140,9 @@ function Home() {
             </div>
           </div>
           <ul className="divide-y divide-border border-t border-border">
+            {cultos.length === 0 ? (
+              <li className="px-4 py-3.5 text-sm text-soft">Nenhum culto agendado.</li>
+            ) : null}
             {cultos.map((c) => (
               <li key={c.slug} className="flex items-center justify-between gap-3 px-4 py-3.5">
                 <div>

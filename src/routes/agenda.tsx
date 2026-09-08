@@ -1,12 +1,13 @@
 import { appConfirm, appPrompt } from "@/components/ui/AppDialog";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Pencil, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { AppShell, PageHeader } from "@/components/AppShell";
 import { usePerfil } from "@/hooks/usePerfil";
-import { cultos as cultosIniciais } from "@/lib/church-data";
+import { carregarCultos, salvarCultos } from "@/lib/agenda-cultos";
+import { cultos as cultosIniciais, type Culto } from "@/lib/church-data";
 import { podeGerirAgenda } from "@/lib/permissoes";
 
 export const Route = createFileRoute("/agenda")({
@@ -30,10 +31,21 @@ export const Route = createFileRoute("/agenda")({
 function Agenda() {
   const { permissao } = usePerfil();
   const gestor = podeGerirAgenda(permissao);
-  const [itens, setItens] = useState(cultosIniciais);
+  const [itens, setItensState] = useState<Culto[]>(cultosIniciais);
   const [editando, setEditando] = useState<string | null>(null);
 
-  const atualizar = (slug: string, campos: Partial<(typeof cultosIniciais)[number]>) =>
+  useEffect(() => {
+    setItensState(carregarCultos());
+  }, []);
+
+  const setItens = (fn: (atual: Culto[]) => Culto[]) =>
+    setItensState((atual) => {
+      const proximo = fn(atual);
+      salvarCultos(proximo);
+      return proximo;
+    });
+
+  const atualizar = (slug: string, campos: Partial<Culto>) =>
     setItens((atual) => atual.map((c) => (c.slug === slug ? { ...c, ...campos } : c)));
 
   return (

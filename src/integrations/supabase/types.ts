@@ -103,6 +103,53 @@ export type Database = {
         }
         Relationships: []
       }
+      cifras: {
+        Row: {
+          artista: string
+          autor_id: string | null
+          autor_nome: string
+          created_at: string
+          id: string
+          linhas: Json
+          ministerio_slug: string
+          titulo: string
+          tom: string
+          updated_at: string
+        }
+        Insert: {
+          artista?: string
+          autor_id?: string | null
+          autor_nome?: string
+          created_at?: string
+          id?: string
+          linhas?: Json
+          ministerio_slug?: string
+          titulo: string
+          tom?: string
+          updated_at?: string
+        }
+        Update: {
+          artista?: string
+          autor_id?: string | null
+          autor_nome?: string
+          created_at?: string
+          id?: string
+          linhas?: Json
+          ministerio_slug?: string
+          titulo?: string
+          tom?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cifras_autor_id_fkey"
+            columns: ["autor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       configuracao_igreja: {
         Row: {
           cnpj: string
@@ -141,6 +188,68 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      contribuicoes: {
+        Row: {
+          comprovante_nome: string
+          comprovante_tipo: string
+          comprovante_url: string
+          created_at: string
+          id: string
+          mes_ref: string
+          motivo: string
+          revisado_em: string | null
+          revisado_por: string
+          status: string
+          tipo: string
+          updated_at: string
+          usuario_id: string
+          usuario_nome: string
+          valor: number
+        }
+        Insert: {
+          comprovante_nome?: string
+          comprovante_tipo?: string
+          comprovante_url?: string
+          created_at?: string
+          id?: string
+          mes_ref: string
+          motivo?: string
+          revisado_em?: string | null
+          revisado_por?: string
+          status?: string
+          tipo?: string
+          updated_at?: string
+          usuario_id: string
+          usuario_nome?: string
+          valor: number
+        }
+        Update: {
+          comprovante_nome?: string
+          comprovante_tipo?: string
+          comprovante_url?: string
+          created_at?: string
+          id?: string
+          mes_ref?: string
+          motivo?: string
+          revisado_em?: string | null
+          revisado_por?: string
+          status?: string
+          tipo?: string
+          updated_at?: string
+          usuario_id?: string
+          usuario_nome?: string
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contribuicoes_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       estudo_curiosidades: {
         Row: {
@@ -716,6 +825,80 @@ export type Database = {
           {
             foreignKeyName: "mural_profile_id_fkey"
             columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      oracao_intercessores: {
+        Row: {
+          created_at: string
+          pedido_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          pedido_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          pedido_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "oracao_intercessores_pedido_id_fkey"
+            columns: ["pedido_id"]
+            isOneToOne: false
+            referencedRelation: "pedidos_oracao"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "oracao_intercessores_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pedidos_oracao: {
+        Row: {
+          autor_id: string
+          autor_nome: string
+          categoria: string
+          created_at: string
+          expira_em: string
+          id: string
+          texto: string
+          updated_at: string
+        }
+        Insert: {
+          autor_id: string
+          autor_nome?: string
+          categoria?: string
+          created_at?: string
+          expira_em?: string
+          id?: string
+          texto: string
+          updated_at?: string
+        }
+        Update: {
+          autor_id?: string
+          autor_nome?: string
+          categoria?: string
+          created_at?: string
+          expira_em?: string
+          id?: string
+          texto?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pedidos_oracao_autor_id_fkey"
+            columns: ["autor_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
