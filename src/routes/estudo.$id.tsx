@@ -600,7 +600,7 @@ function LeituraEstudo() {
                     <button
                       type="button"
                       aria-label="Mover para cima"
-                      onClick={() => void moverCuriosidade(verTodasCuriosidades ? i : i, -1)}
+                      onClick={() => void moverCuriosidade(i, -1)}
                       className="rounded-lg bg-secondary px-3 py-2 text-primary"
                     >
                       <ArrowUp className="size-3.5" />
