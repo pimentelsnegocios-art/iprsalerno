@@ -20,10 +20,13 @@ export type Database = {
           created_by: string | null
           data: string
           descricao: string
+          dia: string
           dirigente: string
           horario: string
           id: string
+          louvores: Json
           pregador: string
+          slug: string
           tema: string
           tipo: string
           titulo: string
@@ -34,10 +37,13 @@ export type Database = {
           created_by?: string | null
           data?: string
           descricao?: string
+          dia?: string
           dirigente?: string
           horario?: string
           id?: string
+          louvores?: Json
           pregador?: string
+          slug?: string
           tema?: string
           tipo?: string
           titulo: string
@@ -48,10 +54,13 @@ export type Database = {
           created_by?: string | null
           data?: string
           descricao?: string
+          dia?: string
           dirigente?: string
           horario?: string
           id?: string
+          louvores?: Json
           pregador?: string
+          slug?: string
           tema?: string
           tipo?: string
           titulo?: string
