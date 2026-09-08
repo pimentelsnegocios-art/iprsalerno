@@ -16,7 +16,6 @@ import { Route as AgendaRouteImport } from './routes/agenda'
 import { Route as AvisosRouteImport } from './routes/avisos'
 import { Route as CadastroRouteImport } from './routes/cadastro'
 import { Route as CaixaRouteImport } from './routes/caixa'
-import { Route as EstudoRouteImport } from './routes/estudo'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as MaisRouteImport } from './routes/mais'
 import { Route as MinisteriosRouteImport } from './routes/ministerios'
@@ -27,6 +26,8 @@ import { Route as AuthenticatedPerfilRouteImport } from './routes/_authenticated
 import { Route as AdminAvisosRouteImport } from './routes/admin.avisos'
 import { Route as AdminMembrosRouteImport } from './routes/admin.membros'
 import { Route as CultoDiaRouteImport } from './routes/culto.$dia'
+import { Route as EstudoIndexRouteImport } from './routes/estudo.index'
+import { Route as EstudoIdRouteImport } from './routes/estudo.$id'
 import { Route as MinisteriosIndexRouteImport } from './routes/ministerios.index'
 import { Route as MinisteriosSlugIndexRouteImport } from './routes/ministerios.$slug.index'
 import { Route as MinisteriosSlugSecaoRouteImport } from './routes/ministerios.$slug.$secao'
@@ -63,11 +64,6 @@ const CadastroRoute = CadastroRouteImport.update({
 const CaixaRoute = CaixaRouteImport.update({
   id: '/caixa',
   path: '/caixa',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EstudoRoute = EstudoRouteImport.update({
-  id: '/estudo',
-  path: '/estudo',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -120,6 +116,16 @@ const CultoDiaRoute = CultoDiaRouteImport.update({
   path: '/culto/$dia',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EstudoIndexRoute = EstudoIndexRouteImport.update({
+  id: '/estudo/',
+  path: '/estudo/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EstudoIdRoute = EstudoIdRouteImport.update({
+  id: '/estudo/$id',
+  path: '/estudo/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MinisteriosIndexRoute = MinisteriosIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -143,7 +149,6 @@ export interface FileRoutesByFullPath {
   '/avisos': typeof AvisosRoute
   '/cadastro': typeof CadastroRoute
   '/caixa': typeof CaixaRoute
-  '/estudo': typeof EstudoRoute
   '/login': typeof LoginRoute
   '/mais': typeof MaisRoute
   '/ministerios': typeof MinisteriosRouteWithChildren
@@ -154,6 +159,8 @@ export interface FileRoutesByFullPath {
   '/admin/avisos': typeof AdminAvisosRoute
   '/admin/membros': typeof AdminMembrosRoute
   '/culto/$dia': typeof CultoDiaRoute
+  '/estudo/$id': typeof EstudoIdRoute
+  '/estudo/': typeof EstudoIndexRoute
   '/ministerios/': typeof MinisteriosIndexRoute
   '/ministerios/$slug/$secao': typeof MinisteriosSlugSecaoRoute
   '/ministerios/$slug/': typeof MinisteriosSlugIndexRoute
@@ -165,7 +172,6 @@ export interface FileRoutesByTo {
   '/avisos': typeof AvisosRoute
   '/cadastro': typeof CadastroRoute
   '/caixa': typeof CaixaRoute
-  '/estudo': typeof EstudoRoute
   '/login': typeof LoginRoute
   '/mais': typeof MaisRoute
   '/oracao': typeof OracaoRoute
@@ -175,6 +181,8 @@ export interface FileRoutesByTo {
   '/admin/avisos': typeof AdminAvisosRoute
   '/admin/membros': typeof AdminMembrosRoute
   '/culto/$dia': typeof CultoDiaRoute
+  '/estudo/$id': typeof EstudoIdRoute
+  '/estudo': typeof EstudoIndexRoute
   '/ministerios': typeof MinisteriosIndexRoute
   '/ministerios/$slug/$secao': typeof MinisteriosSlugSecaoRoute
   '/ministerios/$slug': typeof MinisteriosSlugIndexRoute
@@ -188,7 +196,6 @@ export interface FileRoutesById {
   '/avisos': typeof AvisosRoute
   '/cadastro': typeof CadastroRoute
   '/caixa': typeof CaixaRoute
-  '/estudo': typeof EstudoRoute
   '/login': typeof LoginRoute
   '/mais': typeof MaisRoute
   '/ministerios': typeof MinisteriosRouteWithChildren
@@ -199,6 +206,8 @@ export interface FileRoutesById {
   '/admin/avisos': typeof AdminAvisosRoute
   '/admin/membros': typeof AdminMembrosRoute
   '/culto/$dia': typeof CultoDiaRoute
+  '/estudo/$id': typeof EstudoIdRoute
+  '/estudo/': typeof EstudoIndexRoute
   '/ministerios/': typeof MinisteriosIndexRoute
   '/ministerios/$slug/$secao': typeof MinisteriosSlugSecaoRoute
   '/ministerios/$slug/': typeof MinisteriosSlugIndexRoute
@@ -212,7 +221,6 @@ export interface FileRouteTypes {
     | '/avisos'
     | '/cadastro'
     | '/caixa'
-    | '/estudo'
     | '/login'
     | '/mais'
     | '/ministerios'
@@ -223,6 +231,8 @@ export interface FileRouteTypes {
     | '/admin/avisos'
     | '/admin/membros'
     | '/culto/$dia'
+    | '/estudo/$id'
+    | '/estudo/'
     | '/ministerios/'
     | '/ministerios/$slug/$secao'
     | '/ministerios/$slug/'
@@ -234,7 +244,6 @@ export interface FileRouteTypes {
     | '/avisos'
     | '/cadastro'
     | '/caixa'
-    | '/estudo'
     | '/login'
     | '/mais'
     | '/oracao'
@@ -244,6 +253,8 @@ export interface FileRouteTypes {
     | '/admin/avisos'
     | '/admin/membros'
     | '/culto/$dia'
+    | '/estudo/$id'
+    | '/estudo'
     | '/ministerios'
     | '/ministerios/$slug/$secao'
     | '/ministerios/$slug'
@@ -256,7 +267,6 @@ export interface FileRouteTypes {
     | '/avisos'
     | '/cadastro'
     | '/caixa'
-    | '/estudo'
     | '/login'
     | '/mais'
     | '/ministerios'
@@ -267,6 +277,8 @@ export interface FileRouteTypes {
     | '/admin/avisos'
     | '/admin/membros'
     | '/culto/$dia'
+    | '/estudo/$id'
+    | '/estudo/'
     | '/ministerios/'
     | '/ministerios/$slug/$secao'
     | '/ministerios/$slug/'
@@ -280,7 +292,6 @@ export interface RootRouteChildren {
   AvisosRoute: typeof AvisosRoute
   CadastroRoute: typeof CadastroRoute
   CaixaRoute: typeof CaixaRoute
-  EstudoRoute: typeof EstudoRoute
   LoginRoute: typeof LoginRoute
   MaisRoute: typeof MaisRoute
   MinisteriosRoute: typeof MinisteriosRouteWithChildren
@@ -290,6 +301,8 @@ export interface RootRouteChildren {
   AdminAvisosRoute: typeof AdminAvisosRoute
   AdminMembrosRoute: typeof AdminMembrosRoute
   CultoDiaRoute: typeof CultoDiaRoute
+  EstudoIdRoute: typeof EstudoIdRoute
+  EstudoIndexRoute: typeof EstudoIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -341,13 +354,6 @@ declare module '@tanstack/react-router' {
       path: '/caixa'
       fullPath: '/caixa'
       preLoaderRoute: typeof CaixaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/estudo': {
-      id: '/estudo'
-      path: '/estudo'
-      fullPath: '/estudo'
-      preLoaderRoute: typeof EstudoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -420,6 +426,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CultoDiaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/estudo/': {
+      id: '/estudo/'
+      path: '/estudo'
+      fullPath: '/estudo/'
+      preLoaderRoute: typeof EstudoIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/estudo/$id': {
+      id: '/estudo/$id'
+      path: '/estudo/$id'
+      fullPath: '/estudo/$id'
+      preLoaderRoute: typeof EstudoIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/ministerios/': {
       id: '/ministerios/'
       path: '/'
@@ -479,7 +499,6 @@ const rootRouteChildren: RootRouteChildren = {
   AvisosRoute: AvisosRoute,
   CadastroRoute: CadastroRoute,
   CaixaRoute: CaixaRoute,
-  EstudoRoute: EstudoRoute,
   LoginRoute: LoginRoute,
   MaisRoute: MaisRoute,
   MinisteriosRoute: MinisteriosRouteWithChildren,
@@ -489,6 +508,8 @@ const rootRouteChildren: RootRouteChildren = {
   AdminAvisosRoute: AdminAvisosRoute,
   AdminMembrosRoute: AdminMembrosRoute,
   CultoDiaRoute: CultoDiaRoute,
+  EstudoIdRoute: EstudoIdRoute,
+  EstudoIndexRoute: EstudoIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

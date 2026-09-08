@@ -38,7 +38,7 @@ export function parseCifraTexto(texto: string): { acordes: string; letra: string
   const resultado: { acordes: string; letra: string }[] = [];
 
   for (let i = 0; i < linhas.length; i++) {
-    const linha = linhas[i];
+    const linha = linhas[i] ?? "";
     const tokens = tokenize(linha);
 
     if (tokens.length === 0) {
@@ -57,7 +57,7 @@ export function parseCifraTexto(texto: string): { acordes: string; letra: string
         proximaTokens.some((t) => !isChordToken(t.text));
 
       if (proximaEhLetra) {
-        resultado.push({ acordes: linha, letra: proxima });
+        resultado.push({ acordes: linha, letra: proxima ?? "" });
         i++;
       } else {
         resultado.push({ acordes: linha, letra: "" });
@@ -82,7 +82,11 @@ export function parseCifraTexto(texto: string): { acordes: string; letra: string
   }
 
   // remove linhas vazias no fim
-  while (resultado.length && !resultado[resultado.length - 1].acordes && !resultado[resultado.length - 1].letra) {
+  while (
+    resultado.length &&
+    !resultado[resultado.length - 1]?.acordes &&
+    !resultado[resultado.length - 1]?.letra
+  ) {
     resultado.pop();
   }
 
@@ -194,4 +198,4 @@ export function CifraViewer({ cifra }: { cifra: Cifra }) {
     </div>
   );
 }
-```
+
