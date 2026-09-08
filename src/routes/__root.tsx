@@ -1,8 +1,8 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Outlet,
-import { AppDialogHost } from "@/components/ui/AppDialog";
   Link,
+
   createRootRouteWithContext,
   useRouter,
   HeadContent,
