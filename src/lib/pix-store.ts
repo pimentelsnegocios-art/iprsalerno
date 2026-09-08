@@ -16,10 +16,10 @@ export interface Contribuicao {
   comprovanteUrl: string;
   comprovanteTipo: "imagem" | "pdf";
   status: StatusContribuicao;
-  motivo?: string;
+  motivo?: string | undefined;
   enviadoEm: string;
-  revisadoPor?: string;
-  revisadoEm?: string;
+  revisadoPor?: string | undefined;
+  revisadoEm?: string | undefined;
 }
 
 export const DADOS_PIX = {
