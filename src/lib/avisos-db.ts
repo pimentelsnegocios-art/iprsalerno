@@ -31,7 +31,7 @@ export async function listarAvisos(): Promise<AvisoIgreja[]> {
 
 export async function salvarAviso(id: string | null, valores: Record<string, unknown>) {
   const { error } = id
-    ? await supabase.from("avisos").update(valores).eq("id", id)
+    ? await supabase.from("avisos").update(valores as never).eq("id", id)
     : await supabase.from("avisos").insert({ data_publicacao: hojeIso(), ...valores } as never);
   if (error) {
     toast.error(

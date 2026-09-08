@@ -138,8 +138,8 @@ async function listarPor<T>(
 
 async function gravar(tabela: Tabela, id: string | null, valores: Record<string, unknown>) {
   const { error } = id
-    ? await supabase.from(tabela).update(valores).eq("id", id)
-    : await supabase.from(tabela).insert(valores);
+    ? await supabase.from(tabela).update(valores as never).eq("id", id)
+    : await supabase.from(tabela).insert(valores as never);
   if (error) {
     toast.error(error.message.includes("row-level security")
       ? "Você não tem permissão para essa alteração."

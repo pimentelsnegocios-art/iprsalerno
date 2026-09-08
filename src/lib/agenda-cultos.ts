@@ -52,7 +52,7 @@ export async function listarCultos(): Promise<Culto[]> {
 
 export async function salvarCulto(id: string | null, valores: Record<string, unknown>) {
   const { error } = id
-    ? await supabase.from("agenda_cultos").update(valores).eq("id", id)
+    ? await supabase.from("agenda_cultos").update(valores as never).eq("id", id)
     : await supabase.from("agenda_cultos").insert(valores as never);
   if (error) {
     toast.error(
