@@ -1,19 +1,32 @@
 import { supabase } from "@/integrations/supabase/client";
-import { ehSuperAdmin, type PerfilPermissao } from "@/lib/permissoes";
+import {
+  ehSuperAdmin,
+  podeAdministrarMinisterio,
+  type PerfilPermissao,
+} from "@/lib/permissoes";
 
 export type CategoriaEstudo = "geral" | "jovens";
 
-/** Somente "geral" aqui: o Estudo Mensal de Jovens vive dentro do Ministério de Jovens. */
+/** "geral" abre pelo botão Estudo; "jovens" vive dentro do Ministério de Jovens. */
 export const CATEGORIAS: { slug: CategoriaEstudo; label: string; descricao: string }[] = [
   {
     slug: "geral",
     label: "Estudos Gerais",
     descricao: "Conteúdo bíblico para toda a igreja",
   },
+  {
+    slug: "jovens",
+    label: "Estudo de Jovens",
+    descricao: "Conteúdo bíblico do Ministério de Jovens",
+  },
 ];
 
 /** Somente Pastor, Presbítero e Fundador criam/editam/moderam conteúdo. */
 export const podeGerirEstudos = (p: PerfilPermissao) => ehSuperAdmin(p);
+
+/** Nos estudos de Jovens, a liderança do ministério também gere o conteúdo. */
+export const podeGerirCategoria = (p: PerfilPermissao, categoria: CategoriaEstudo) =>
+  ehSuperAdmin(p) || (categoria === "jovens" && podeAdministrarMinisterio(p, "jovens"));
 
 export interface Estudo {
   id: string;

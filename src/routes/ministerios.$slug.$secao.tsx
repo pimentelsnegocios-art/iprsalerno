@@ -1,6 +1,6 @@
 import { appConfirm, appPrompt } from "@/components/ui/AppDialog";
-import { createFileRoute, notFound } from "@tanstack/react-router";
-import { CalendarPlus, ExternalLink, Music2, Pencil, Pin, Plus, Trash2 } from "lucide-react";
+import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
+import { BookOpen, CalendarPlus, ExternalLink, Music2, Pencil, Pin, Plus, Search, Trash2 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 
 
@@ -16,6 +16,16 @@ import {
   type SlugMinisterio,
 } from "@/lib/permissoes";
 import { BloqueioMinisterio } from "@/components/BloqueioMinisterio";
+import { RichTextEditor } from "@/components/RichTextEditor";
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  formatarData,
+  listarEstudos,
+  podeGerirCategoria,
+  textoPuro,
+  type Estudo,
+} from "@/lib/estudos-biblicos";
 import {
   ministeriosConteudo,
   podeEditarEstudo,
@@ -715,311 +725,153 @@ function AvisosView({ c }: { c: MinisterioConteudo }) {
     </div>
   );
 }
-
-
-/* ---------- Estudo mensal (só Jovens) ---------- */
+/* ---------- Estudo de Jovens (mesma estrutura dos Estudos Gerais) ---------- */
 function EstudoView({ c }: { c: MinisterioConteudo }) {
   const { perfil, permissao } = usePerfil();
-  const nome = perfil?.nome ?? usuarioAtual.nome;
-  const cargo = perfil?.cargo ?? "Membro";
-  const mesesBase = c.estudo ?? [];
-  const [mesesState, setMesesState] = useState(mesesBase);
-  const [sel, setSel] = useState(mesesBase[mesesBase.length - 1]?.id);
-  const [pergunta, setPergunta] = useState("");
-  const [mural, setMural] = useState(mesesBase.find((m) => m.id === sel)?.mural ?? []);
-  const [editandoMes, setEditandoMes] = useState<{ id: string; resumo: string; curiosidades: string } | null>(null);
-  const mes = mesesState.find((m) => m.id === sel);
-  const podeEditar =
-    podeEditarEstudo(cargo) || podeAdministrarMinisterio(permissao, c.slug as SlugMinisterio);
+  const navigate = useNavigate();
+  const gestor =
+    podeGerirCategoria(permissao, "jovens") ||
+    podeAdministrarMinisterio(permissao, c.slug as SlugMinisterio);
 
-  const podeGerir =
-    ehSuperAdmin(permissao) || podeAdministrarMinisterio(permissao, c.slug as SlugMinisterio);
-  const [estudosDb, setEstudosDb] = useState<
-    { id: string; mes: string; titulo: string; conteudo: string; autor_nome: string }[]
-  >([]);
-  const carregarEstudos = () => {
-    void (async () => {
-      const { data } = await (supabase.from as (t: string) => ReturnType<typeof supabase.from>)(
-        "estudos_mensais",
-      )
-        .select("id,mes,titulo,conteudo,autor_nome")
-        .eq("ministerio_slug", c.slug)
-        .order("created_at", { ascending: false });
-      setEstudosDb((data as typeof estudosDb | null) ?? []);
-    })();
-  };
-  useEffect(carregarEstudos, [c.slug]);
+  const [lista, setLista] = useState<Estudo[] | null>(null);
+  const [busca, setBusca] = useState("");
+  const [criando, setCriando] = useState(false);
+  const [salvando, setSalvando] = useState(false);
+  const [form, setForm] = useState({ titulo: "", subtitulo: "", conteudo: "" });
 
-  const novoEstudo = async () => {
-    const mesTxt = await appPrompt("Mês do estudo (ex.: Setembro/2026):");
-    if (!mesTxt?.trim()) return;
-    const titulo = await appPrompt("Título do estudo:");
-    if (!titulo?.trim()) return;
-    const conteudo = await appPrompt("Conteúdo do estudo:");
-    if (!conteudo?.trim()) return;
-    await (supabase.from as (t: string) => ReturnType<typeof supabase.from>)(
-      "estudos_mensais",
-    ).insert({
-      ministerio_slug: c.slug,
-      mes: mesTxt.trim(),
-      titulo: titulo.trim(),
-      conteudo: conteudo.trim(),
-      autor_id: perfil?.id ?? null,
-      autor_nome: nome,
-    } as never);
-    carregarEstudos();
-  };
+  useEffect(() => {
+    void (async () => setLista(await listarEstudos("jovens")))();
+  }, []);
 
-  const editarEstudo = async (x: (typeof estudosDb)[number]) => {
-    const mesTxt = await appPrompt("Mês do estudo:", x.mes);
-    if (!mesTxt?.trim()) return;
-    const titulo = await appPrompt("Título do estudo:", x.titulo);
-    if (!titulo?.trim()) return;
-    const conteudo = await appPrompt("Conteúdo do estudo:", x.conteudo);
-    if (!conteudo?.trim()) return;
-    await (supabase.from as (t: string) => ReturnType<typeof supabase.from>)("estudos_mensais")
-      .update({ mes: mesTxt.trim(), titulo: titulo.trim(), conteudo: conteudo.trim() } as never)
-      .eq("id", x.id);
-    carregarEstudos();
-  };
+  const filtrados = (lista ?? []).filter((e) =>
+    [e.titulo, e.subtitulo, textoPuro(e.conteudo_html)]
+      .join(" ")
+      .toLowerCase()
+      .includes(busca.toLowerCase()),
+  );
 
-  const excluirEstudo = async (x: (typeof estudosDb)[number]) => {
-    if (!await appConfirm(`Excluir o estudo "${x.titulo}"?`)) return;
-    await (supabase.from as (t: string) => ReturnType<typeof supabase.from>)("estudos_mensais")
-      .delete()
-      .eq("id", x.id);
-    carregarEstudos();
+  const salvar = async () => {
+    if (!form.titulo.trim() || !perfil) return;
+    setSalvando(true);
+    const { data, error } = await supabase
+      .from("estudos")
+      .insert({
+        categoria: "jovens",
+        titulo: form.titulo.trim(),
+        subtitulo: form.subtitulo.trim(),
+        conteudo_html: form.conteudo,
+        autor_id: perfil.id,
+        autor_nome: perfil.nome,
+      })
+      .select("id")
+      .maybeSingle();
+    setSalvando(false);
+    if (error || !data) return;
+    setCriando(false);
+    await navigate({ to: "/estudo/$id", params: { id: data.id } });
   };
 
   return (
     <div className="space-y-4">
-      {podeGerir ? (
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-soft" />
+        <Input
+          value={busca}
+          onChange={(e) => setBusca(e.target.value)}
+          placeholder="Buscar por título, tema ou palavra-chave"
+          className="h-12 bg-surface pl-9"
+        />
+      </div>
+
+      {gestor ? (
         <button
           type="button"
-          onClick={() => void novoEstudo()}
-          className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
+          onClick={() => {
+            setForm({ titulo: "", subtitulo: "", conteudo: "" });
+            setCriando(true);
+          }}
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3.5 text-sm font-bold text-primary-foreground active:scale-95"
         >
-          <Plus className="size-4" /> Novo
+          <Plus className="size-4" /> Adicionar Estudo
         </button>
       ) : null}
 
-      {estudosDb.map((x) => (
-        <article key={x.id} className="surface-card p-4">
-          <p className="text-xs font-semibold text-primary">📅 {x.mes}</p>
-          <h2 className="mt-1 font-display text-lg">{x.titulo}</h2>
-          <p className="mt-2 text-sm">{x.conteudo}</p>
-          <p className="mt-2 text-xs text-soft">Por {x.autor_nome}</p>
-          {podeGerir ? (
-            <div className="mt-3 flex gap-2">
-              <AcaoBtn onClick={() => void editarEstudo(x)}>
-                <Pencil className="size-3.5" /> Editar
-              </AcaoBtn>
-              <AcaoBtn perigo onClick={() => void excluirEstudo(x)}>
-                <Trash2 className="size-3.5" /> Excluir
-              </AcaoBtn>
-            </div>
-          ) : null}
-        </article>
-      ))}
-      <div className="flex gap-2 overflow-x-auto">
-        {mesesState.map((m) => (
-          <button
-            key={m.id}
-            onClick={async () => {
-              setSel(m.id);
-              setMural(m.mural);
-            }}
-            className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold ${
-              m.id === sel ? "bg-primary text-primary-foreground" : "border border-border text-soft"
-            }`}
+      {lista === null ? (
+        [0, 1, 2].map((i) => (
+          <div key={i} className="surface-card space-y-2.5 p-4">
+            <Skeleton className="h-3 w-20" />
+            <Skeleton className="h-5 w-3/4" />
+            <Skeleton className="h-4 w-2/3" />
+          </div>
+        ))
+      ) : filtrados.length ? (
+        filtrados.map((e) => (
+          <Link
+            key={e.id}
+            to="/estudo/$id"
+            params={{ id: e.id }}
+            className="surface-card block p-4 active:scale-[0.99]"
           >
-            📅 {m.mes} — {m.livro}
-          </button>
-        ))}
-      </div>
-
-      <p className="rounded-xl border border-primary/50 p-3 text-xs text-primary">
-        {podeEditar
-          ? "Você é liderança: pode criar e editar o estudo e responder o mural."
-          : "🔒 Somente Pastor, Presbítero, Admin e Fundador criam ou editam o estudo. Você pode ler e perguntar."}
-      </p>
-
-      {mes ? (
-        <>
-          <div className="surface-card p-4">
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <h2 className="font-display text-xl">📝 Resumo — {mes.livro}</h2>
-                <p className="mt-2 text-sm">{mes.resumo}</p>
-              </div>
-              {podeGerir ? (
-                <div className="flex shrink-0 gap-2">
-                  <AcaoBtn
-                    onClick={() =>
-                      setEditandoMes({
-                        id: mes.id,
-                        resumo: mes.resumo,
-                        curiosidades: mes.curiosidades.join("\n"),
-                      })
-                    }
-                  >
-                    <Pencil className="size-3.5" /> Editar
-                  </AcaoBtn>
-                  <AcaoBtn
-                    perigo
-                    onClick={async () => {
-                      if (await appConfirm(`Excluir o estudo de ${mes.mes}?`)) {
-                        const restante = mesesState.filter((m) => m.id !== mes.id);
-                        setMesesState(restante);
-                        setSel(restante[restante.length - 1]?.id);
-                      }
-                    }}
-                  >
-                    <Trash2 className="size-3.5" /> Excluir
-                  </AcaoBtn>
-                </div>
-              ) : null}
-            </div>
-          </div>
-
-          <div className="surface-card p-4">
-            <h2 className="font-display text-xl">💡 Curiosidades</h2>
-            <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-soft">
-              {mes.curiosidades.map((x) => (
-                <li key={x}>{x}</li>
-              ))}
-            </ul>
-          </div>
-        </>
-      ) : null}
-
-      {editandoMes ? (
-        <form
-          onSubmit={(ev) => {
-            ev.preventDefault();
-            setMesesState((ms) =>
-              ms.map((m) =>
-                m.id === editandoMes.id
-                  ? {
-                      ...m,
-                      resumo: editandoMes.resumo.trim(),
-                      curiosidades: editandoMes.curiosidades
-                        .split("\n")
-                        .map((s) => s.trim())
-                        .filter(Boolean),
-                    }
-                  : m,
-              ),
-            );
-            setEditandoMes(null);
-          }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
-        >
-          <div className="w-full max-w-md space-y-3 rounded-2xl bg-background p-4 shadow-xl">
-            <h2 className="font-display text-lg">Editar resumo do estudo</h2>
-            <div>
-              <label className="text-xs font-semibold text-soft">Resumo</label>
-              <textarea
-                value={editandoMes.resumo}
-                onChange={(ev) => setEditandoMes({ ...editandoMes, resumo: ev.target.value })}
-                rows={4}
-                className="mt-1 w-full rounded-xl border border-border bg-transparent p-3 text-sm outline-none focus:ring-2 focus:ring-ring"
-              />
-            </div>
-            <div>
-              <label className="text-xs font-semibold text-soft">Curiosidades (uma por linha)</label>
-              <textarea
-                value={editandoMes.curiosidades}
-                onChange={(ev) => setEditandoMes({ ...editandoMes, curiosidades: ev.target.value })}
-                rows={4}
-                className="mt-1 w-full rounded-xl border border-border bg-transparent p-3 text-sm outline-none focus:ring-2 focus:ring-ring"
-              />
-            </div>
-            <div className="flex gap-2">
-              <button className="flex-1 rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground">
-                Salvar
-              </button>
-              <button
-                type="button"
-                onClick={() => setEditandoMes(null)}
-                className="rounded-xl border border-border px-4 text-sm font-semibold"
-              >
-                Cancelar
-              </button>
-            </div>
-          </div>
-        </form>
-      ) : null}
-
-      <div className="surface-card p-4">
-        <h2 className="font-display text-xl">💬 Mural de dúvidas</h2>
-        <form
-          className="mt-3"
-          onSubmit={(ev) => {
-            ev.preventDefault();
-            if (!pergunta.trim()) return;
-            setMural((m) => [{ autor: nome, papel: cargo, texto: pergunta.trim() }, ...m]);
-            setPergunta("");
-          }}
-        >
-          <textarea
-            value={pergunta}
-            onChange={(ev) => setPergunta(ev.target.value)}
-            rows={2}
-            placeholder="Sua pergunta sobre o livro…"
-            className="w-full rounded-xl border border-border bg-transparent p-3 text-sm outline-none focus:ring-2 focus:ring-ring"
-          />
-          <button className="mt-2 w-full rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground">
-            Perguntar como {nome}
-          </button>
-        </form>
-
-        <div className="mt-4 space-y-3">
-          {mural.map((q, i) => (
-            <div key={i} className="rounded-xl border border-border p-3">
-              <p className="text-xs font-semibold text-primary">
-                {q.autor} · {q.papel}
-              </p>
-              <p className="mt-1 text-sm">{q.texto}</p>
-              {q.resposta ? (
-                <div className="mt-2 border-l-2 border-primary/60 pl-3">
-                  <p className="text-xs font-semibold">{q.resposta.autor} respondeu</p>
-                  <p className="text-sm">{q.resposta.texto}</p>
-                </div>
-              ) : null}
-              <div className="mt-2 flex gap-2">
-                {podeEditar ? (
-                  <AcaoBtn
-                    onClick={async () => {
-                      const texto = await appPrompt("Resposta da liderança:", q.resposta?.texto ?? "");
-                      if (!texto?.trim()) return;
-                      setMural((m) =>
-                        m.map((x, idx) =>
-                          idx === i ? { ...x, resposta: { autor: nome, texto: texto.trim() } } : x,
-                        ),
-                      );
-                    }}
-                  >
-                    <Pencil className="size-3.5" /> Responder
-                  </AcaoBtn>
-                ) : null}
-                {podeEditar ? (
-                  <AcaoBtn
-                    perigo
-                    onClick={async () => {
-                      if (await appConfirm("Excluir esta pergunta?"))
-                        setMural((m) => m.filter((_, idx) => idx !== i));
-                    }}
-                  >
-                    <Trash2 className="size-3.5" /> Excluir
-                  </AcaoBtn>
-                ) : null}
-              </div>
-            </div>
-          ))}
+            <span className="inline-block rounded-full bg-primary/15 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-primary">
+              Estudo de Jovens
+            </span>
+            <h2 className="mt-2 font-display text-lg leading-snug">{e.titulo}</h2>
+            {e.subtitulo ? <p className="mt-0.5 text-sm text-soft">{e.subtitulo}</p> : null}
+            <p className="mt-2 text-xs text-soft">
+              {e.autor_nome || "Liderança"} · {formatarData(e.created_at)}
+            </p>
+          </Link>
+        ))
+      ) : (
+        <div className="surface-card flex flex-col items-center gap-2 px-5 py-10 text-center">
+          <BookOpen className="size-8 text-primary" />
+          <p className="font-display text-lg">
+            {busca ? "Nenhum estudo encontrado." : "Nenhum estudo publicado ainda."}
+          </p>
+          <p className="text-sm text-soft">
+            {busca ? "Tente outra palavra-chave." : "A liderança publicará os estudos em breve."}
+          </p>
         </div>
+      )}
 
-      </div>
+      {criando ? (
+        <div className="fixed inset-0 z-50 flex flex-col bg-background">
+          <div className="flex items-center justify-between border-b border-border px-4 py-3">
+            <button type="button" onClick={() => setCriando(false)} className="text-sm text-soft">
+              Cancelar
+            </button>
+            <p className="font-display text-base">Novo estudo</p>
+            <button
+              type="button"
+              disabled={!form.titulo.trim() || salvando}
+              onClick={() => void salvar()}
+              className="rounded-lg bg-primary px-3 py-2 text-sm font-bold text-primary-foreground disabled:opacity-40"
+            >
+              {salvando ? "Salvando…" : "Salvar"}
+            </button>
+          </div>
+          <div className="flex-1 space-y-3 overflow-y-auto p-4 pb-24">
+            <Input
+              value={form.titulo}
+              onChange={(e) => setForm({ ...form, titulo: e.target.value })}
+              placeholder="Título do estudo (obrigatório)"
+              className="h-12 bg-surface"
+            />
+            <Input
+              value={form.subtitulo}
+              onChange={(e) => setForm({ ...form, subtitulo: e.target.value })}
+              placeholder="Subtítulo (opcional)"
+              className="h-12 bg-surface"
+            />
+            <RichTextEditor
+              valor={form.conteudo}
+              onChange={(html) => setForm((f) => ({ ...f, conteudo: html }))}
+              placeholder="Escreva o conteúdo do estudo…"
+              minHeight={280}
+            />
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
