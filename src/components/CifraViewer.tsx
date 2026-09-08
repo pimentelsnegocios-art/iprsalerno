@@ -57,7 +57,7 @@ export function parseCifraTexto(texto: string): { acordes: string; letra: string
         proximaTokens.some((t) => !isChordToken(t.text));
 
       if (proximaEhLetra) {
-        resultado.push({ acordes: linha, letra: proxima });
+        resultado.push({ acordes: linha, letra: proxima ?? "" });
         i++;
       } else {
         resultado.push({ acordes: linha, letra: "" });
