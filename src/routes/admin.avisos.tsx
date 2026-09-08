@@ -84,7 +84,7 @@ function AdminAvisos() {
     setAberto(false);
   };
 
-  const excluir = (a: Aviso) => {
+  const excluir = async (a: Aviso) => {
     if (await appConfirm(`Excluir o aviso "${a.titulo}"?`)) acoes.excluirAviso(a.id);
   };
 

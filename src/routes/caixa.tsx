@@ -212,8 +212,8 @@ function Caixa() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const excluir = (id: string) => {
-    if (!await appConfirm("Excluir este lançamento definitivamente?")) return;
+  const excluir = async (id: string) => {
+    if (!(await appConfirm("Excluir este lançamento definitivamente?"))) return;
     setItens((atual) => atual.filter((x) => x.id !== id));
     if (editandoId === id) limparForm();
   };
