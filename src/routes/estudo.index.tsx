@@ -99,32 +99,11 @@ function EstudosBiblicos() {
   };
 
   return (
-    <AppShell {...(aba === "jovens" ? { theme: "jovens" as const } : {})}>
-      <PageHeader title="Estudos Bíblicos" subtitle="Leia, estude e participe com a comunidade" />
+    <AppShell>
+      <PageHeader title="Estudos Gerais" subtitle="Conteúdo bíblico para toda a igreja" />
 
       <div className="px-5 pt-4">
-        <div
-          className="flex gap-2 rounded-2xl border border-border bg-surface p-1"
-          role="tablist"
-          aria-label="Categorias de estudo"
-        >
-          {CATEGORIAS.map((c) => (
-            <button
-              key={c.slug}
-              role="tab"
-              aria-selected={aba === c.slug}
-              onClick={() => setAba(c.slug)}
-              className={`flex-1 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
-                aba === c.slug ? "bg-primary text-primary-foreground" : "text-soft"
-              }`}
-            >
-              {c.label}
-            </button>
-          ))}
-        </div>
-        <p className="mt-2 text-center text-xs text-soft">
-          {CATEGORIAS.find((c) => c.slug === aba)?.descricao}
-        </p>
+
 
         <div className="relative mt-4">
           <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-soft" />
