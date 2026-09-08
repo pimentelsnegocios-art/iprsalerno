@@ -16,6 +16,7 @@ import {
 import { AniversariantesHoje } from "@/components/AniversariantesHoje";
 import { AppShell } from "@/components/AppShell";
 import { cultos } from "@/lib/church-data";
+import { useConfigIgreja } from "@/hooks/useConfigIgreja";
 import { usePerfil } from "@/hooks/usePerfil";
 import { useAppStore } from "@/lib/app-store";
 
@@ -50,6 +51,7 @@ const botoes = [
 
 function Home() {
   const { perfil } = usePerfil();
+  const { config } = useConfigIgreja();
   const { avisos } = useAppStore();
   const aviso = avisos.find((a) => a.fixadoHome) ?? avisos[0];
 
@@ -64,18 +66,18 @@ function Home() {
           <div className="min-w-0">
             <p className="text-[10px] font-semibold tracking-[0.3em] text-soft">IGREJA</p>
             <h1 className="font-display text-xl leading-tight font-extrabold md:text-2xl">
-              Presbiteriana <span className="text-primary">Renovada</span>
+              {config.nome}
             </h1>
           </div>
         </div>
         <a
-          href="https://maps.app.goo.gl/yuVVKkDf6Sh6ieoV6?g_st=ac"
+          href={config.mapa_url || "https://maps.app.goo.gl/yuVVKkDf6Sh6ieoV6?g_st=ac"}
           target="_blank"
           rel="noopener noreferrer"
           className="mt-3 flex items-start gap-1.5 border-l-2 border-primary/60 pl-2.5 text-xs text-soft transition hover:text-primary"
         >
           <MapPin className="mt-0.5 size-3.5 shrink-0 text-primary" />
-          Rua José Finoteli, 730 — Città di Salerno (Jardim Explanada), Campinas / SP
+          {config.endereco}
           <ExternalLink className="mt-0.5 size-3 shrink-0 text-primary/70" />
         </a>
       </header>

@@ -16,6 +16,7 @@ import { Route as AgendaRouteImport } from './routes/agenda'
 import { Route as AvisosRouteImport } from './routes/avisos'
 import { Route as CadastroRouteImport } from './routes/cadastro'
 import { Route as CaixaRouteImport } from './routes/caixa'
+import { Route as ConfiguracaoRouteImport } from './routes/configuracao'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as MaisRouteImport } from './routes/mais'
 import { Route as MinisteriosRouteImport } from './routes/ministerios'
@@ -66,6 +67,11 @@ const CadastroRoute = CadastroRouteImport.update({
 const CaixaRoute = CaixaRouteImport.update({
   id: '/caixa',
   path: '/caixa',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConfiguracaoRoute = ConfiguracaoRouteImport.update({
+  id: '/configuracao',
+  path: '/configuracao',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -162,6 +168,7 @@ export interface FileRoutesByFullPath {
   '/avisos': typeof AvisosRoute
   '/cadastro': typeof CadastroRoute
   '/caixa': typeof CaixaRoute
+  '/configuracao': typeof ConfiguracaoRoute
   '/login': typeof LoginRoute
   '/mais': typeof MaisRoute
   '/ministerios': typeof MinisteriosRouteWithChildren
@@ -187,6 +194,7 @@ export interface FileRoutesByTo {
   '/avisos': typeof AvisosRoute
   '/cadastro': typeof CadastroRoute
   '/caixa': typeof CaixaRoute
+  '/configuracao': typeof ConfiguracaoRoute
   '/login': typeof LoginRoute
   '/mais': typeof MaisRoute
   '/oracao': typeof OracaoRoute
@@ -213,6 +221,7 @@ export interface FileRoutesById {
   '/avisos': typeof AvisosRoute
   '/cadastro': typeof CadastroRoute
   '/caixa': typeof CaixaRoute
+  '/configuracao': typeof ConfiguracaoRoute
   '/login': typeof LoginRoute
   '/mais': typeof MaisRoute
   '/ministerios': typeof MinisteriosRouteWithChildren
@@ -240,6 +249,7 @@ export interface FileRouteTypes {
     | '/avisos'
     | '/cadastro'
     | '/caixa'
+    | '/configuracao'
     | '/login'
     | '/mais'
     | '/ministerios'
@@ -265,6 +275,7 @@ export interface FileRouteTypes {
     | '/avisos'
     | '/cadastro'
     | '/caixa'
+    | '/configuracao'
     | '/login'
     | '/mais'
     | '/oracao'
@@ -290,6 +301,7 @@ export interface FileRouteTypes {
     | '/avisos'
     | '/cadastro'
     | '/caixa'
+    | '/configuracao'
     | '/login'
     | '/mais'
     | '/ministerios'
@@ -317,6 +329,7 @@ export interface RootRouteChildren {
   AvisosRoute: typeof AvisosRoute
   CadastroRoute: typeof CadastroRoute
   CaixaRoute: typeof CaixaRoute
+  ConfiguracaoRoute: typeof ConfiguracaoRoute
   LoginRoute: typeof LoginRoute
   MaisRoute: typeof MaisRoute
   MinisteriosRoute: typeof MinisteriosRouteWithChildren
@@ -381,6 +394,13 @@ declare module '@tanstack/react-router' {
       path: '/caixa'
       fullPath: '/caixa'
       preLoaderRoute: typeof CaixaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/configuracao': {
+      id: '/configuracao'
+      path: '/configuracao'
+      fullPath: '/configuracao'
+      preLoaderRoute: typeof ConfiguracaoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -540,6 +560,7 @@ const rootRouteChildren: RootRouteChildren = {
   AvisosRoute: AvisosRoute,
   CadastroRoute: CadastroRoute,
   CaixaRoute: CaixaRoute,
+  ConfiguracaoRoute: ConfiguracaoRoute,
   LoginRoute: LoginRoute,
   MaisRoute: MaisRoute,
   MinisteriosRoute: MinisteriosRouteWithChildren,

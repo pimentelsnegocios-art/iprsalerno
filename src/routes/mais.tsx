@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Wallet, ShieldCheck, LogOut, Users, Megaphone, HandCoins } from "lucide-react";
+import { Wallet, ShieldCheck, LogOut, Users, Megaphone, HandCoins, Settings } from "lucide-react";
 
 import { AppShell, PageHeader } from "@/components/AppShell";
 import { usePerfil } from "@/hooks/usePerfil";
@@ -35,6 +35,7 @@ function Mais() {
 
   const caixa = podeVerCaixaPerfil(permissao);
   const admin = podeAprovarCadastros(permissao);
+  const config = ["Fundador", "Admin"].includes(permissao.cargo);
 
   return (
     <AppShell>
@@ -85,6 +86,16 @@ function Mais() {
               </div>
             </Link>
           </>
+        ) : null}
+
+        {config ? (
+          <Link to="/configuracao" className="surface-card flex items-center gap-3 p-4">
+            <Settings className="size-5 text-primary" />
+            <div>
+              <p className="font-semibold">⚙️ Configuração da Igreja</p>
+              <p className="text-xs text-soft">Nome, CNPJ, endereço e chave PIX oficial</p>
+            </div>
+          </Link>
         ) : null}
 
         <button

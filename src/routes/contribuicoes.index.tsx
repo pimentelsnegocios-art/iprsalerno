@@ -5,12 +5,12 @@ import { Check, ClipboardCheck, Copy, QrCode, ShieldCheck, Upload } from "lucide
 import { AppShell, PageHeader } from "@/components/AppShell";
 import { StatusBadge, VisualizadorComprovante } from "@/components/ContribuicaoUI";
 import { appConfirm } from "@/components/ui/AppDialog";
+import { useConfigIgreja } from "@/hooks/useConfigIgreja";
 import { usePerfil } from "@/hooks/usePerfil";
 import { podeVerCaixaPerfil } from "@/lib/permissoes";
 import {
   acoesPix,
   brlPix,
-  DADOS_PIX,
   mesAtual,
   rotuloMes,
   usePixStore,
@@ -58,6 +58,7 @@ function Contribuicoes() {
   const [copiado, setCopiado] = useState(false);
   const [aberto, setAberto] = useState<Contribuicao | null>(null);
 
+  const { config } = useConfigIgreja();
   const gestorCaixa = podeVerCaixaPerfil(permissao);
 
   const meus = useMemo(
@@ -75,7 +76,7 @@ function Contribuicoes() {
 
   async function copiarChave() {
     try {
-      await navigator.clipboard.writeText(DADOS_PIX.chave);
+      await navigator.clipboard.writeText(config.pix_chave);
       setCopiado(true);
       setTimeout(() => setCopiado(false), 2000);
     } catch {
@@ -161,12 +162,12 @@ function Contribuicoes() {
         {/* Dados PIX */}
         <div className="surface-card p-4">
           <p className="text-xs text-soft">Recebedor</p>
-          <p className="font-display text-lg leading-tight">{DADOS_PIX.igreja}</p>
-          <p className="mt-1 text-xs text-soft">{DADOS_PIX.banco}</p>
+          <p className="font-display text-lg leading-tight">{config.nome}</p>
+          <p className="mt-1 text-xs text-soft">{config.pix_banco}</p>
 
           <div className="mt-4 rounded-xl border border-border bg-background/40 p-3">
-            <p className="text-xs text-soft">Chave PIX ({DADOS_PIX.tipoChave})</p>
-            <p className="break-all font-semibold">{DADOS_PIX.chave}</p>
+            <p className="text-xs text-soft">Chave PIX ({config.pix_tipo})</p>
+            <p className="break-all font-semibold">{config.pix_chave}</p>
             <button
               type="button"
               onClick={() => void copiarChave()}
