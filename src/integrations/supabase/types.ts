@@ -103,6 +103,45 @@ export type Database = {
         }
         Relationships: []
       }
+      configuracao_igreja: {
+        Row: {
+          cnpj: string
+          created_at: string
+          endereco: string
+          id: string
+          mapa_url: string
+          nome: string
+          pix_banco: string
+          pix_chave: string
+          pix_tipo: string
+          updated_at: string
+        }
+        Insert: {
+          cnpj?: string
+          created_at?: string
+          endereco?: string
+          id?: string
+          mapa_url?: string
+          nome?: string
+          pix_banco?: string
+          pix_chave?: string
+          pix_tipo?: string
+          updated_at?: string
+        }
+        Update: {
+          cnpj?: string
+          created_at?: string
+          endereco?: string
+          id?: string
+          mapa_url?: string
+          nome?: string
+          pix_banco?: string
+          pix_chave?: string
+          pix_tipo?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       estudo_curiosidades: {
         Row: {
           conteudo: string
@@ -810,6 +849,7 @@ export type Database = {
         }[]
       }
       check_aniversariantes_hoje: { Args: never; Returns: number }
+      eh_admin_config: { Args: { _user_id: string }; Returns: boolean }
       eh_gestor: { Args: { _user_id: string }; Returns: boolean }
       eh_gestor_agenda: { Args: { _user_id: string }; Returns: boolean }
       eh_gestor_caixa: { Args: { _user_id: string }; Returns: boolean }
