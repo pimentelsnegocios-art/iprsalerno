@@ -1,3 +1,4 @@
+import { appConfirm, appPrompt } from "@/components/ui/AppDialog";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
@@ -75,8 +76,8 @@ function Agenda() {
                   <Pencil className="size-3.5" /> Editar
                 </button>
                 <button
-                  onClick={() => {
-                    if (!window.confirm(`Excluir o culto de ${c.dia}?`)) return;
+                  onClick={async () => {
+                    if (!await appConfirm(`Excluir o culto de ${c.dia}?`)) return;
                     setItens((atual) => atual.filter((x) => x.slug !== c.slug));
                     toast.success("Culto removido da agenda.");
                   }}
@@ -107,7 +108,7 @@ function Agenda() {
                   </label>
                 ))}
                 <button
-                  onClick={() => {
+                  onClick={async () => {
                     setEditando(null);
                     toast.success("Culto atualizado.");
                   }}

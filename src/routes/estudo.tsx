@@ -1,3 +1,4 @@
+import { appConfirm, appPrompt } from "@/components/ui/AppDialog";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Pencil, Plus, Search, Trash2 } from "lucide-react";
@@ -51,10 +52,10 @@ function Estudos() {
   useEffect(carregar, []);
 
   const novo = async () => {
-    const titulo = window.prompt("Título do estudo:");
+    const titulo = await appPrompt("Título do estudo:");
     if (!titulo?.trim()) return;
-    const categoria = window.prompt("Categoria (livro/tema):");
-    const conteudo = window.prompt("Conteúdo do estudo:");
+    const categoria = await appPrompt("Categoria (livro/tema):");
+    const conteudo = await appPrompt("Conteúdo do estudo:");
     if (!conteudo?.trim()) return;
     await (supabase.from as (t: string) => ReturnType<typeof supabase.from>)(
       "estudos_gerais",
@@ -69,10 +70,10 @@ function Estudos() {
   };
 
   const editar = async (x: (typeof estudosDb)[number]) => {
-    const titulo = window.prompt("Título do estudo:", x.titulo);
+    const titulo = await appPrompt("Título do estudo:", x.titulo);
     if (!titulo?.trim()) return;
-    const categoria = window.prompt("Categoria (livro/tema):", x.categoria);
-    const conteudo = window.prompt("Conteúdo do estudo:", x.conteudo);
+    const categoria = await appPrompt("Categoria (livro/tema):", x.categoria);
+    const conteudo = await appPrompt("Conteúdo do estudo:", x.conteudo);
     if (!conteudo?.trim()) return;
     await (supabase.from as (t: string) => ReturnType<typeof supabase.from>)("estudos_gerais")
       .update({
@@ -85,7 +86,7 @@ function Estudos() {
   };
 
   const excluir = async (x: (typeof estudosDb)[number]) => {
-    if (!window.confirm(`Excluir o estudo "${x.titulo}"?`)) return;
+    if (!await appConfirm(`Excluir o estudo "${x.titulo}"?`)) return;
     await (supabase.from as (t: string) => ReturnType<typeof supabase.from>)("estudos_gerais")
       .delete()
       .eq("id", x.id);

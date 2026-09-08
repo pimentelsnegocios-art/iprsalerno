@@ -1,3 +1,4 @@
+import { appConfirm, appPrompt } from "@/components/ui/AppDialog";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -211,8 +212,8 @@ function Caixa() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const excluir = (id: string) => {
-    if (!window.confirm("Excluir este lançamento definitivamente?")) return;
+  const excluir = async (id: string) => {
+    if (!(await appConfirm("Excluir este lançamento definitivamente?"))) return;
     setItens((atual) => atual.filter((x) => x.id !== id));
     if (editandoId === id) limparForm();
   };
@@ -401,7 +402,7 @@ ${linhas
             {(["entrada", "saida"] as const).map((t) => (
               <button
                 key={t}
-                onClick={() => {
+                onClick={async () => {
                   setTipo(t);
                   setCategoria(t === "entrada" ? "Dízimo" : "Conta Luz");
                 }}

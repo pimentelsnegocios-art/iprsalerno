@@ -1,3 +1,4 @@
+import { appConfirm, appPrompt } from "@/components/ui/AppDialog";
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { CalendarPlus, ExternalLink, Music2, Pencil, Pin, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
@@ -357,7 +358,7 @@ function OracaoView({ c }: { c: MinisterioConteudo }) {
             {lider || p.autor === nome ? (
               <div className="mt-3 flex gap-2 border-t border-border pt-3">
                 <AcaoBtn
-                  onClick={() => {
+                  onClick={async () => {
                     setEditando(i);
                     setTexto(p.texto);
                   }}
@@ -366,8 +367,8 @@ function OracaoView({ c }: { c: MinisterioConteudo }) {
                 </AcaoBtn>
                 <AcaoBtn
                   perigo
-                  onClick={() => {
-                    if (window.confirm("Excluir este pedido?"))
+                  onClick={async () => {
+                    if (await appConfirm("Excluir este pedido?"))
                       setLista((l) => l.filter((_, idx) => idx !== i));
                   }}
                 >
@@ -555,7 +556,7 @@ function RepertorioView({ c }: { c: MinisterioConteudo }) {
                 {lider ? (
                   <div className="flex gap-2 border-t border-border pt-3">
                     <AcaoBtn
-                      onClick={() => {
+                      onClick={async () => {
                         setEditandoId(l.id);
                         setFormAberto(true);
                         setForm({
@@ -571,8 +572,8 @@ function RepertorioView({ c }: { c: MinisterioConteudo }) {
                     </AcaoBtn>
                     <AcaoBtn
                       perigo
-                      onClick={() => {
-                        if (!window.confirm(`Excluir “${l.titulo}”?`)) return;
+                      onClick={async () => {
+                        if (!await appConfirm(`Excluir “${l.titulo}”?`)) return;
                         setAbas((all) =>
                           all.map((a) =>
                             a.id !== atual?.id
@@ -656,7 +657,7 @@ function AvisosView({ c }: { c: MinisterioConteudo }) {
             {editandoId ? (
               <button
                 type="button"
-                onClick={() => {
+                onClick={async () => {
                   setEditandoId(null);
                   setForm({ titulo: "", texto: "" });
                 }}
@@ -683,7 +684,7 @@ function AvisosView({ c }: { c: MinisterioConteudo }) {
           {podePublicar ? (
             <div className="mt-3 flex flex-wrap gap-2 border-t border-border pt-3">
               <AcaoBtn
-                onClick={() => {
+                onClick={async () => {
                   setEditandoId(a.id);
                   setForm({ titulo: a.titulo, texto: a.texto });
                 }}
@@ -699,8 +700,8 @@ function AvisosView({ c }: { c: MinisterioConteudo }) {
               </AcaoBtn>
               <AcaoBtn
                 perigo
-                onClick={() => {
-                  if (window.confirm("Excluir este aviso?"))
+                onClick={async () => {
+                  if (await appConfirm("Excluir este aviso?"))
                     setLista((l) => l.filter((x) => x.id !== a.id));
                 }}
               >
@@ -750,11 +751,11 @@ function EstudoView({ c }: { c: MinisterioConteudo }) {
   useEffect(carregarEstudos, [c.slug]);
 
   const novoEstudo = async () => {
-    const mesTxt = window.prompt("Mês do estudo (ex.: Setembro/2026):");
+    const mesTxt = await appPrompt("Mês do estudo (ex.: Setembro/2026):");
     if (!mesTxt?.trim()) return;
-    const titulo = window.prompt("Título do estudo:");
+    const titulo = await appPrompt("Título do estudo:");
     if (!titulo?.trim()) return;
-    const conteudo = window.prompt("Conteúdo do estudo:");
+    const conteudo = await appPrompt("Conteúdo do estudo:");
     if (!conteudo?.trim()) return;
     await (supabase.from as (t: string) => ReturnType<typeof supabase.from>)(
       "estudos_mensais",
@@ -770,11 +771,11 @@ function EstudoView({ c }: { c: MinisterioConteudo }) {
   };
 
   const editarEstudo = async (x: (typeof estudosDb)[number]) => {
-    const mesTxt = window.prompt("Mês do estudo:", x.mes);
+    const mesTxt = await appPrompt("Mês do estudo:", x.mes);
     if (!mesTxt?.trim()) return;
-    const titulo = window.prompt("Título do estudo:", x.titulo);
+    const titulo = await appPrompt("Título do estudo:", x.titulo);
     if (!titulo?.trim()) return;
-    const conteudo = window.prompt("Conteúdo do estudo:", x.conteudo);
+    const conteudo = await appPrompt("Conteúdo do estudo:", x.conteudo);
     if (!conteudo?.trim()) return;
     await (supabase.from as (t: string) => ReturnType<typeof supabase.from>)("estudos_mensais")
       .update({ mes: mesTxt.trim(), titulo: titulo.trim(), conteudo: conteudo.trim() } as never)
@@ -783,7 +784,7 @@ function EstudoView({ c }: { c: MinisterioConteudo }) {
   };
 
   const excluirEstudo = async (x: (typeof estudosDb)[number]) => {
-    if (!window.confirm(`Excluir o estudo "${x.titulo}"?`)) return;
+    if (!await appConfirm(`Excluir o estudo "${x.titulo}"?`)) return;
     await (supabase.from as (t: string) => ReturnType<typeof supabase.from>)("estudos_mensais")
       .delete()
       .eq("id", x.id);
@@ -824,7 +825,7 @@ function EstudoView({ c }: { c: MinisterioConteudo }) {
         {mesesState.map((m) => (
           <button
             key={m.id}
-            onClick={() => {
+            onClick={async () => {
               setSel(m.id);
               setMural(m.mural);
             }}
@@ -866,8 +867,8 @@ function EstudoView({ c }: { c: MinisterioConteudo }) {
                   </AcaoBtn>
                   <AcaoBtn
                     perigo
-                    onClick={() => {
-                      if (window.confirm(`Excluir o estudo de ${mes.mes}?`)) {
+                    onClick={async () => {
+                      if (await appConfirm(`Excluir o estudo de ${mes.mes}?`)) {
                         const restante = mesesState.filter((m) => m.id !== mes.id);
                         setMesesState(restante);
                         setSel(restante[restante.length - 1]?.id);
@@ -989,8 +990,8 @@ function EstudoView({ c }: { c: MinisterioConteudo }) {
               <div className="mt-2 flex gap-2">
                 {podeEditar ? (
                   <AcaoBtn
-                    onClick={() => {
-                      const texto = window.prompt("Resposta da liderança:", q.resposta?.texto ?? "");
+                    onClick={async () => {
+                      const texto = await appPrompt("Resposta da liderança:", q.resposta?.texto ?? "");
                       if (!texto?.trim()) return;
                       setMural((m) =>
                         m.map((x, idx) =>
@@ -1005,8 +1006,8 @@ function EstudoView({ c }: { c: MinisterioConteudo }) {
                 {podeEditar ? (
                   <AcaoBtn
                     perigo
-                    onClick={() => {
-                      if (window.confirm("Excluir esta pergunta?"))
+                    onClick={async () => {
+                      if (await appConfirm("Excluir esta pergunta?"))
                         setMural((m) => m.filter((_, idx) => idx !== i));
                     }}
                   >
@@ -1112,7 +1113,7 @@ function AgendaView({ c }: { c: MinisterioConteudo }) {
               </button>
               <button
                 type="button"
-                onClick={() => {
+                onClick={async () => {
                   setFormAberto(false);
                   setEditandoId(null);
                 }}
@@ -1180,7 +1181,7 @@ function AgendaView({ c }: { c: MinisterioConteudo }) {
           {lider ? (
             <div className="mt-3 flex gap-2 border-t border-border pt-3">
               <AcaoBtn
-                onClick={() => {
+                onClick={async () => {
                   setEditandoId(e.id);
                   setFormAberto(true);
                   setForm({ titulo: e.titulo, tipo: e.tipo, data: e.data, hora: e.hora });
@@ -1190,8 +1191,8 @@ function AgendaView({ c }: { c: MinisterioConteudo }) {
               </AcaoBtn>
               <AcaoBtn
                 perigo
-                onClick={() => {
-                  if (window.confirm(`Excluir “${e.titulo}”?`))
+                onClick={async () => {
+                  if (await appConfirm(`Excluir “${e.titulo}”?`))
                     setEventos((evs) => evs.filter((x) => x.id !== e.id));
                 }}
               >
@@ -1295,7 +1296,7 @@ function VisitasView({ c }: { c: MinisterioConteudo }) {
               {lider ? (
                 <div className="mt-3 flex gap-2 border-t border-border pt-3">
                   <AcaoBtn
-                    onClick={() => {
+                    onClick={async () => {
                       setEditandoId(v.id);
                       setForm({
                         nome: v.nome,
@@ -1310,8 +1311,8 @@ function VisitasView({ c }: { c: MinisterioConteudo }) {
                   </AcaoBtn>
                   <AcaoBtn
                     perigo
-                    onClick={() => {
-                      if (window.confirm(`Excluir a visita a ${v.nome}?`))
+                    onClick={async () => {
+                      if (await appConfirm(`Excluir a visita a ${v.nome}?`))
                         setVisitas((all) => all.filter((x) => x.id !== v.id));
                     }}
                   >
@@ -1438,7 +1439,7 @@ function CifrasView({ c }: { c: MinisterioConteudo }) {
               </button>
               <button
                 type="button"
-                onClick={() => {
+                onClick={async () => {
                   setFormAberto(false);
                   setEditandoId(null);
                 }}
@@ -1480,7 +1481,7 @@ function CifrasView({ c }: { c: MinisterioConteudo }) {
           {lider ? (
             <div className="mt-3 flex gap-2 border-t border-border pt-3">
               <AcaoBtn
-                onClick={() => {
+                onClick={async () => {
                   setEditandoId(cf.id);
                   setFormAberto(true);
                   setForm({
@@ -1495,8 +1496,8 @@ function CifrasView({ c }: { c: MinisterioConteudo }) {
               </AcaoBtn>
               <AcaoBtn
                 perigo
-                onClick={() => {
-                  if (window.confirm(`Excluir “${cf.titulo}”?`))
+                onClick={async () => {
+                  if (await appConfirm(`Excluir “${cf.titulo}”?`))
                     setCifras((all) => all.filter((x) => x.id !== cf.id));
                 }}
               >
