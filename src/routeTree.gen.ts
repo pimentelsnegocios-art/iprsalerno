@@ -26,6 +26,7 @@ import { Route as AuthenticatedPerfilRouteImport } from './routes/_authenticated
 import { Route as AdminAvisosRouteImport } from './routes/admin.avisos'
 import { Route as AdminMembrosRouteImport } from './routes/admin.membros'
 import { Route as ContribuicoesIndexRouteImport } from './routes/contribuicoes.index'
+import { Route as ContribuicoesConferenciaRouteImport } from './routes/contribuicoes.conferencia'
 import { Route as CultoDiaRouteImport } from './routes/culto.$dia'
 import { Route as EstudoIndexRouteImport } from './routes/estudo.index'
 import { Route as EstudoIdRouteImport } from './routes/estudo.$id'
@@ -117,6 +118,12 @@ const ContribuicoesIndexRoute = ContribuicoesIndexRouteImport.update({
   path: '/contribuicoes/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ContribuicoesConferenciaRoute =
+  ContribuicoesConferenciaRouteImport.update({
+    id: '/contribuicoes/conferencia',
+    path: '/contribuicoes/conferencia',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const CultoDiaRoute = CultoDiaRouteImport.update({
   id: '/culto/$dia',
   path: '/culto/$dia',
@@ -164,6 +171,7 @@ export interface FileRoutesByFullPath {
   '/perfil': typeof AuthenticatedPerfilRoute
   '/admin/avisos': typeof AdminAvisosRoute
   '/admin/membros': typeof AdminMembrosRoute
+  '/contribuicoes/conferencia': typeof ContribuicoesConferenciaRoute
   '/culto/$dia': typeof CultoDiaRoute
   '/estudo/$id': typeof EstudoIdRoute
   '/contribuicoes/': typeof ContribuicoesIndexRoute
@@ -187,6 +195,7 @@ export interface FileRoutesByTo {
   '/perfil': typeof AuthenticatedPerfilRoute
   '/admin/avisos': typeof AdminAvisosRoute
   '/admin/membros': typeof AdminMembrosRoute
+  '/contribuicoes/conferencia': typeof ContribuicoesConferenciaRoute
   '/culto/$dia': typeof CultoDiaRoute
   '/estudo/$id': typeof EstudoIdRoute
   '/contribuicoes': typeof ContribuicoesIndexRoute
@@ -213,6 +222,7 @@ export interface FileRoutesById {
   '/_authenticated/perfil': typeof AuthenticatedPerfilRoute
   '/admin/avisos': typeof AdminAvisosRoute
   '/admin/membros': typeof AdminMembrosRoute
+  '/contribuicoes/conferencia': typeof ContribuicoesConferenciaRoute
   '/culto/$dia': typeof CultoDiaRoute
   '/estudo/$id': typeof EstudoIdRoute
   '/contribuicoes/': typeof ContribuicoesIndexRoute
@@ -239,6 +249,7 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/admin/avisos'
     | '/admin/membros'
+    | '/contribuicoes/conferencia'
     | '/culto/$dia'
     | '/estudo/$id'
     | '/contribuicoes/'
@@ -262,6 +273,7 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/admin/avisos'
     | '/admin/membros'
+    | '/contribuicoes/conferencia'
     | '/culto/$dia'
     | '/estudo/$id'
     | '/contribuicoes'
@@ -287,6 +299,7 @@ export interface FileRouteTypes {
     | '/_authenticated/perfil'
     | '/admin/avisos'
     | '/admin/membros'
+    | '/contribuicoes/conferencia'
     | '/culto/$dia'
     | '/estudo/$id'
     | '/contribuicoes/'
@@ -312,6 +325,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   AdminAvisosRoute: typeof AdminAvisosRoute
   AdminMembrosRoute: typeof AdminMembrosRoute
+  ContribuicoesConferenciaRoute: typeof ContribuicoesConferenciaRoute
   CultoDiaRoute: typeof CultoDiaRoute
   EstudoIdRoute: typeof EstudoIdRoute
   ContribuicoesIndexRoute: typeof ContribuicoesIndexRoute
@@ -439,6 +453,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ContribuicoesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/contribuicoes/conferencia': {
+      id: '/contribuicoes/conferencia'
+      path: '/contribuicoes/conferencia'
+      fullPath: '/contribuicoes/conferencia'
+      preLoaderRoute: typeof ContribuicoesConferenciaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/culto/$dia': {
       id: '/culto/$dia'
       path: '/culto/$dia'
@@ -527,6 +548,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   AdminAvisosRoute: AdminAvisosRoute,
   AdminMembrosRoute: AdminMembrosRoute,
+  ContribuicoesConferenciaRoute: ContribuicoesConferenciaRoute,
   CultoDiaRoute: CultoDiaRoute,
   EstudoIdRoute: EstudoIdRoute,
   ContribuicoesIndexRoute: ContribuicoesIndexRoute,
