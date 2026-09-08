@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Wallet, ShieldCheck, LogOut, Users, Megaphone } from "lucide-react";
+import { Wallet, ShieldCheck, LogOut, Users, Megaphone, HandCoins } from "lucide-react";
 
 import { AppShell, PageHeader } from "@/components/AppShell";
 import { usePerfil } from "@/hooks/usePerfil";
@@ -43,6 +43,14 @@ function Mais() {
         subtitle={perfil ? `${perfil.nome} · ${perfil.cargo}` : "Menu do aplicativo"}
       />
       <div className="space-y-3 px-5 py-5">
+        <Link to="/contribuicoes" className="surface-card flex items-center gap-3 p-4">
+          <HandCoins className="size-5 text-primary" />
+          <div>
+            <p className="font-semibold">PIX da Igreja</p>
+            <p className="text-xs text-soft">Dízimos, ofertas e envio de comprovante</p>
+          </div>
+        </Link>
+
         {caixa ? (
           <Link to="/caixa" className="surface-card flex items-center gap-3 p-4">
             <Wallet className="size-5 text-primary" />

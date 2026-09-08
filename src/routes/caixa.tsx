@@ -1,5 +1,5 @@
 import { appConfirm, appPrompt } from "@/components/ui/AppDialog";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowDownCircle,
@@ -339,6 +339,18 @@ ${linhas
     <AppShell>
       <PageHeader title="Livro Caixa" subtitle="Saldo em tempo real" />
       <div className="px-5 py-5">
+        <Link
+          to="/contribuicoes/conferencia"
+          className="surface-card mb-4 flex items-center justify-between gap-3 p-4"
+        >
+          <div>
+            <p className="font-semibold">Comprovantes PIX</p>
+            <p className="text-xs text-soft">Conferir dízimos e ofertas enviados</p>
+          </div>
+          <span className="rounded-full border border-amber-500/30 bg-amber-500/15 px-2.5 py-1 text-[11px] font-semibold text-amber-500">
+            {pendentesPix} aguardando
+          </span>
+        </Link>
         {/* Saldo + gráfico */}
         <div className="surface-card p-4">
           <p className="text-center text-xs text-soft">Saldo atual</p>
