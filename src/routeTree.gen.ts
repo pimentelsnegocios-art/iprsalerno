@@ -25,6 +25,7 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedPerfilRouteImport } from './routes/_authenticated/perfil'
 import { Route as AdminAvisosRouteImport } from './routes/admin.avisos'
 import { Route as AdminMembrosRouteImport } from './routes/admin.membros'
+import { Route as ContribuicoesIndexRouteImport } from './routes/contribuicoes.index'
 import { Route as CultoDiaRouteImport } from './routes/culto.$dia'
 import { Route as EstudoIndexRouteImport } from './routes/estudo.index'
 import { Route as EstudoIdRouteImport } from './routes/estudo.$id'
@@ -111,6 +112,11 @@ const AdminMembrosRoute = AdminMembrosRouteImport.update({
   path: '/admin/membros',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ContribuicoesIndexRoute = ContribuicoesIndexRouteImport.update({
+  id: '/contribuicoes/',
+  path: '/contribuicoes/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CultoDiaRoute = CultoDiaRouteImport.update({
   id: '/culto/$dia',
   path: '/culto/$dia',
@@ -160,6 +166,7 @@ export interface FileRoutesByFullPath {
   '/admin/membros': typeof AdminMembrosRoute
   '/culto/$dia': typeof CultoDiaRoute
   '/estudo/$id': typeof EstudoIdRoute
+  '/contribuicoes/': typeof ContribuicoesIndexRoute
   '/estudo/': typeof EstudoIndexRoute
   '/ministerios/': typeof MinisteriosIndexRoute
   '/ministerios/$slug/$secao': typeof MinisteriosSlugSecaoRoute
@@ -182,6 +189,7 @@ export interface FileRoutesByTo {
   '/admin/membros': typeof AdminMembrosRoute
   '/culto/$dia': typeof CultoDiaRoute
   '/estudo/$id': typeof EstudoIdRoute
+  '/contribuicoes': typeof ContribuicoesIndexRoute
   '/estudo': typeof EstudoIndexRoute
   '/ministerios': typeof MinisteriosIndexRoute
   '/ministerios/$slug/$secao': typeof MinisteriosSlugSecaoRoute
@@ -207,6 +215,7 @@ export interface FileRoutesById {
   '/admin/membros': typeof AdminMembrosRoute
   '/culto/$dia': typeof CultoDiaRoute
   '/estudo/$id': typeof EstudoIdRoute
+  '/contribuicoes/': typeof ContribuicoesIndexRoute
   '/estudo/': typeof EstudoIndexRoute
   '/ministerios/': typeof MinisteriosIndexRoute
   '/ministerios/$slug/$secao': typeof MinisteriosSlugSecaoRoute
@@ -232,6 +241,7 @@ export interface FileRouteTypes {
     | '/admin/membros'
     | '/culto/$dia'
     | '/estudo/$id'
+    | '/contribuicoes/'
     | '/estudo/'
     | '/ministerios/'
     | '/ministerios/$slug/$secao'
@@ -254,6 +264,7 @@ export interface FileRouteTypes {
     | '/admin/membros'
     | '/culto/$dia'
     | '/estudo/$id'
+    | '/contribuicoes'
     | '/estudo'
     | '/ministerios'
     | '/ministerios/$slug/$secao'
@@ -278,6 +289,7 @@ export interface FileRouteTypes {
     | '/admin/membros'
     | '/culto/$dia'
     | '/estudo/$id'
+    | '/contribuicoes/'
     | '/estudo/'
     | '/ministerios/'
     | '/ministerios/$slug/$secao'
@@ -302,6 +314,7 @@ export interface RootRouteChildren {
   AdminMembrosRoute: typeof AdminMembrosRoute
   CultoDiaRoute: typeof CultoDiaRoute
   EstudoIdRoute: typeof EstudoIdRoute
+  ContribuicoesIndexRoute: typeof ContribuicoesIndexRoute
   EstudoIndexRoute: typeof EstudoIndexRoute
 }
 
@@ -419,6 +432,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminMembrosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/contribuicoes/': {
+      id: '/contribuicoes/'
+      path: '/contribuicoes'
+      fullPath: '/contribuicoes/'
+      preLoaderRoute: typeof ContribuicoesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/culto/$dia': {
       id: '/culto/$dia'
       path: '/culto/$dia'
@@ -509,6 +529,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminMembrosRoute: AdminMembrosRoute,
   CultoDiaRoute: CultoDiaRoute,
   EstudoIdRoute: EstudoIdRoute,
+  ContribuicoesIndexRoute: ContribuicoesIndexRoute,
   EstudoIndexRoute: EstudoIndexRoute,
 }
 export const routeTree = rootRouteImport
