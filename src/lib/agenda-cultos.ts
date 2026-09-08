@@ -1,50 +1,94 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 
-import { cultos as cultosIniciais, type Culto } from "./church-data";
+import { supabase } from "@/integrations/supabase/client";
+import { isoParaBR } from "@/lib/livros-biblia";
 
-export const AGENDA_KEY = "igreja_agenda_cultos";
-const EVENTO = "igreja_agenda_cultos_change";
-
-export function carregarCultos(): Culto[] {
-  if (typeof window === "undefined") return cultosIniciais;
-  try {
-    const raw = window.localStorage.getItem(AGENDA_KEY);
-    if (!raw) return cultosIniciais;
-    const parsed = JSON.parse(raw) as unknown;
-    if (!Array.isArray(parsed)) return cultosIniciais;
-    return parsed as Culto[];
-  } catch {
-    return cultosIniciais;
-  }
+export interface LouvorCulto {
+  titulo: string;
+  artista: string;
+  tom: string;
 }
 
-export function salvarCultos(lista: Culto[]) {
-  if (typeof window === "undefined") return;
-  try {
-    window.localStorage.setItem(AGENDA_KEY, JSON.stringify(lista));
-  } catch {
-    /* ignore */
-  }
-  window.dispatchEvent(new Event(EVENTO));
+export interface Culto {
+  id: string;
+  slug: string;
+  dia: string;
+  data: string | null;
+  horario: string;
+  tema: string;
+  pregador: string;
+  dirigente: string;
+  tipo: string;
+  descricao: string;
+  louvores: LouvorCulto[];
 }
 
-/** Lê os cultos da agenda e mantém sincronizado entre telas e abas. */
-export function useCultos(): Culto[] {
-  const [lista, setLista] = useState<Culto[]>(cultosIniciais);
+export const dataCultoBR = (c: Culto) => (c.data ? isoParaBR(c.data) : "Data a definir");
 
-  useEffect(() => {
-    const atualizar = () => setLista(carregarCultos());
-    atualizar();
-    const onStorage = (e: StorageEvent) => {
-      if (e.key === null || e.key === AGENDA_KEY) atualizar();
-    };
-    window.addEventListener("storage", onStorage);
-    window.addEventListener(EVENTO, atualizar);
-    return () => {
-      window.removeEventListener("storage", onStorage);
-      window.removeEventListener(EVENTO, atualizar);
-    };
+export async function listarCultos(): Promise<Culto[]> {
+  const { data, error } = await supabase
+    .from("agenda_cultos")
+    .select("*")
+    .order("data", { ascending: true });
+  if (error) {
+    toast.error("Não foi possível carregar a agenda.");
+    return [];
+  }
+  return (data ?? []).map((c) => ({
+    id: c.id,
+    slug: c.slug || c.id,
+    dia: c.dia || c.titulo,
+    data: c.data,
+    horario: c.horario ?? "",
+    tema: c.tema ?? "",
+    pregador: c.pregador ?? "",
+    dirigente: c.dirigente ?? "",
+    tipo: c.tipo ?? "Culto",
+    descricao: c.descricao ?? "",
+    louvores: Array.isArray(c.louvores) ? (c.louvores as unknown as LouvorCulto[]) : [],
+  }));
+}
+
+export async function salvarCulto(id: string | null, valores: Record<string, unknown>) {
+  const { error } = id
+    ? await supabase.from("agenda_cultos").update(valores).eq("id", id)
+    : await supabase.from("agenda_cultos").insert(valores as never);
+  if (error) {
+    toast.error(
+      error.message.includes("row-level security")
+        ? "Você não tem permissão para alterar a agenda."
+        : "Não foi possível salvar o culto.",
+    );
+    return false;
+  }
+  toast.success("Agenda atualizada.");
+  return true;
+}
+
+export async function excluirCulto(id: string) {
+  const { error } = await supabase.from("agenda_cultos").delete().eq("id", id);
+  if (error) {
+    toast.error("Não foi possível excluir o culto.");
+    return false;
+  }
+  toast.success("Culto removido da agenda.");
+  return true;
+}
+
+/** Lê os cultos direto do banco e permite recarregar após alterações. */
+export function useCultos() {
+  const [cultos, setCultos] = useState<Culto[]>([]);
+  const [carregando, setCarregando] = useState(true);
+
+  const recarregar = useCallback(async () => {
+    setCultos(await listarCultos());
+    setCarregando(false);
   }, []);
 
-  return lista;
+  useEffect(() => {
+    void recarregar();
+  }, [recarregar]);
+
+  return { cultos, carregando, recarregar };
 }
