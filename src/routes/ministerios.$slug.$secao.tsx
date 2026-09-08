@@ -1,24 +1,16 @@
-import { appConfirm, appPrompt } from "@/components/ui/AppDialog";
 import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
-import { BookOpen, CalendarPlus, ExternalLink, Music2, Pencil, Pin, Plus, Search, Trash2 } from "lucide-react";
-import { useEffect, useState, type ReactNode } from "react";
-
+import { BookOpen, ExternalLink, Music2, Pencil, Pin, Plus, Search, Trash2 } from "lucide-react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 
 import { AppShell, PageHeader } from "@/components/AppShell";
-import { CifraViewer } from "@/components/CifraViewer";
-import { usuarioAtual } from "@/lib/church-data";
-import { supabase } from "@/integrations/supabase/client";
-import { usePerfil } from "@/hooks/usePerfil";
-import {
-  ehSuperAdmin,
-  podeAdministrarMinisterio,
-  podeVerMinisterio,
-  type SlugMinisterio,
-} from "@/lib/permissoes";
 import { BloqueioMinisterio } from "@/components/BloqueioMinisterio";
+import { CifraViewer } from "@/components/CifraViewer";
 import { RichTextEditor } from "@/components/RichTextEditor";
+import { appConfirm } from "@/components/ui/AppDialog";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { usePerfil, type PerfilAtual } from "@/hooks/usePerfil";
+import { supabase } from "@/integrations/supabase/client";
 import {
   formatarData,
   listarEstudos,
@@ -26,24 +18,61 @@ import {
   textoPuro,
   type Estudo,
 } from "@/lib/estudos-biblicos";
+import { hojeIso, isoParaBR, LIVROS_BIBLIA, ordemDoLivro } from "@/lib/livros-biblia";
+import {
+  excluirAvisoMin,
+  excluirCheckin,
+  excluirCifra,
+  excluirEnsaio,
+  excluirEventoMin,
+  excluirLouvor,
+  excluirVisita,
+  lerProposito,
+  listarAgendaMin,
+  listarAvisosMin,
+  listarCheckins,
+  listarCifras,
+  listarEnsaios,
+  listarRepertorio,
+  listarVisitas,
+  salvarAvisoMin,
+  salvarCheckin,
+  salvarCifra,
+  salvarEnsaio,
+  salvarEventoMin,
+  salvarLouvor,
+  salvarProposito,
+  salvarVisita,
+  useLista,
+  type AvisoMinDB,
+  type CheckinDB,
+  type CifraDB,
+  type EnsaioDB,
+  type EventoMinDB,
+  type LouvorDB,
+  type VisitaDB,
+} from "@/lib/ministerio-db";
 import {
   ministeriosConteudo,
-  podeEditarEstudo,
   type MinisterioConteudo,
   type SecaoKey,
 } from "@/lib/ministerio-data";
+import { podeAdministrarMinisterio, podeVerMinisterio, type SlugMinisterio } from "@/lib/permissoes";
 import type { MinisterioSlug } from "@/lib/church-data";
 
 export const Route = createFileRoute("/ministerios/$slug/$secao")({
+  ssr: false,
   head: () => ({
     meta: [
-      { title: "Área do Ministério — IPR" },
+      { title: "Área do Ministério — IPRB Renovada" },
       {
         name: "description",
         content: "Ensaio, oração, repertório, avisos, agenda e mais dentro do ministério.",
       },
-      { property: "og:title", content: "Área do Ministério — IPR" },
+      { property: "og:title", content: "Área do Ministério — IPRB Renovada" },
       { property: "og:description", content: "Conteúdo interno do ministério." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: SecaoPage,
@@ -71,7 +100,6 @@ function SecaoPage() {
         title={`${meta.emoji} ${meta.label}`}
         subtitle={`${conteudo.nome} · ${conteudo.subtitulo}`}
       />
-
       <div className="px-5 py-5">
         {!temAcesso ? (
           <BloqueioMinisterio slug={conteudo.slug as SlugMinisterio} />
@@ -81,6 +109,18 @@ function SecaoPage() {
       </div>
     </AppShell>
   );
+}
+
+function Conteudo({ secao, c }: { secao: SecaoKey; c: MinisterioConteudo }) {
+  if (secao === "ensaio") return <EnsaioView c={c} />;
+  if (secao === "oracao") return <OracaoView c={c} />;
+  if (secao === "repertorio" || secao === "letras") return <RepertorioView c={c} />;
+  if (secao === "avisos") return <AvisosView c={c} />;
+  if (secao === "estudo") return <EstudoView c={c} />;
+  if (secao === "agenda") return <AgendaView c={c} />;
+  if (secao === "visitas") return <VisitasView c={c} />;
+  if (secao === "cifras") return <CifrasView c={c} />;
+  return null;
 }
 
 function AcaoBtn({
@@ -105,271 +145,362 @@ function AcaoBtn({
   );
 }
 
-function Conteudo({ secao, c }: { secao: SecaoKey; c: MinisterioConteudo }) {
-  if (secao === "ensaio") return <EnsaioView c={c} />;
-  if (secao === "oracao") return <OracaoView c={c} />;
-  if (secao === "repertorio" || secao === "letras") return <RepertorioView c={c} />;
-  if (secao === "avisos") return <AvisosView c={c} />;
-  if (secao === "estudo") return <EstudoView c={c} />;
-  if (secao === "agenda") return <AgendaView c={c} />;
-  if (secao === "visitas") return <VisitasView c={c} />;
-  if (secao === "cifras") return <CifrasView c={c} />;
-  return null;
+function Campo({
+  label,
+  valor,
+  onChange,
+  tipo = "text",
+}: {
+  label: string;
+  valor: string;
+  onChange: (v: string) => void;
+  tipo?: string;
+}) {
+  return (
+    <label className="block text-xs text-soft">
+      {label}
+      <input
+        type={tipo}
+        value={valor}
+        onChange={(e) => onChange(e.target.value)}
+        className="mt-1 w-full rounded-xl border border-border bg-transparent px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
+      />
+    </label>
+  );
 }
 
+const Vazio = ({ texto }: { texto: string }) => <p className="text-sm text-soft">{texto}</p>;
+
+const Carregando = () => (
+  <div className="space-y-2">
+    <Skeleton className="h-16 w-full" />
+    <Skeleton className="h-16 w-full" />
+  </div>
+);
+
+function useMinisterio(c: MinisterioConteudo) {
+  const { perfil, permissao } = usePerfil();
+  const lider = podeAdministrarMinisterio(permissao, c.slug as SlugMinisterio);
+  return { perfil: perfil as PerfilAtual | null, lider, slug: c.slug as string };
+}
 
 /* ---------- Ensaio ---------- */
-interface EnsaioEdit {
-  titulo: string;
-  artista: string;
-  tom: string;
-  link: string;
-  solistas: string;
-  partes: string;
-  observacoes: string;
-}
+const ensaioVazio = {
+  titulo: "",
+  artista: "",
+  tom: "",
+  data: "",
+  horario: "",
+  local: "",
+  link: "",
+  solistas: "",
+  partes: "",
+  observacoes: "",
+};
 
 function EnsaioView({ c }: { c: MinisterioConteudo }) {
-  const { perfil, permissao } = usePerfil();
-  const nome = perfil?.nome ?? "Liderança";
-  const lider = podeAdministrarMinisterio(permissao, c.slug as SlugMinisterio);
-  const [e, setE] = useState(c.ensaio);
-  const [autor, setAutor] = useState<string | null>(null);
-  const [editando, setEditando] = useState(false);
-  const [form, setForm] = useState<EnsaioEdit>({
-    titulo: e.titulo,
-    artista: e.artista,
-    tom: e.tom,
-    link: e.link,
-    solistas: e.solistas.join(", "),
-    partes: e.partes
-      .map((p) => `${p.quem} | ${p.texto}${p.marcacao ? ` | ${p.marcacao}` : ""}`)
-      .join("\n"),
-    observacoes: (e.observacoes ?? []).join("\n"),
-  });
+  const { perfil, lider, slug } = useMinisterio(c);
+  const { lista, recarregar } = useLista<EnsaioDB>(() => listarEnsaios(slug));
+  const [aberto, setAberto] = useState(false);
+  const [editandoId, setEditandoId] = useState<string | null>(null);
+  const [form, setForm] = useState(ensaioVazio);
 
-  const salvar = (ev: React.FormEvent) => {
+  const abrirNovo = () => {
+    setForm({ ...ensaioVazio, data: hojeIso() });
+    setEditandoId(null);
+    setAberto(true);
+  };
+
+  const abrirEdicao = (e: EnsaioDB) => {
+    setForm({
+      titulo: e.titulo,
+      artista: e.artista,
+      tom: e.tom,
+      data: e.data ?? "",
+      horario: e.horario,
+      local: e.local,
+      link: e.link,
+      solistas: e.solistas.join(", "),
+      partes: e.partes
+        .map((p) => `${p.quem} | ${p.texto}${p.marcacao ? ` | ${p.marcacao}` : ""}`)
+        .join("\n"),
+      observacoes: e.observacoes.join("\n"),
+    });
+    setEditandoId(e.id);
+    setAberto(true);
+  };
+
+  const salvar = async (ev: React.FormEvent) => {
     ev.preventDefault();
     if (!form.titulo.trim()) return;
-    setE({
+    const ok = await salvarEnsaio(editandoId, {
+      ministerio_slug: slug,
       titulo: form.titulo.trim(),
       artista: form.artista.trim(),
       tom: form.tom.trim() || "C",
+      data: form.data || null,
+      horario: form.horario.trim(),
+      local: form.local.trim(),
       link: form.link.trim(),
-      solistas: form.solistas
-        .split(",")
-        .map((s) => s.trim())
-        .filter(Boolean),
+      solistas: form.solistas.split(",").map((s) => s.trim()).filter(Boolean),
       partes: form.partes
         .split("\n")
-        .map((linha) => linha.trim())
+        .map((l) => l.trim())
         .filter(Boolean)
         .map((linha) => {
           const [quem = "Conjunto", texto = "", marcacao] = linha.split("|").map((p) => p.trim());
           return marcacao ? { quem, texto, marcacao } : { quem, texto };
         }),
-      observacoes: form.observacoes
-        .split("\n")
-        .map((o) => o.trim())
-        .filter(Boolean),
+      observacoes: form.observacoes.split("\n").map((o) => o.trim()).filter(Boolean),
+      ...(editandoId
+        ? {}
+        : { autor_id: perfil?.id ?? null, autor_nome: perfil?.nome ?? "Liderança" }),
     });
-    setAutor(nome);
-    setEditando(false);
+    if (!ok) return;
+    setAberto(false);
+    setEditandoId(null);
+    await recarregar();
   };
-
-  if (editando) {
-    return (
-      <form onSubmit={salvar} className="surface-card space-y-3 p-4">
-        <h2 className="font-display text-lg">Editar ensaio da semana</h2>
-        <p className="text-xs text-soft">Será salvo como alteração de {nome}.</p>
-        {(
-          [
-            ["titulo", "Louvor da semana"],
-            ["artista", "Artista / versão"],
-            ["tom", "Tom"],
-            ["link", "Referência (link do vídeo/áudio)"],
-          ] as const
-        ).map(([campo, label]) => (
-          <input
-            key={campo}
-            value={form[campo]}
-            onChange={(ev) => setForm({ ...form, [campo]: ev.target.value })}
-            placeholder={label}
-            className="w-full rounded-xl border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
-          />
-        ))}
-        <input
-          value={form.solistas}
-          onChange={(ev) => setForm({ ...form, solistas: ev.target.value })}
-          placeholder="Solistas / ministros (separados por vírgula)"
-          className="w-full rounded-xl border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
-        />
-        <div>
-          <label className="text-xs font-semibold text-soft">
-            Letra com as partes — uma por linha: Quem canta | trecho | marcação (opcional)
-          </label>
-          <textarea
-            value={form.partes}
-            onChange={(ev) => setForm({ ...form, partes: ev.target.value })}
-            rows={7}
-            className="mt-1 w-full rounded-xl border border-border bg-transparent p-3 text-sm outline-none focus:ring-2 focus:ring-ring"
-          />
-        </div>
-        <textarea
-          value={form.observacoes}
-          onChange={(ev) => setForm({ ...form, observacoes: ev.target.value })}
-          rows={3}
-          placeholder="Observações de dinâmica (uma por linha)"
-          className="w-full rounded-xl border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
-        />
-        <div className="flex gap-2">
-          <button className="flex-1 rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground">
-            Salvar ensaio
-          </button>
-          <button
-            type="button"
-            onClick={() => setEditando(false)}
-            className="rounded-xl border border-border px-4 text-sm font-semibold"
-          >
-            Cancelar
-          </button>
-        </div>
-      </form>
-    );
-  }
 
   return (
     <div className="space-y-4">
       {lider ? (
-        <button
-          onClick={() => setEditando(true)}
-          className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
-        >
-          <Pencil className="size-4" /> Editar ensaio
-        </button>
-      ) : null}
-      {autor ? (
-        <p className="rounded-xl border border-primary/50 p-3 text-xs text-primary">
-          Última atualização por {autor}.
-        </p>
-      ) : null}
-      <div className="surface-card p-4">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="text-xs text-soft">Louvor da semana</p>
-            <h2 className="font-display text-xl">{e.titulo}</h2>
-            <p className="text-sm text-soft">{e.artista}</p>
-          </div>
-          <span className="rounded-lg bg-primary px-3 py-1.5 text-sm font-bold text-primary-foreground">
-            Tom {e.tom}
-          </span>
-        </div>
-        {e.link ? (
-          <a
-            href={e.link}
-            target="_blank"
-            rel="noreferrer"
-            className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-primary"
-          >
-            <ExternalLink className="size-4" /> Referência (vídeo/áudio)
-          </a>
-        ) : null}
-      </div>
-
-      <div className="surface-card p-4">
-        <h3 className="font-display text-lg">Solistas / ministros</h3>
-        <ul className="mt-2 flex flex-wrap gap-2">
-          {e.solistas.map((s) => (
-            <li key={s} className="rounded-full border border-border px-3 py-1 text-xs">
-              {s}
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      <div className="surface-card p-4">
-        <h3 className="font-display text-lg">Letra com as partes</h3>
-        <div className="mt-3 space-y-3">
-          {e.partes.map((p, i) => (
-            <div key={i} className="border-l-2 border-primary/60 pl-3">
-              <p className="text-xs font-semibold text-primary">{p.quem}</p>
-              <p className="text-sm">{p.texto}</p>
-              {p.marcacao ? <p className="mt-0.5 text-[11px] italic text-soft">▸ {p.marcacao}</p> : null}
+        aberto ? (
+          <form onSubmit={salvar} className="surface-card space-y-2 p-4">
+            <h2 className="font-display text-lg">
+              {editandoId ? "Editar ensaio" : "Adicionar ensaio"}
+            </h2>
+            <Campo label="Louvor / título do ensaio" valor={form.titulo} onChange={(v) => setForm({ ...form, titulo: v })} />
+            <Campo label="Artista / versão" valor={form.artista} onChange={(v) => setForm({ ...form, artista: v })} />
+            <Campo label="Tom" valor={form.tom} onChange={(v) => setForm({ ...form, tom: v })} />
+            <Campo label="Data" tipo="date" valor={form.data} onChange={(v) => setForm({ ...form, data: v })} />
+            <Campo label="Horário" tipo="time" valor={form.horario} onChange={(v) => setForm({ ...form, horario: v })} />
+            <Campo label="Local" valor={form.local} onChange={(v) => setForm({ ...form, local: v })} />
+            <Campo label="Referência (link do vídeo/áudio)" valor={form.link} onChange={(v) => setForm({ ...form, link: v })} />
+            <Campo label="Solistas / ministros (separados por vírgula)" valor={form.solistas} onChange={(v) => setForm({ ...form, solistas: v })} />
+            <label className="block text-xs text-soft">
+              Letra com as partes — uma por linha: Quem canta | trecho | marcação (opcional)
+              <textarea
+                rows={6}
+                value={form.partes}
+                onChange={(e) => setForm({ ...form, partes: e.target.value })}
+                className="mt-1 w-full rounded-xl border border-border bg-transparent p-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
+              />
+            </label>
+            <label className="block text-xs text-soft">
+              Observações de dinâmica (uma por linha)
+              <textarea
+                rows={3}
+                value={form.observacoes}
+                onChange={(e) => setForm({ ...form, observacoes: e.target.value })}
+                className="mt-1 w-full rounded-xl border border-border bg-transparent p-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
+              />
+            </label>
+            <div className="flex gap-2">
+              <button className="flex-1 rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground">
+                Salvar ensaio
+              </button>
+              <button
+                type="button"
+                onClick={() => setAberto(false)}
+                className="rounded-xl border border-border px-4 text-sm font-semibold"
+              >
+                Cancelar
+              </button>
             </div>
-          ))}
-        </div>
-      </div>
-
-      {e.observacoes?.length ? (
-        <div className="surface-card p-4">
-          <h3 className="font-display text-lg">Observações de dinâmica</h3>
-          <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-soft">
-            {e.observacoes.map((o) => (
-              <li key={o}>{o}</li>
-            ))}
-          </ul>
-        </div>
+          </form>
+        ) : (
+          <button
+            onClick={abrirNovo}
+            className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
+          >
+            <Plus className="size-4" /> Adicionar ensaio
+          </button>
+        )
       ) : null}
+
+      {lista === null ? <Carregando /> : null}
+      {lista?.length === 0 ? <Vazio texto="Nenhum ensaio cadastrado." /> : null}
+
+      {(lista ?? []).map((e) => (
+        <div key={e.id} className="surface-card p-4">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-xs text-soft">
+                {e.data ? isoParaBR(e.data) : "Sem data"}
+                {e.horario ? ` · ${e.horario}` : ""}
+                {e.local ? ` · ${e.local}` : ""}
+              </p>
+              <h2 className="font-display text-xl">{e.titulo}</h2>
+              <p className="text-sm text-soft">{e.artista}</p>
+            </div>
+            <span className="rounded-lg bg-primary px-3 py-1.5 text-sm font-bold text-primary-foreground">
+              Tom {e.tom}
+            </span>
+          </div>
+
+          {e.link ? (
+            <a
+              href={e.link}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-primary"
+            >
+              <ExternalLink className="size-4" /> Referência (vídeo/áudio)
+            </a>
+          ) : null}
+
+          {e.solistas.length ? (
+            <ul className="mt-3 flex flex-wrap gap-2">
+              {e.solistas.map((s) => (
+                <li key={s} className="rounded-full border border-border px-3 py-1 text-xs">
+                  {s}
+                </li>
+              ))}
+            </ul>
+          ) : null}
+
+          {e.partes.length ? (
+            <div className="mt-3 space-y-3">
+              {e.partes.map((p, i) => (
+                <div key={i} className="border-l-2 border-primary/60 pl-3">
+                  <p className="text-xs font-semibold text-primary">{p.quem}</p>
+                  <p className="text-sm">{p.texto}</p>
+                  {p.marcacao ? (
+                    <p className="mt-0.5 text-[11px] italic text-soft">▸ {p.marcacao}</p>
+                  ) : null}
+                </div>
+              ))}
+            </div>
+          ) : null}
+
+          {e.observacoes.length ? (
+            <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-soft">
+              {e.observacoes.map((o) => (
+                <li key={o}>{o}</li>
+              ))}
+            </ul>
+          ) : null}
+
+          <p className="mt-3 text-xs text-soft">Por {e.autor_nome || "Liderança"}</p>
+
+          {lider ? (
+            <div className="mt-3 flex gap-2 border-t border-border pt-3">
+              <AcaoBtn onClick={() => abrirEdicao(e)}>
+                <Pencil className="size-3.5" /> Editar
+              </AcaoBtn>
+              <AcaoBtn
+                perigo
+                onClick={async () => {
+                  if (!(await appConfirm(`Excluir o ensaio “${e.titulo}”?`))) return;
+                  if (await excluirEnsaio(e.id)) await recarregar();
+                }}
+              >
+                <Trash2 className="size-3.5" /> Excluir
+              </AcaoBtn>
+            </div>
+          ) : null}
+        </div>
+      ))}
     </div>
   );
 }
 
 /* ---------- Oração ---------- */
 function OracaoView({ c }: { c: MinisterioConteudo }) {
-  const { perfil, permissao } = usePerfil();
-  const nome = perfil?.nome ?? usuarioAtual.nome;
-  const lider = podeAdministrarMinisterio(permissao, c.slug as SlugMinisterio);
-  const [lista, setLista] = useState(c.oracao.checkins);
+  const { perfil, lider, slug } = useMinisterio(c);
+  const { lista, recarregar } = useLista<CheckinDB>(() => listarCheckins(slug));
+  const [proposito, setProposito] = useState("");
+  const [editandoProposito, setEditandoProposito] = useState(false);
   const [texto, setTexto] = useState("");
-  const [editando, setEditando] = useState<number | null>(null);
+  const [editandoId, setEditandoId] = useState<string | null>(null);
+
+  const carregarProposito = useCallback(async () => setProposito(await lerProposito(slug)), [slug]);
+  useEffect(() => {
+    void carregarProposito();
+  }, [carregarProposito]);
+
+  const enviar = async (ev: React.FormEvent) => {
+    ev.preventDefault();
+    if (!texto.trim() || !perfil) return;
+    const ok = await salvarCheckin(editandoId, {
+      ministerio_slug: slug,
+      texto: texto.trim(),
+      ...(editandoId ? {} : { autor_id: perfil.id, autor_nome: perfil.nome }),
+    });
+    if (!ok) return;
+    setTexto("");
+    setEditandoId(null);
+    await recarregar();
+  };
 
   return (
     <div className="space-y-4">
       <div className="surface-card border-primary/40 p-4">
         <p className="text-xs font-semibold text-primary">Propósito da semana</p>
-        <p className="mt-1 text-sm">{c.oracao.proposito}</p>
+        {editandoProposito ? (
+          <>
+            <textarea
+              rows={3}
+              value={proposito}
+              onChange={(e) => setProposito(e.target.value)}
+              className="mt-2 w-full rounded-xl border border-border bg-transparent p-3 text-sm text-foreground"
+            />
+            <button
+              onClick={async () => {
+                if (await salvarProposito(slug, proposito)) setEditandoProposito(false);
+              }}
+              className="mt-2 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
+            >
+              Salvar propósito
+            </button>
+          </>
+        ) : (
+          <>
+            <p className="mt-1 text-sm">{proposito || "Nenhum propósito registrado ainda."}</p>
+            {lider ? (
+              <div className="mt-3">
+                <AcaoBtn onClick={() => setEditandoProposito(true)}>
+                  <Pencil className="size-3.5" /> Editar propósito
+                </AcaoBtn>
+              </div>
+            ) : null}
+          </>
+        )}
       </div>
 
-      <form
-        className="surface-card p-4"
-        onSubmit={(ev) => {
-          ev.preventDefault();
-          if (!texto.trim()) return;
-          if (editando !== null) {
-            setLista((l) => l.map((p, i) => (i === editando ? { ...p, texto: texto.trim() } : p)));
-            setEditando(null);
-          } else {
-            setLista((l) => [{ autor: nome, texto: texto.trim(), quando: "agora" }, ...l]);
-          }
-          setTexto("");
-        }}
-      >
+      <form className="surface-card p-4" onSubmit={enviar}>
         <h3 className="font-display text-lg">Check-in de oração</h3>
-        <p className="text-xs text-soft">Identificado como {nome} — sem anonimato.</p>
+        <p className="text-xs text-soft">
+          Identificado como {perfil?.nome ?? "visitante"} — sem anonimato.
+        </p>
         <textarea
           value={texto}
-          onChange={(ev) => setTexto(ev.target.value)}
+          onChange={(e) => setTexto(e.target.value)}
           rows={3}
           placeholder="Compartilhe sua intenção ou pedido…"
-          className="mt-3 w-full rounded-xl border border-border bg-transparent p-3 text-sm outline-none focus:ring-2 focus:ring-ring"
+          className="mt-3 w-full rounded-xl border border-border bg-transparent p-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
         />
         <button className="mt-3 w-full rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground">
-          {editando !== null ? "Salvar alteração" : "Registrar"}
+          {editandoId ? "Salvar alteração" : "Registrar"}
         </button>
       </form>
 
+      {lista === null ? <Carregando /> : null}
+      {lista?.length === 0 ? <Vazio texto="Nenhum check-in registrado." /> : null}
+
       <div className="space-y-3">
-        {lista.map((p, i) => (
-          <div key={i} className="surface-card p-4">
+        {(lista ?? []).map((p) => (
+          <div key={p.id} className="surface-card p-4">
             <p className="text-sm">{p.texto}</p>
             <p className="mt-2 text-xs text-soft">
-              {p.autor} · {p.quando}
+              {p.autor_nome} · {formatarData(p.created_at)}
             </p>
-            {lider || p.autor === nome ? (
+            {lider || p.autor_id === perfil?.id ? (
               <div className="mt-3 flex gap-2 border-t border-border pt-3">
                 <AcaoBtn
-                  onClick={async () => {
-                    setEditando(i);
+                  onClick={() => {
+                    setEditandoId(p.id);
                     setTexto(p.texto);
                   }}
                 >
@@ -378,8 +509,8 @@ function OracaoView({ c }: { c: MinisterioConteudo }) {
                 <AcaoBtn
                   perigo
                   onClick={async () => {
-                    if (await appConfirm("Excluir este pedido?"))
-                      setLista((l) => l.filter((_, idx) => idx !== i));
+                    if (!(await appConfirm("Excluir este pedido?"))) return;
+                    if (await excluirCheckin(p.id)) await recarregar();
                   }}
                 >
                   <Trash2 className="size-3.5" /> Excluir
@@ -393,20 +524,21 @@ function OracaoView({ c }: { c: MinisterioConteudo }) {
   );
 }
 
-
 /* ---------- Repertório / Letras ---------- */
+const ABAS = [
+  { id: "rapidos", label: "⚡ Rápidos" },
+  { id: "congregacional", label: "📌 Congregacionais" },
+  { id: "ceia", label: "✝️ Ceia" },
+];
+
 function RepertorioView({ c }: { c: MinisterioConteudo }) {
-  const { permissao } = usePerfil();
-  const lider = podeAdministrarMinisterio(permissao, c.slug as SlugMinisterio);
-  const [abas, setAbas] = useState(c.abas);
-  const [aba, setAba] = useState(c.abas[0]?.id ?? "");
+  const { perfil, lider, slug } = useMinisterio(c);
+  const { lista, recarregar } = useLista<LouvorDB>(() => listarRepertorio(slug));
+  const [aba, setAba] = useState("congregacional");
   const [aberto, setAberto] = useState<string | null>(null);
-  const [avisoAcao, setAvisoAcao] = useState<string | null>(null);
-  const [form, setForm] = useState({ titulo: "", artista: "", tom: "", link: "", letra: "" });
-  const [editandoId, setEditandoId] = useState<string | null>(null);
   const [formAberto, setFormAberto] = useState(false);
-  const atual = abas.find((a) => a.id === aba) ?? abas[0];
-  const ehLouvor = c.slug === "louvor";
+  const [editandoId, setEditandoId] = useState<string | null>(null);
+  const [form, setForm] = useState({ titulo: "", artista: "", tom: "", link: "", letra: "" });
 
   const limpar = () => {
     setForm({ titulo: "", artista: "", tom: "", link: "", letra: "" });
@@ -414,42 +546,37 @@ function RepertorioView({ c }: { c: MinisterioConteudo }) {
     setFormAberto(false);
   };
 
-  const salvar = (ev: React.FormEvent) => {
+  const salvar = async (ev: React.FormEvent) => {
     ev.preventDefault();
-    if (!form.titulo.trim() || !atual) return;
-    const dados = {
+    if (!form.titulo.trim()) return;
+    const ok = await salvarLouvor(editandoId, {
+      ministerio_slug: slug,
+      aba,
       titulo: form.titulo.trim(),
       artista: form.artista.trim(),
       tom: form.tom.trim() || "C",
       link: form.link.trim(),
       letra: form.letra.split("\n").filter(Boolean),
-    };
-    setAbas((all) =>
-      all.map((a) =>
-        a.id !== atual.id
-          ? a
-          : {
-              ...a,
-              louvores: editandoId
-                ? a.louvores.map((l) => (l.id === editandoId ? { ...l, ...dados } : l))
-                : [...a.louvores, { id: `l${Date.now()}`, ...dados }],
-            },
-      ),
-    );
+      ...(editandoId
+        ? {}
+        : { autor_id: perfil?.id ?? null, autor_nome: perfil?.nome ?? "Liderança" }),
+    });
+    if (!ok) return;
     limpar();
+    await recarregar();
   };
+
+  const filtrados = (lista ?? []).filter((l) => l.aba === aba);
 
   return (
     <div className="space-y-4">
       <div className="flex gap-2 overflow-x-auto">
-        {abas.map((a) => (
+        {ABAS.map((a) => (
           <button
             key={a.id}
             onClick={() => setAba(a.id)}
             className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold ${
-              a.id === aba
-                ? "bg-primary text-primary-foreground"
-                : "border border-border text-soft"
+              a.id === aba ? "bg-primary text-primary-foreground" : "border border-border text-soft"
             }`}
           >
             {a.label}
@@ -457,37 +584,23 @@ function RepertorioView({ c }: { c: MinisterioConteudo }) {
         ))}
       </div>
 
-      {avisoAcao ? (
-        <p className="rounded-xl border border-primary/50 p-3 text-xs text-primary">{avisoAcao}</p>
-      ) : null}
-
       {lider ? (
         formAberto ? (
           <form onSubmit={salvar} className="surface-card space-y-2 p-4">
             <h3 className="font-display text-lg">{editandoId ? "Editar louvor" : "Novo louvor"}</h3>
-            {(
-              [
-                ["titulo", "Título"],
-                ["artista", "Artista"],
-                ["tom", "Tom"],
-                ["link", "Link de referência"],
-              ] as const
-            ).map(([campo, label]) => (
-              <input
-                key={campo}
-                value={form[campo]}
-                onChange={(ev) => setForm({ ...form, [campo]: ev.target.value })}
-                placeholder={label}
-                className="w-full rounded-xl border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
+            <Campo label="Título" valor={form.titulo} onChange={(v) => setForm({ ...form, titulo: v })} />
+            <Campo label="Artista" valor={form.artista} onChange={(v) => setForm({ ...form, artista: v })} />
+            <Campo label="Tom" valor={form.tom} onChange={(v) => setForm({ ...form, tom: v })} />
+            <Campo label="Link de referência" valor={form.link} onChange={(v) => setForm({ ...form, link: v })} />
+            <label className="block text-xs text-soft">
+              Letra (uma linha por verso)
+              <textarea
+                rows={4}
+                value={form.letra}
+                onChange={(e) => setForm({ ...form, letra: e.target.value })}
+                className="mt-1 w-full rounded-xl border border-border bg-transparent px-3 py-2 text-sm text-foreground"
               />
-            ))}
-            <textarea
-              value={form.letra}
-              onChange={(ev) => setForm({ ...form, letra: ev.target.value })}
-              rows={4}
-              placeholder="Letra (uma linha por verso)"
-              className="w-full rounded-xl border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
-            />
+            </label>
             <div className="flex gap-2">
               <button className="flex-1 rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground">
                 Salvar
@@ -511,9 +624,13 @@ function RepertorioView({ c }: { c: MinisterioConteudo }) {
         )
       ) : null}
 
-      <div className="space-y-3">
-        {(atual?.louvores ?? []).map((l) => (
+      {lista === null ? <Carregando /> : null}
+      {lista !== null && filtrados.length === 0 ? (
+        <Vazio texto="Nenhum louvor nesta aba." />
+      ) : null}
 
+      <div className="space-y-3">
+        {filtrados.map((l) => (
           <div key={l.id} className="surface-card p-4">
             <button
               onClick={() => setAberto(aberto === l.id ? null : l.id)}
@@ -533,40 +650,20 @@ function RepertorioView({ c }: { c: MinisterioConteudo }) {
                 <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed">
                   {l.letra.join("\n")}
                 </pre>
-                <a
-                  href={l.link}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary"
-                >
-                  <ExternalLink className="size-4" /> Ouvir referência
-                </a>
-                {ehLouvor ? (
-                  <div className="flex flex-wrap gap-2">
-                    <button
-                      onClick={() => setAvisoAcao(`“${l.titulo}” adicionado automaticamente aos Ensaios.`)}
-                      className="inline-flex items-center gap-1.5 rounded-xl border border-border px-3 py-2 text-xs font-semibold"
-                    >
-                      <Music2 className="size-3.5" /> Enviar para Ensaios
-                    </button>
-                    <button
-                      onClick={() => setAvisoAcao(`“${l.titulo}” registrado na Agenda — culto de sábado.`)}
-                      className="inline-flex items-center gap-1.5 rounded-xl border border-border px-3 py-2 text-xs font-semibold"
-                    >
-                      <CalendarPlus className="size-3.5" /> Registrar sábado
-                    </button>
-                    <button
-                      onClick={() => setAvisoAcao(`“${l.titulo}” registrado na Agenda — culto de domingo.`)}
-                      className="inline-flex items-center gap-1.5 rounded-xl border border-border px-3 py-2 text-xs font-semibold"
-                    >
-                      <CalendarPlus className="size-3.5" /> Registrar domingo
-                    </button>
-                  </div>
+                {l.link ? (
+                  <a
+                    href={l.link}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary"
+                  >
+                    <ExternalLink className="size-4" /> Ouvir referência
+                  </a>
                 ) : null}
                 {lider ? (
                   <div className="flex gap-2 border-t border-border pt-3">
                     <AcaoBtn
-                      onClick={async () => {
+                      onClick={() => {
                         setEditandoId(l.id);
                         setFormAberto(true);
                         setForm({
@@ -583,14 +680,8 @@ function RepertorioView({ c }: { c: MinisterioConteudo }) {
                     <AcaoBtn
                       perigo
                       onClick={async () => {
-                        if (!await appConfirm(`Excluir “${l.titulo}”?`)) return;
-                        setAbas((all) =>
-                          all.map((a) =>
-                            a.id !== atual?.id
-                              ? a
-                              : { ...a, louvores: a.louvores.filter((x) => x.id !== l.id) },
-                          ),
-                        );
+                        if (!(await appConfirm(`Excluir “${l.titulo}”?`))) return;
+                        if (await excluirLouvor(l.id)) await recarregar();
                       }}
                     >
                       <Trash2 className="size-3.5" /> Excluir
@@ -601,7 +692,6 @@ function RepertorioView({ c }: { c: MinisterioConteudo }) {
             ) : null}
           </div>
         ))}
-
       </div>
     </div>
   );
@@ -609,57 +699,45 @@ function RepertorioView({ c }: { c: MinisterioConteudo }) {
 
 /* ---------- Avisos ---------- */
 function AvisosView({ c }: { c: MinisterioConteudo }) {
-  const { perfil, permissao } = usePerfil();
-  const podePublicar = podeAdministrarMinisterio(permissao, c.slug as SlugMinisterio);
-  const autor = perfil?.nome ?? "Liderança";
-  const [lista, setLista] = useState(c.avisos);
+  const { perfil, lider, slug } = useMinisterio(c);
+  const { lista, recarregar } = useLista<AvisoMinDB>(() => listarAvisosMin(slug));
   const [form, setForm] = useState({ titulo: "", texto: "" });
   const [editandoId, setEditandoId] = useState<string | null>(null);
 
-  const salvar = (ev: React.FormEvent) => {
+  const salvar = async (ev: React.FormEvent) => {
     ev.preventDefault();
-    if (!form.titulo.trim() || !form.texto.trim()) return;
-    if (editandoId) {
-      setLista((l) =>
-        l.map((a) => (a.id === editandoId ? { ...a, titulo: form.titulo, texto: form.texto } : a)),
-      );
-    } else {
-      setLista((l) => [
-        {
-          id: `a${Date.now()}`,
-          titulo: form.titulo.trim(),
-          texto: form.texto.trim(),
-          autor,
-          data: new Date().toLocaleDateString("pt-BR"),
-          fixado: false,
-        },
-        ...l,
-      ]);
-    }
+    if (!form.titulo.trim()) return;
+    const ok = await salvarAvisoMin(editandoId, {
+      ministerio_slug: slug,
+      titulo: form.titulo.trim(),
+      texto: form.texto.trim(),
+      ...(editandoId
+        ? {}
+        : { autor_id: perfil?.id ?? null, autor_nome: perfil?.nome ?? "Liderança" }),
+    });
+    if (!ok) return;
     setForm({ titulo: "", texto: "" });
     setEditandoId(null);
+    await recarregar();
   };
 
   return (
     <div className="space-y-3">
-      {podePublicar ? (
+      {lider ? (
         <form onSubmit={salvar} className="surface-card space-y-2 p-4">
           <h2 className="font-display text-lg">
             {editandoId ? "Editar aviso" : "Novo aviso do ministério"}
           </h2>
-          <input
-            value={form.titulo}
-            onChange={(ev) => setForm({ ...form, titulo: ev.target.value })}
-            placeholder="Título"
-            className="w-full rounded-xl border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
-          />
-          <textarea
-            value={form.texto}
-            onChange={(ev) => setForm({ ...form, texto: ev.target.value })}
-            rows={2}
-            placeholder="Mensagem"
-            className="w-full rounded-xl border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
-          />
+          <Campo label="Título" valor={form.titulo} onChange={(v) => setForm({ ...form, titulo: v })} />
+          <label className="block text-xs text-soft">
+            Mensagem
+            <textarea
+              rows={2}
+              value={form.texto}
+              onChange={(e) => setForm({ ...form, texto: e.target.value })}
+              className="mt-1 w-full rounded-xl border border-border bg-transparent px-3 py-2 text-sm text-foreground"
+            />
+          </label>
           <div className="flex gap-2">
             <button className="flex-1 rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground">
               {editandoId ? "Salvar" : "Publicar"}
@@ -667,7 +745,7 @@ function AvisosView({ c }: { c: MinisterioConteudo }) {
             {editandoId ? (
               <button
                 type="button"
-                onClick={async () => {
+                onClick={() => {
                   setEditandoId(null);
                   setForm({ titulo: "", texto: "" });
                 }}
@@ -679,7 +757,11 @@ function AvisosView({ c }: { c: MinisterioConteudo }) {
           </div>
         </form>
       ) : null}
-      {lista.map((a) => (
+
+      {lista === null ? <Carregando /> : null}
+      {lista?.length === 0 ? <Vazio texto="Nenhum aviso publicado." /> : null}
+
+      {(lista ?? []).map((a) => (
         <article key={a.id} className={`surface-card p-4 ${a.fixado ? "border-primary/50" : ""}`}>
           {a.fixado ? (
             <p className="flex items-center gap-1.5 text-xs font-semibold text-primary">
@@ -689,12 +771,12 @@ function AvisosView({ c }: { c: MinisterioConteudo }) {
           <h2 className="font-display text-lg">{a.titulo}</h2>
           <p className="mt-1 text-sm">{a.texto}</p>
           <p className="mt-2 text-xs text-soft">
-            {a.autor} · {a.data}
+            {a.autor_nome} · {formatarData(a.created_at)}
           </p>
-          {podePublicar ? (
+          {lider ? (
             <div className="mt-3 flex flex-wrap gap-2 border-t border-border pt-3">
               <AcaoBtn
-                onClick={async () => {
+                onClick={() => {
                   setEditandoId(a.id);
                   setForm({ titulo: a.titulo, texto: a.texto });
                 }}
@@ -702,17 +784,17 @@ function AvisosView({ c }: { c: MinisterioConteudo }) {
                 <Pencil className="size-3.5" /> Editar
               </AcaoBtn>
               <AcaoBtn
-                onClick={() =>
-                  setLista((l) => l.map((x) => (x.id === a.id ? { ...x, fixado: !x.fixado } : x)))
-                }
+                onClick={async () => {
+                  if (await salvarAvisoMin(a.id, { fixado: !a.fixado })) await recarregar();
+                }}
               >
                 <Pin className="size-3.5" /> {a.fixado ? "Desafixar" : "Fixar"}
               </AcaoBtn>
               <AcaoBtn
                 perigo
                 onClick={async () => {
-                  if (await appConfirm("Excluir este aviso?"))
-                    setLista((l) => l.filter((x) => x.id !== a.id));
+                  if (!(await appConfirm("Excluir este aviso?"))) return;
+                  if (await excluirAvisoMin(a.id)) await recarregar();
                 }}
               >
                 <Trash2 className="size-3.5" /> Excluir
@@ -721,11 +803,11 @@ function AvisosView({ c }: { c: MinisterioConteudo }) {
           ) : null}
         </article>
       ))}
-      {lista.length === 0 ? <p className="text-sm text-soft">Nenhum aviso publicado.</p> : null}
     </div>
   );
 }
-/* ---------- Estudo de Jovens (mesma estrutura dos Estudos Gerais) ---------- */
+
+/* ---------- Estudo de Jovens (ordem dos livros da Bíblia) ---------- */
 function EstudoView({ c }: { c: MinisterioConteudo }) {
   const { perfil, permissao } = usePerfil();
   const navigate = useNavigate();
@@ -737,18 +819,24 @@ function EstudoView({ c }: { c: MinisterioConteudo }) {
   const [busca, setBusca] = useState("");
   const [criando, setCriando] = useState(false);
   const [salvando, setSalvando] = useState(false);
-  const [form, setForm] = useState({ titulo: "", subtitulo: "", conteudo: "" });
+  const [form, setForm] = useState({ titulo: "", subtitulo: "", livro: "", conteudo: "" });
 
   useEffect(() => {
     void (async () => setLista(await listarEstudos("jovens")))();
   }, []);
 
-  const filtrados = (lista ?? []).filter((e) =>
-    [e.titulo, e.subtitulo, textoPuro(e.conteudo_html)]
-      .join(" ")
-      .toLowerCase()
-      .includes(busca.toLowerCase()),
-  );
+  const filtrados = (lista ?? [])
+    .filter((e) =>
+      [e.titulo, e.subtitulo, e.livro_biblico, textoPuro(e.conteudo_html)]
+        .join(" ")
+        .toLowerCase()
+        .includes(busca.toLowerCase()),
+    )
+    .sort(
+      (a, b) =>
+        (a.ordem_livro ?? 999) - (b.ordem_livro ?? 999) ||
+        a.titulo.localeCompare(b.titulo, "pt-BR"),
+    );
 
   const salvar = async () => {
     if (!form.titulo.trim() || !perfil) return;
@@ -759,6 +847,8 @@ function EstudoView({ c }: { c: MinisterioConteudo }) {
         categoria: "jovens",
         titulo: form.titulo.trim(),
         subtitulo: form.subtitulo.trim(),
+        livro_biblico: form.livro.trim(),
+        ordem_livro: ordemDoLivro(form.livro),
         conteudo_html: form.conteudo,
         autor_id: perfil.id,
         autor_nome: perfil.nome,
@@ -778,7 +868,7 @@ function EstudoView({ c }: { c: MinisterioConteudo }) {
         <Input
           value={busca}
           onChange={(e) => setBusca(e.target.value)}
-          placeholder="Buscar por título, tema ou palavra-chave"
+          placeholder="Buscar por título, livro ou palavra-chave"
           className="h-12 bg-surface pl-9"
         />
       </div>
@@ -787,7 +877,7 @@ function EstudoView({ c }: { c: MinisterioConteudo }) {
         <button
           type="button"
           onClick={() => {
-            setForm({ titulo: "", subtitulo: "", conteudo: "" });
+            setForm({ titulo: "", subtitulo: "", livro: "", conteudo: "" });
             setCriando(true);
           }}
           className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3.5 text-sm font-bold text-primary-foreground active:scale-95"
@@ -797,13 +887,7 @@ function EstudoView({ c }: { c: MinisterioConteudo }) {
       ) : null}
 
       {lista === null ? (
-        [0, 1, 2].map((i) => (
-          <div key={i} className="surface-card space-y-2.5 p-4">
-            <Skeleton className="h-3 w-20" />
-            <Skeleton className="h-5 w-3/4" />
-            <Skeleton className="h-4 w-2/3" />
-          </div>
-        ))
+        <Carregando />
       ) : filtrados.length ? (
         filtrados.map((e) => (
           <Link
@@ -813,7 +897,7 @@ function EstudoView({ c }: { c: MinisterioConteudo }) {
             className="surface-card block p-4 active:scale-[0.99]"
           >
             <span className="inline-block rounded-full bg-primary/15 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-primary">
-              Estudo de Jovens
+              {e.livro_biblico || "Estudo de Jovens"}
             </span>
             <h2 className="mt-2 font-display text-lg leading-snug">{e.titulo}</h2>
             {e.subtitulo ? <p className="mt-0.5 text-sm text-soft">{e.subtitulo}</p> : null}
@@ -863,6 +947,21 @@ function EstudoView({ c }: { c: MinisterioConteudo }) {
               placeholder="Subtítulo (opcional)"
               className="h-12 bg-surface"
             />
+            <label className="block text-xs text-soft">
+              Livro da Bíblia — define a ordem da lista
+              <input
+                list="livros-biblia"
+                value={form.livro}
+                onChange={(e) => setForm({ ...form, livro: e.target.value })}
+                placeholder="Ex.: Gênesis"
+                className="mt-1 h-12 w-full rounded-xl border border-border bg-surface px-3 text-sm text-foreground"
+              />
+              <datalist id="livros-biblia">
+                {LIVROS_BIBLIA.map((l) => (
+                  <option key={l} value={l} />
+                ))}
+              </datalist>
+            </label>
             <RichTextEditor
               valor={form.conteudo}
               onChange={(html) => setForm((f) => ({ ...f, conteudo: html }))}
@@ -876,96 +975,78 @@ function EstudoView({ c }: { c: MinisterioConteudo }) {
   );
 }
 
-/* ---------- Agenda ---------- */
+/* ---------- Agenda do ministério ---------- */
 function AgendaView({ c }: { c: MinisterioConteudo }) {
-  const { permissao } = usePerfil();
-  const lider = podeAdministrarMinisterio(permissao, c.slug as SlugMinisterio);
-  const [eventos, setEventos] = useState(c.agenda ?? []);
-  const [form, setForm] = useState<{ titulo: string; tipo: "Culto" | "Ensaio" | "Evento"; data: string; hora: string }>({ titulo: "", tipo: "Ensaio", data: "", hora: "" });
+  const { perfil, lider, slug } = useMinisterio(c);
+  const { lista, recarregar } = useLista<EventoMinDB>(() => listarAgendaMin(slug));
   const [formAberto, setFormAberto] = useState(false);
   const [editandoId, setEditandoId] = useState<string | null>(null);
+  const [form, setForm] = useState({ titulo: "", tipo: "Ensaio", data: "", hora: "", presencas: "" });
 
-  const toggle = (idEvento: string, nome: string) =>
-    setEventos((evs) =>
-      evs.map((e) =>
-        e.id === idEvento
-          ? {
-              ...e,
-              presencas: e.presencas.map((p) =>
-                p.nome === nome ? { ...p, presente: !p.presente } : p,
-              ),
-            }
-          : e,
-      ),
+  const salvar = async (ev: React.FormEvent) => {
+    ev.preventDefault();
+    if (!form.titulo.trim()) return;
+    const nomes = form.presencas.split(",").map((n) => n.trim()).filter(Boolean);
+    const ok = await salvarEventoMin(editandoId, {
+      ministerio_slug: slug,
+      titulo: form.titulo.trim(),
+      tipo: form.tipo,
+      data: form.data || null,
+      hora: form.hora,
+      ...(nomes.length ? { presencas: nomes.map((nome) => ({ nome, presente: false })) } : {}),
+      ...(editandoId
+        ? {}
+        : { autor_id: perfil?.id ?? null, autor_nome: perfil?.nome ?? "Liderança" }),
+    });
+    if (!ok) return;
+    setForm({ titulo: "", tipo: "Ensaio", data: "", hora: "", presencas: "" });
+    setEditandoId(null);
+    setFormAberto(false);
+    await recarregar();
+  };
+
+  const alternarPresenca = async (e: EventoMinDB, nome: string) => {
+    const presencas = e.presencas.map((p) =>
+      p.nome === nome ? { ...p, presente: !p.presente } : p,
     );
-
-  const nomes = Array.from(new Set(eventos.flatMap((e) => e.presencas.map((p) => p.nome))));
-  const pendentes = nomes.filter((n) => {
-    const faltas = eventos.map((e) => e.presencas.find((p) => p.nome === n)?.presente);
-    for (let i = 0; i < faltas.length - 1; i++) {
-      if (faltas[i] === false && faltas[i + 1] === false) return true;
-    }
-    return false;
-  });
+    if (await salvarEventoMin(e.id, { presencas })) await recarregar();
+  };
 
   return (
     <div className="space-y-4">
-      {c.slug === "jovens" ? (
-        <div className="surface-card border-primary/50 p-4">
-          <p className="text-xs font-semibold text-primary">⚠️ Regra de frequência</p>
-          <p className="mt-1 text-sm">2 faltas seguidas = pendente / pontuado.</p>
-          <p className="mt-2 text-xs text-soft">
-            {pendentes.length ? `Pendentes: ${pendentes.join(", ")}` : "Nenhum pendente este mês."}
-          </p>
-        </div>
-      ) : null}
-
       {lider ? (
         formAberto ? (
-          <form
-            onSubmit={(ev) => {
-              ev.preventDefault();
-              if (!form.titulo.trim()) return;
-              if (editandoId) {
-                setEventos((evs) =>
-                  evs.map((e) => (e.id === editandoId ? { ...e, ...form } : e)),
-                );
-              } else {
-                setEventos((evs) => [
-                  ...evs,
-                  { id: `ev${Date.now()}`, ...form, presencas: [], louvoresDoDia: [] },
-                ]);
-              }
-              setForm({ titulo: "", tipo: "Ensaio", data: "", hora: "" });
-              setEditandoId(null);
-              setFormAberto(false);
-            }}
-            className="surface-card space-y-2 p-4"
-          >
+          <form onSubmit={salvar} className="surface-card space-y-2 p-4">
             <h3 className="font-display text-lg">{editandoId ? "Editar evento" : "Novo evento"}</h3>
-            {(
-              [
-                ["titulo", "Título"],
-                ["tipo", "Tipo"],
-                ["data", "Data"],
-                ["hora", "Hora"],
-              ] as const
-            ).map(([campo, label]) => (
-              <input
-                key={campo}
-                value={form[campo]}
-                onChange={(ev) => setForm({ ...form, [campo]: ev.target.value as never })}
-                placeholder={label}
-                className="w-full rounded-xl border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
-              />
-            ))}
+            <Campo label="Título" valor={form.titulo} onChange={(v) => setForm({ ...form, titulo: v })} />
+            <label className="block text-xs text-soft">
+              Tipo
+              <select
+                value={form.tipo}
+                onChange={(e) => setForm({ ...form, tipo: e.target.value })}
+                className="mt-1 w-full rounded-xl border border-border bg-transparent px-3 py-2 text-sm text-foreground"
+              >
+                {["Ensaio", "Culto", "Evento"].map((t) => (
+                  <option key={t} value={t}>
+                    {t}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <Campo label="Data" tipo="date" valor={form.data} onChange={(v) => setForm({ ...form, data: v })} />
+            <Campo label="Hora" tipo="time" valor={form.hora} onChange={(v) => setForm({ ...form, hora: v })} />
+            <Campo
+              label="Lista de presença (nomes separados por vírgula)"
+              valor={form.presencas}
+              onChange={(v) => setForm({ ...form, presencas: v })}
+            />
             <div className="flex gap-2">
               <button className="flex-1 rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground">
                 Salvar
               </button>
               <button
                 type="button"
-                onClick={async () => {
+                onClick={() => {
                   setFormAberto(false);
                   setEditandoId(null);
                 }}
@@ -985,22 +1066,24 @@ function AgendaView({ c }: { c: MinisterioConteudo }) {
         )
       ) : null}
 
-      {eventos.map((e) => (
+      {lista === null ? <Carregando /> : null}
+      {lista?.length === 0 ? <Vazio texto="Nenhum evento na agenda do ministério." /> : null}
 
+      {(lista ?? []).map((e) => (
         <div key={e.id} className="surface-card p-4">
           <div className="flex items-baseline justify-between">
             <h2 className="font-display text-lg">{e.titulo}</h2>
             <span className="text-xs font-semibold text-primary">{e.tipo}</span>
           </div>
           <p className="text-xs text-soft">
-            {e.data} · {e.hora}
+            {e.data ? isoParaBR(e.data) : "Sem data"} {e.hora ? `· ${e.hora}` : ""}
           </p>
 
-          {e.louvoresDoDia?.length ? (
+          {e.louvores.length ? (
             <div className="mt-3 rounded-xl border border-border p-3">
               <p className="text-xs font-semibold text-primary">🎵 Louvores do dia</p>
               <ul className="mt-1 space-y-1 text-sm">
-                {e.louvoresDoDia.map((l) => (
+                {e.louvores.map((l) => (
                   <li key={l.titulo} className="flex justify-between gap-2">
                     <span>{l.titulo}</span>
                     <span className="text-xs text-soft">
@@ -1012,31 +1095,42 @@ function AgendaView({ c }: { c: MinisterioConteudo }) {
             </div>
           ) : null}
 
-          <p className="mt-3 text-xs font-semibold text-soft">Lista de presença</p>
-          <ul className="mt-1 space-y-1.5">
-            {e.presencas.map((p) => (
-              <li key={p.nome} className="flex items-center justify-between gap-2">
-                <span className="text-sm">{p.nome}</span>
-                <button
-                  onClick={() => toggle(e.id, p.nome)}
-                  className={`rounded-lg px-2.5 py-1 text-xs font-semibold ${
-                    p.presente
-                      ? "bg-primary text-primary-foreground"
-                      : "border border-border text-soft"
-                  }`}
-                >
-                  {p.presente ? "Presente" : "Ausente"}
-                </button>
-              </li>
-            ))}
-          </ul>
+          {e.presencas.length ? (
+            <>
+              <p className="mt-3 text-xs font-semibold text-soft">Lista de presença</p>
+              <ul className="mt-1 space-y-1.5">
+                {e.presencas.map((p) => (
+                  <li key={p.nome} className="flex items-center justify-between gap-2">
+                    <span className="text-sm">{p.nome}</span>
+                    <button
+                      onClick={() => void alternarPresenca(e, p.nome)}
+                      className={`rounded-lg px-2.5 py-1 text-xs font-semibold ${
+                        p.presente
+                          ? "bg-primary text-primary-foreground"
+                          : "border border-border text-soft"
+                      }`}
+                    >
+                      {p.presente ? "Presente" : "Ausente"}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </>
+          ) : null}
+
           {lider ? (
             <div className="mt-3 flex gap-2 border-t border-border pt-3">
               <AcaoBtn
-                onClick={async () => {
+                onClick={() => {
                   setEditandoId(e.id);
                   setFormAberto(true);
-                  setForm({ titulo: e.titulo, tipo: e.tipo, data: e.data, hora: e.hora });
+                  setForm({
+                    titulo: e.titulo,
+                    tipo: e.tipo,
+                    data: e.data ?? "",
+                    hora: e.hora,
+                    presencas: e.presencas.map((p) => p.nome).join(", "),
+                  });
                 }}
               >
                 <Pencil className="size-3.5" /> Editar
@@ -1044,8 +1138,8 @@ function AgendaView({ c }: { c: MinisterioConteudo }) {
               <AcaoBtn
                 perigo
                 onClick={async () => {
-                  if (await appConfirm(`Excluir “${e.titulo}”?`))
-                    setEventos((evs) => evs.filter((x) => x.id !== e.id));
+                  if (!(await appConfirm(`Excluir “${e.titulo}”?`))) return;
+                  if (await excluirEventoMin(e.id)) await recarregar();
                 }}
               >
                 <Trash2 className="size-3.5" /> Excluir
@@ -1053,7 +1147,6 @@ function AgendaView({ c }: { c: MinisterioConteudo }) {
             </div>
           ) : null}
         </div>
-
       ))}
     </div>
   );
@@ -1061,66 +1154,55 @@ function AgendaView({ c }: { c: MinisterioConteudo }) {
 
 /* ---------- Visitas (só Irmãs) ---------- */
 function VisitasView({ c }: { c: MinisterioConteudo }) {
-  const { perfil, permissao } = usePerfil();
-  const nome = perfil?.nome ?? usuarioAtual.nome;
-  const lider = podeAdministrarMinisterio(permissao, c.slug as SlugMinisterio);
-  const [visitas, setVisitas] = useState(c.visitas ?? []);
+  const { perfil, lider, slug } = useMinisterio(c);
+  const { lista, recarregar } = useLista<VisitaDB>(() => listarVisitas(slug));
   const [form, setForm] = useState({ nome: "", endereco: "", data: "", hora: "", irmas: "" });
   const [editandoId, setEditandoId] = useState<string | null>(null);
 
-  const agendadas = visitas.filter((v) => !v.realizada);
-  const historico = visitas.filter((v) => v.realizada);
+  const agendadas = (lista ?? []).filter((v) => !v.realizada);
+  const historico = (lista ?? []).filter((v) => v.realizada);
+
+  const salvar = async (ev: React.FormEvent) => {
+    ev.preventDefault();
+    if (!form.nome.trim() || !form.data) return;
+    const ok = await salvarVisita(editandoId, {
+      ministerio_slug: slug,
+      nome: form.nome.trim(),
+      endereco: form.endereco.trim(),
+      data: form.data,
+      hora: form.hora,
+      irmas: form.irmas
+        ? form.irmas.split(",").map((s) => s.trim()).filter(Boolean)
+        : [perfil?.nome ?? "Irmãs"],
+      ...(editandoId
+        ? {}
+        : { autor_id: perfil?.id ?? null, autor_nome: perfil?.nome ?? "Irmãs" }),
+    });
+    if (!ok) return;
+    setForm({ nome: "", endereco: "", data: "", hora: "", irmas: "" });
+    setEditandoId(null);
+    await recarregar();
+  };
 
   return (
     <div className="space-y-4">
-      <form
-        className="surface-card space-y-2 p-4"
-        onSubmit={(ev) => {
-          ev.preventDefault();
-          if (!form.nome.trim() || !form.data) return;
-          const dados = {
-            nome: form.nome,
-            endereco: form.endereco,
-            data: form.data,
-            hora: form.hora || "—",
-            irmas: form.irmas ? form.irmas.split(",").map((s) => s.trim()) : [nome],
-          };
-          if (editandoId) {
-            setVisitas((v) => v.map((x) => (x.id === editandoId ? { ...x, ...dados } : x)));
-            setEditandoId(null);
-          } else {
-            setVisitas((v) => [...v, { id: `v${Date.now()}`, ...dados, realizada: false }]);
-          }
-          setForm({ nome: "", endereco: "", data: "", hora: "", irmas: "" });
-        }}
-      >
-        <h2 className="font-display text-lg">
-          {editandoId ? "Editar visita" : "Agendar visita"}
-        </h2>
-
-        {(
-          [
-            ["nome", "Nome da pessoa a visitar", "text"],
-            ["endereco", "Endereço", "text"],
-            ["data", "Data", "date"],
-            ["hora", "Horário", "time"],
-            ["irmas", "Irmãs escaladas (separe por vírgula)", "text"],
-          ] as const
-        ).map(([campo, label, tipo]) => (
-          <label key={campo} className="block">
-            <span className="text-xs text-soft">{label}</span>
-            <input
-              type={tipo}
-              value={form[campo]}
-              onChange={(ev) => setForm({ ...form, [campo]: ev.target.value })}
-              className="mt-1 w-full rounded-xl border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
-            />
-          </label>
-        ))}
+      <form className="surface-card space-y-2 p-4" onSubmit={salvar}>
+        <h2 className="font-display text-lg">{editandoId ? "Editar visita" : "Agendar visita"}</h2>
+        <Campo label="Nome da pessoa a visitar" valor={form.nome} onChange={(v) => setForm({ ...form, nome: v })} />
+        <Campo label="Endereço" valor={form.endereco} onChange={(v) => setForm({ ...form, endereco: v })} />
+        <Campo label="Data" tipo="date" valor={form.data} onChange={(v) => setForm({ ...form, data: v })} />
+        <Campo label="Horário" tipo="time" valor={form.hora} onChange={(v) => setForm({ ...form, hora: v })} />
+        <Campo
+          label="Irmãs escaladas (separe por vírgula)"
+          valor={form.irmas}
+          onChange={(v) => setForm({ ...form, irmas: v })}
+        />
         <button className="w-full rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground">
-          Agendar
+          {editandoId ? "Salvar alteração" : "Agendar"}
         </button>
       </form>
+
+      {lista === null ? <Carregando /> : null}
 
       <section>
         <h2 className="mb-2 font-display text-lg">Próximas visitas</h2>
@@ -1130,17 +1212,15 @@ function VisitasView({ c }: { c: MinisterioConteudo }) {
               <div className="flex items-baseline justify-between gap-2">
                 <h3 className="font-semibold">{v.nome}</h3>
                 <span className="text-xs font-semibold text-primary">
-                  {v.data} · {v.hora}
+                  {v.data ? isoParaBR(v.data) : "Sem data"} · {v.hora || "—"}
                 </span>
               </div>
               <p className="text-xs text-soft">{v.endereco}</p>
               <p className="mt-2 text-xs">Irmãs: {v.irmas.join(" e ")}</p>
               <button
-                onClick={() =>
-                  setVisitas((all) =>
-                    all.map((x) => (x.id === v.id ? { ...x, realizada: true } : x)),
-                  )
-                }
+                onClick={async () => {
+                  if (await salvarVisita(v.id, { realizada: true })) await recarregar();
+                }}
                 className="mt-3 rounded-xl border border-border px-3 py-1.5 text-xs font-semibold"
               >
                 Marcar como realizada
@@ -1148,12 +1228,12 @@ function VisitasView({ c }: { c: MinisterioConteudo }) {
               {lider ? (
                 <div className="mt-3 flex gap-2 border-t border-border pt-3">
                   <AcaoBtn
-                    onClick={async () => {
+                    onClick={() => {
                       setEditandoId(v.id);
                       setForm({
                         nome: v.nome,
                         endereco: v.endereco,
-                        data: v.data,
+                        data: v.data ?? "",
                         hora: v.hora,
                         irmas: v.irmas.join(", "),
                       });
@@ -1164,8 +1244,8 @@ function VisitasView({ c }: { c: MinisterioConteudo }) {
                   <AcaoBtn
                     perigo
                     onClick={async () => {
-                      if (await appConfirm(`Excluir a visita a ${v.nome}?`))
-                        setVisitas((all) => all.filter((x) => x.id !== v.id));
+                      if (!(await appConfirm(`Excluir a visita a ${v.nome}?`))) return;
+                      if (await excluirVisita(v.id)) await recarregar();
                     }}
                   >
                     <Trash2 className="size-3.5" /> Excluir
@@ -1173,10 +1253,9 @@ function VisitasView({ c }: { c: MinisterioConteudo }) {
                 </div>
               ) : null}
             </div>
-
           ))}
-          {agendadas.length === 0 ? (
-            <p className="text-sm text-soft">Nenhuma visita agendada.</p>
+          {lista !== null && agendadas.length === 0 ? (
+            <Vazio texto="Nenhuma visita agendada." />
           ) : null}
         </div>
       </section>
@@ -1188,12 +1267,12 @@ function VisitasView({ c }: { c: MinisterioConteudo }) {
             <div key={v.id} className="surface-card p-3 text-sm">
               <p className="font-semibold">{v.nome}</p>
               <p className="text-xs text-soft">
-                {v.data} · {v.irmas.join(" e ")}
+                {v.data ? isoParaBR(v.data) : ""} · {v.irmas.join(" e ")}
               </p>
             </div>
           ))}
-          {historico.length === 0 ? (
-            <p className="text-sm text-soft">Ainda sem visitas realizadas.</p>
+          {lista !== null && historico.length === 0 ? (
+            <Vazio texto="Ainda sem visitas realizadas." />
           ) : null}
         </div>
       </section>
@@ -1201,16 +1280,41 @@ function VisitasView({ c }: { c: MinisterioConteudo }) {
   );
 }
 
-/* ---------- Cifras (só Louvor) ---------- */
+/* ---------- Cifras ---------- */
 function CifrasView({ c }: { c: MinisterioConteudo }) {
-  const { permissao } = usePerfil();
-  const lider = podeAdministrarMinisterio(permissao, c.slug as SlugMinisterio);
-  const [cifras, setCifras] = useState(c.cifras ?? []);
+  const { perfil, lider, slug } = useMinisterio(c);
+  const { lista, recarregar } = useLista<CifraDB>(() => listarCifras(slug));
   const [abertaId, setAbertaId] = useState<string | null>(null);
   const [formAberto, setFormAberto] = useState(false);
-  const [form, setForm] = useState({ titulo: "", artista: "", tom: "", corpo: "" });
   const [editandoId, setEditandoId] = useState<string | null>(null);
-  const aberta = cifras.find((x) => x.id === abertaId);
+  const [form, setForm] = useState({ titulo: "", artista: "", tom: "", corpo: "" });
+
+  const aberta = (lista ?? []).find((x) => x.id === abertaId);
+
+  const salvar = async (ev: React.FormEvent) => {
+    ev.preventDefault();
+    if (!form.titulo.trim()) return;
+    const ok = await salvarCifra(editandoId, {
+      ministerio_slug: slug,
+      titulo: form.titulo.trim(),
+      artista: form.artista.trim(),
+      tom: form.tom.trim() || "C",
+      linhas: form.corpo.split("\n").map((linha) => {
+        const [acordes, ...resto] = linha.split("|");
+        return resto.length
+          ? { acordes: (acordes ?? "").trim(), letra: resto.join("|").trim() }
+          : { acordes: "", letra: linha };
+      }),
+      ...(editandoId
+        ? {}
+        : { autor_id: perfil?.id ?? null, autor_nome: perfil?.nome ?? "Liderança" }),
+    });
+    if (!ok) return;
+    setForm({ titulo: "", artista: "", tom: "", corpo: "" });
+    setEditandoId(null);
+    setFormAberto(false);
+    await recarregar();
+  };
 
   if (aberta) {
     return (
@@ -1234,64 +1338,27 @@ function CifrasView({ c }: { c: MinisterioConteudo }) {
 
       {lider ? (
         formAberto ? (
-          <form
-            onSubmit={(ev) => {
-              ev.preventDefault();
-              if (!form.titulo.trim()) return;
-              const dados = {
-                titulo: form.titulo.trim(),
-                artista: form.artista.trim(),
-                tom: form.tom.trim() || "C",
-                linhas: form.corpo.split("\n").map((linha) => {
-                  const [acordes, ...resto] = linha.split("|");
-                  return resto.length
-                    ? { acordes: (acordes ?? "").trim(), letra: resto.join("|").trim() }
-                    : { acordes: "", letra: linha };
-                }),
-              };
-              if (editandoId) {
-                setCifras((all) =>
-                  all.map((x) => (x.id === editandoId ? { ...x, ...dados } : x)),
-                );
-                setEditandoId(null);
-              } else {
-                setCifras((all) => [...all, { id: `cf${Date.now()}`, ...dados }]);
-              }
-              setForm({ titulo: "", artista: "", tom: "", corpo: "" });
-              setFormAberto(false);
-            }}
-            className="surface-card space-y-2 p-4"
-          >
+          <form onSubmit={salvar} className="surface-card space-y-2 p-4">
             <h3 className="font-display text-lg">{editandoId ? "Editar cifra" : "Nova cifra"}</h3>
-            {(
-              [
-                ["titulo", "Título"],
-                ["artista", "Artista"],
-                ["tom", "Tom"],
-              ] as const
-            ).map(([campo, label]) => (
-              <input
-                key={campo}
-                value={form[campo]}
-                onChange={(ev) => setForm({ ...form, [campo]: ev.target.value })}
-                placeholder={label}
-                className="w-full rounded-xl border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
+            <Campo label="Título" valor={form.titulo} onChange={(v) => setForm({ ...form, titulo: v })} />
+            <Campo label="Artista" valor={form.artista} onChange={(v) => setForm({ ...form, artista: v })} />
+            <Campo label="Tom" valor={form.tom} onChange={(v) => setForm({ ...form, tom: v })} />
+            <label className="block text-xs text-soft">
+              Uma linha por verso. Use: acordes | letra
+              <textarea
+                rows={6}
+                value={form.corpo}
+                onChange={(e) => setForm({ ...form, corpo: e.target.value })}
+                className="mt-1 w-full rounded-xl border border-border bg-transparent px-3 py-2 text-sm text-foreground"
               />
-            ))}
-            <textarea
-              value={form.corpo}
-              onChange={(ev) => setForm({ ...form, corpo: ev.target.value })}
-              rows={5}
-              placeholder="Uma linha por verso. Use: acordes | letra"
-              className="w-full rounded-xl border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
-            />
+            </label>
             <div className="flex gap-2">
               <button className="flex-1 rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground">
                 Salvar
               </button>
               <button
                 type="button"
-                onClick={async () => {
+                onClick={() => {
                   setFormAberto(false);
                   setEditandoId(null);
                 }}
@@ -1311,7 +1378,10 @@ function CifrasView({ c }: { c: MinisterioConteudo }) {
         )
       ) : null}
 
-      {cifras.map((cf) => (
+      {lista === null ? <Carregando /> : null}
+      {lista?.length === 0 ? <Vazio texto="Nenhuma cifra cadastrada." /> : null}
+
+      {(lista ?? []).map((cf) => (
         <div key={cf.id} className="surface-card p-4">
           <button
             onClick={() => setAbertaId(cf.id)}
@@ -1333,14 +1403,16 @@ function CifrasView({ c }: { c: MinisterioConteudo }) {
           {lider ? (
             <div className="mt-3 flex gap-2 border-t border-border pt-3">
               <AcaoBtn
-                onClick={async () => {
+                onClick={() => {
                   setEditandoId(cf.id);
                   setFormAberto(true);
                   setForm({
                     titulo: cf.titulo,
                     artista: cf.artista,
                     tom: cf.tom,
-                    corpo: cf.linhas.map((l) => (l.acordes ? `${l.acordes} | ${l.letra}` : l.letra)).join("\n"),
+                    corpo: cf.linhas
+                      .map((l) => (l.acordes ? `${l.acordes} | ${l.letra}` : l.letra))
+                      .join("\n"),
                   });
                 }}
               >
@@ -1349,8 +1421,8 @@ function CifrasView({ c }: { c: MinisterioConteudo }) {
               <AcaoBtn
                 perigo
                 onClick={async () => {
-                  if (await appConfirm(`Excluir “${cf.titulo}”?`))
-                    setCifras((all) => all.filter((x) => x.id !== cf.id));
+                  if (!(await appConfirm(`Excluir “${cf.titulo}”?`))) return;
+                  if (await excluirCifra(cf.id)) await recarregar();
                 }}
               >
                 <Trash2 className="size-3.5" /> Excluir
@@ -1359,8 +1431,6 @@ function CifrasView({ c }: { c: MinisterioConteudo }) {
           ) : null}
         </div>
       ))}
-      {cifras.length === 0 ? <p className="text-sm text-soft">Nenhuma cifra cadastrada.</p> : null}
-
     </div>
   );
 }
