@@ -103,6 +103,409 @@ export type Database = {
         }
         Relationships: []
       }
+      estudo_curiosidades: {
+        Row: {
+          conteudo: string
+          created_at: string
+          estudo_id: string
+          id: string
+          posicao: number
+          titulo: string
+        }
+        Insert: {
+          conteudo?: string
+          created_at?: string
+          estudo_id: string
+          id?: string
+          posicao?: number
+          titulo?: string
+        }
+        Update: {
+          conteudo?: string
+          created_at?: string
+          estudo_id?: string
+          id?: string
+          posicao?: number
+          titulo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estudo_curiosidades_estudo_id_fkey"
+            columns: ["estudo_id"]
+            isOneToOne: false
+            referencedRelation: "estudos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      estudo_denuncias: {
+        Row: {
+          alvo_id: string
+          alvo_tipo: string
+          autor_id: string
+          created_at: string
+          id: string
+          motivo: string
+        }
+        Insert: {
+          alvo_id: string
+          alvo_tipo: string
+          autor_id: string
+          created_at?: string
+          id?: string
+          motivo?: string
+        }
+        Update: {
+          alvo_id?: string
+          alvo_tipo?: string
+          autor_id?: string
+          created_at?: string
+          id?: string
+          motivo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estudo_denuncias_autor_id_fkey"
+            columns: ["autor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      estudo_moderacao_log: {
+        Row: {
+          acao: string
+          alvo_id: string
+          alvo_tipo: string
+          created_at: string
+          detalhe: string
+          id: string
+          moderador_id: string | null
+          moderador_nome: string
+        }
+        Insert: {
+          acao: string
+          alvo_id: string
+          alvo_tipo: string
+          created_at?: string
+          detalhe?: string
+          id?: string
+          moderador_id?: string | null
+          moderador_nome?: string
+        }
+        Update: {
+          acao?: string
+          alvo_id?: string
+          alvo_tipo?: string
+          created_at?: string
+          detalhe?: string
+          id?: string
+          moderador_id?: string | null
+          moderador_nome?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estudo_moderacao_log_moderador_id_fkey"
+            columns: ["moderador_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      estudo_pergunta_curtidas: {
+        Row: {
+          created_at: string
+          pergunta_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          pergunta_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          pergunta_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estudo_pergunta_curtidas_pergunta_id_fkey"
+            columns: ["pergunta_id"]
+            isOneToOne: false
+            referencedRelation: "estudo_perguntas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "estudo_pergunta_curtidas_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      estudo_perguntas: {
+        Row: {
+          autor_id: string
+          autor_nome: string
+          conteudo: string
+          created_at: string
+          estudo_id: string
+          id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          autor_id: string
+          autor_nome?: string
+          conteudo: string
+          created_at?: string
+          estudo_id: string
+          id?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          autor_id?: string
+          autor_nome?: string
+          conteudo?: string
+          created_at?: string
+          estudo_id?: string
+          id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estudo_perguntas_autor_id_fkey"
+            columns: ["autor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "estudo_perguntas_estudo_id_fkey"
+            columns: ["estudo_id"]
+            isOneToOne: false
+            referencedRelation: "estudos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      estudo_referencias: {
+        Row: {
+          capitulo: number
+          created_at: string
+          descricao: string
+          estudo_id: string
+          id: string
+          livro: string
+          posicao: number
+          versiculo_fim: number | null
+          versiculo_inicio: number
+        }
+        Insert: {
+          capitulo?: number
+          created_at?: string
+          descricao?: string
+          estudo_id: string
+          id?: string
+          livro?: string
+          posicao?: number
+          versiculo_fim?: number | null
+          versiculo_inicio?: number
+        }
+        Update: {
+          capitulo?: number
+          created_at?: string
+          descricao?: string
+          estudo_id?: string
+          id?: string
+          livro?: string
+          posicao?: number
+          versiculo_fim?: number | null
+          versiculo_inicio?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estudo_referencias_estudo_id_fkey"
+            columns: ["estudo_id"]
+            isOneToOne: false
+            referencedRelation: "estudos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      estudo_resposta_curtidas: {
+        Row: {
+          created_at: string
+          resposta_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          resposta_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          resposta_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estudo_resposta_curtidas_resposta_id_fkey"
+            columns: ["resposta_id"]
+            isOneToOne: false
+            referencedRelation: "estudo_respostas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "estudo_resposta_curtidas_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      estudo_respostas: {
+        Row: {
+          ajudou: boolean
+          autor_id: string
+          autor_nome: string
+          conteudo: string
+          created_at: string
+          id: string
+          oficial: boolean
+          pergunta_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          ajudou?: boolean
+          autor_id: string
+          autor_nome?: string
+          conteudo: string
+          created_at?: string
+          id?: string
+          oficial?: boolean
+          pergunta_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          ajudou?: boolean
+          autor_id?: string
+          autor_nome?: string
+          conteudo?: string
+          created_at?: string
+          id?: string
+          oficial?: boolean
+          pergunta_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estudo_respostas_autor_id_fkey"
+            columns: ["autor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "estudo_respostas_pergunta_id_fkey"
+            columns: ["pergunta_id"]
+            isOneToOne: false
+            referencedRelation: "estudo_perguntas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      estudo_salvos: {
+        Row: {
+          created_at: string
+          estudo_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          estudo_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          estudo_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estudo_salvos_estudo_id_fkey"
+            columns: ["estudo_id"]
+            isOneToOne: false
+            referencedRelation: "estudos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "estudo_salvos_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      estudos: {
+        Row: {
+          autor_id: string | null
+          autor_nome: string
+          categoria: string
+          conteudo_html: string
+          created_at: string
+          id: string
+          status: string
+          subtitulo: string
+          titulo: string
+          updated_at: string
+        }
+        Insert: {
+          autor_id?: string | null
+          autor_nome?: string
+          categoria?: string
+          conteudo_html?: string
+          created_at?: string
+          id?: string
+          status?: string
+          subtitulo?: string
+          titulo: string
+          updated_at?: string
+        }
+        Update: {
+          autor_id?: string | null
+          autor_nome?: string
+          categoria?: string
+          conteudo_html?: string
+          created_at?: string
+          id?: string
+          status?: string
+          subtitulo?: string
+          titulo?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estudos_autor_id_fkey"
+            columns: ["autor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       estudos_gerais: {
         Row: {
           autor_id: string | null
@@ -415,6 +818,14 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      pode_editar_estudo: {
+        Args: { _estudo_id: string; _user_id: string }
+        Returns: boolean
+      }
+      pode_gerir_estudos: {
+        Args: { _categoria: string; _user_id: string }
         Returns: boolean
       }
       promote_user: {
