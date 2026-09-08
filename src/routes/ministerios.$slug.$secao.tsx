@@ -1002,7 +1002,7 @@ function EstudoView({ c }: { c: MinisterioConteudo }) {
                     <Pencil className="size-3.5" /> Responder
                   </AcaoBtn>
                 ) : null}
-                {podeEditar || q.autor === nome ? (
+                {podeEditar ? (
                   <AcaoBtn
                     perigo
                     onClick={() => {
