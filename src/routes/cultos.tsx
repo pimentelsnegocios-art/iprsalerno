@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 
 import { AppShell, PageHeader } from "@/components/AppShell";
-import { useCultos } from "@/lib/agenda-cultos";
+import { dataCultoBR, useCultos } from "@/lib/agenda-cultos";
 
 export const Route = createFileRoute("/cultos")({
   ssr: false,
@@ -22,20 +22,21 @@ export const Route = createFileRoute("/cultos")({
 });
 
 function Cultos() {
-  const cultos = useCultos();
+  const { cultos, carregando } = useCultos();
 
   return (
     <AppShell>
       <PageHeader title="Cultos" subtitle="Programação da semana" />
       <div className="space-y-3 px-5 py-5">
-        {cultos.length === 0 ? (
+        {carregando ? <p className="text-sm text-soft">Carregando…</p> : null}
+        {!carregando && cultos.length === 0 ? (
           <p className="text-sm text-soft">Nenhum culto agendado no momento.</p>
         ) : null}
         {cultos.map((c) => (
           <Link
-            key={c.slug}
+            key={c.id}
             to="/culto/$dia"
-            params={{ dia: c.slug }}
+            params={{ dia: c.id }}
             className="surface-card block p-4"
           >
             <div className="flex items-baseline justify-between">
@@ -43,7 +44,7 @@ function Cultos() {
               <span className="font-semibold text-primary">{c.horario}</span>
             </div>
             <p className="mt-1 text-sm text-soft">
-              {c.data} · {c.tema}
+              {dataCultoBR(c)} · {c.tema}
             </p>
           </Link>
         ))}

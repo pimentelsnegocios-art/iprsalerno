@@ -18,7 +18,7 @@ import { AppShell } from "@/components/AppShell";
 import { useCultos } from "@/lib/agenda-cultos";
 import { useConfigIgreja } from "@/hooks/useConfigIgreja";
 import { usePerfil } from "@/hooks/usePerfil";
-import { useAppStore } from "@/lib/app-store";
+import { useAvisos, dataAvisoBR } from "@/lib/avisos-db";
 
 
 export const Route = createFileRoute("/")({
@@ -52,9 +52,9 @@ const botoes = [
 function Home() {
   const { perfil } = usePerfil();
   const { config } = useConfigIgreja();
-  const { avisos } = useAppStore();
-  const cultos = useCultos();
-  const aviso = avisos.find((a) => a.fixadoHome) ?? avisos[0];
+  const { avisos } = useAvisos();
+  const { cultos } = useCultos();
+  const aviso = avisos.find((a) => a.fixado_home) ?? avisos[0];
 
 
   return (
@@ -99,9 +99,9 @@ function Home() {
               <h2 className="mt-2 max-w-[80%] font-display text-2xl font-bold leading-snug text-white">
                 {aviso.titulo}
               </h2>
-              <p className="mt-1 max-w-[85%] text-sm text-white/90">{aviso.texto}</p>
+              <p className="mt-1 max-w-[85%] text-sm text-white/90">{aviso.descricao}</p>
               <p className="mt-2 text-xs font-medium text-white/90">
-                {aviso.autor} · {aviso.data} · toque para ver detalhes
+                {aviso.autor} · {dataAvisoBR(aviso)} · toque para ver detalhes
               </p>
             </>
           ) : (
@@ -144,7 +144,7 @@ function Home() {
               <li className="px-4 py-3.5 text-sm text-soft">Nenhum culto agendado.</li>
             ) : null}
             {cultos.map((c) => (
-              <li key={c.slug} className="flex items-center justify-between gap-3 px-4 py-3.5">
+              <li key={c.id} className="flex items-center justify-between gap-3 px-4 py-3.5">
                 <div>
                   <p className="text-sm font-medium uppercase tracking-wide">{c.dia}</p>
                   <p className="text-xs text-soft">{c.tema}</p>
