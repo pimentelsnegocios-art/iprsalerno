@@ -25,6 +25,7 @@ import {
 } from "recharts";
 
 import { AppShell, PageHeader } from "@/components/AppShell";
+import { usePixStore } from "@/lib/pix-store";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -88,7 +89,30 @@ function Caixa() {
   const { perfil, permissao, carregando } = usePerfil();
   const nomeResponsavel = perfil?.nome ?? "Tesouraria";
   const [editandoId, setEditandoId] = useState<string | null>(null);
-  const [itens, setItens] = useState<Lancamento[]>(iniciais);
+  const [manuais, setItens] = useState<Lancamento[]>(iniciais);
+  const { contribuicoes } = usePixStore();
+  const pendentesPix = contribuicoes.filter((c) => c.status === "pendente").length;
+  const itens = useMemo<Lancamento[]>(
+    () => [
+      ...manuais,
+      ...contribuicoes
+        .filter((c) => c.status === "confirmado")
+        .map((c) => ({
+          id: `pix-${c.id}`,
+          tipo: "entrada" as const,
+          categoria: c.tipo === "Dízimo" ? "Dízimo" : "Oferta",
+          descricao: `${c.tipo} PIX — ${c.usuarioNome}`,
+          valor: c.valor,
+          data: new Date(c.enviadoEm).toLocaleDateString("pt-BR"),
+          dataISO: c.enviadoEm.slice(0, 10),
+          responsavel: c.revisadoPor ?? "Tesouraria",
+          forma: "Pix" as const,
+          observacao: `Comprovante confirmado (${c.mesRef})`,
+          comprovante: c.comprovanteUrl,
+        })),
+    ],
+    [manuais, contribuicoes],
+  );
   const [mesesFechados, setMesesFechados] = useState<string[]>([]);
   const [montado, setMontado] = useState(false);
   useEffect(() => setMontado(true), []);
@@ -640,7 +664,7 @@ ${linhas
                 {i.tipo === "entrada" ? "+" : "-"}
                 {brl(i.valor)}
               </span>
-              <div className="flex shrink-0 flex-col gap-1">
+              <div className={`flex shrink-0 flex-col gap-1 ${i.id.startsWith("pix-") ? "hidden" : ""}`}>
                 <button
                   aria-label={`Editar ${i.descricao}`}
                   onClick={() => editar(i)}
