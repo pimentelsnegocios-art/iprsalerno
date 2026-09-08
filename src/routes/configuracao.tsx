@@ -48,7 +48,7 @@ function Configuracao() {
   if (carregandoPerfil || carregando) {
     return (
       <AppShell>
-        <PageHeader title="Configuração da Igreja" subtitle="Carregando…" back="/mais" />
+        <PageHeader title="Configuração da Igreja" subtitle="Carregando…" />
       </AppShell>
     );
   }
@@ -59,7 +59,8 @@ function Configuracao() {
         <PageHeader
           title="Configuração da Igreja"
           subtitle="Área restrita"
-          back="/mais"
+          back
+         
         />
         <div className="px-5 py-6">
           <div className="surface-card p-5 text-sm text-soft">
@@ -106,7 +107,7 @@ function Configuracao() {
       <PageHeader
         title="Configuração da Igreja"
         subtitle="Nome, CNPJ, endereço e chave PIX oficiais"
-        back="/mais"
+       
       />
       <div className="space-y-4 px-5 py-5">
         <div className="surface-card flex items-center gap-3 p-4 text-sm text-soft">
