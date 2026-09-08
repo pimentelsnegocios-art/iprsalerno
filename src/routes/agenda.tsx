@@ -31,10 +31,21 @@ export const Route = createFileRoute("/agenda")({
 function Agenda() {
   const { permissao } = usePerfil();
   const gestor = podeGerirAgenda(permissao);
-  const [itens, setItens] = useState(cultosIniciais);
+  const [itens, setItensState] = useState<Culto[]>(cultosIniciais);
   const [editando, setEditando] = useState<string | null>(null);
 
-  const atualizar = (slug: string, campos: Partial<(typeof cultosIniciais)[number]>) =>
+  useEffect(() => {
+    setItensState(carregarCultos());
+  }, []);
+
+  const setItens = (fn: (atual: Culto[]) => Culto[]) =>
+    setItensState((atual) => {
+      const proximo = fn(atual);
+      salvarCultos(proximo);
+      return proximo;
+    });
+
+  const atualizar = (slug: string, campos: Partial<Culto>) =>
     setItens((atual) => atual.map((c) => (c.slug === slug ? { ...c, ...campos } : c)));
 
   return (
