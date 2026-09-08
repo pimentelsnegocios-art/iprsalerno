@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { usePerfil } from "@/hooks/usePerfil";
 import { ehAdmin, ehSuperAdmin } from "@/lib/permissoes";
 
-export const Route = createFileRoute("/estudo")({
+export const Route = createFileRoute("/estudo/")({
   head: () => ({
     meta: [
       { title: "Estudos Bíblicos — IPR" },
