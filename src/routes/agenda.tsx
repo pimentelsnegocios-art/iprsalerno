@@ -6,7 +6,8 @@ import { toast } from "sonner";
 
 import { AppShell, PageHeader } from "@/components/AppShell";
 import { usePerfil } from "@/hooks/usePerfil";
-import { cultos as cultosIniciais } from "@/lib/church-data";
+import { carregarCultos, salvarCultos } from "@/lib/agenda-cultos";
+import { cultos as cultosIniciais, type Culto } from "@/lib/church-data";
 import { podeGerirAgenda } from "@/lib/permissoes";
 
 export const Route = createFileRoute("/agenda")({
