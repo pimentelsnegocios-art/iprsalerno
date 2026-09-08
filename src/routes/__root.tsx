@@ -8,6 +8,7 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
+import { AppDialogHost } from "@/components/ui/AppDialog";
 import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
