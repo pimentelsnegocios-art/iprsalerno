@@ -15,7 +15,7 @@ import {
 
 import { AniversariantesHoje } from "@/components/AniversariantesHoje";
 import { AppShell } from "@/components/AppShell";
-import { cultos } from "@/lib/church-data";
+import { useCultos } from "@/lib/agenda-cultos";
 import { useConfigIgreja } from "@/hooks/useConfigIgreja";
 import { usePerfil } from "@/hooks/usePerfil";
 import { useAppStore } from "@/lib/app-store";
