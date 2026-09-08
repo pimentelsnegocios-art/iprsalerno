@@ -721,11 +721,13 @@ function EstudoView({ c }: { c: MinisterioConteudo }) {
   const { perfil, permissao } = usePerfil();
   const nome = perfil?.nome ?? usuarioAtual.nome;
   const cargo = perfil?.cargo ?? "Membro";
-  const meses = c.estudo ?? [];
-  const [sel, setSel] = useState(meses[meses.length - 1]?.id);
+  const mesesBase = c.estudo ?? [];
+  const [mesesState, setMesesState] = useState(mesesBase);
+  const [sel, setSel] = useState(mesesBase[mesesBase.length - 1]?.id);
   const [pergunta, setPergunta] = useState("");
-  const [mural, setMural] = useState(meses.find((m) => m.id === sel)?.mural ?? []);
-  const mes = meses.find((m) => m.id === sel);
+  const [mural, setMural] = useState(mesesBase.find((m) => m.id === sel)?.mural ?? []);
+  const [editandoMes, setEditandoMes] = useState<{ id: string; resumo: string; curiosidades: string } | null>(null);
+  const mes = mesesState.find((m) => m.id === sel);
   const podeEditar =
     podeEditarEstudo(cargo) || podeAdministrarMinisterio(permissao, c.slug as SlugMinisterio);
 
