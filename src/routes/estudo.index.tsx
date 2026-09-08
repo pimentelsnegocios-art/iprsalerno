@@ -21,13 +21,13 @@ import {
 export const Route = createFileRoute("/estudo/")({
   head: () => ({
     meta: [
-      { title: "Estudos Bíblicos — IPRB Renovada" },
+      { title: "Estudos Gerais — IPRB Renovada" },
       {
         name: "description",
         content:
-          "Estudos bíblicos gerais e de jovens, com curiosidades, referências e mural de dúvidas da comunidade.",
+          "Estudos bíblicos para toda a igreja, com curiosidades, referências e mural de dúvidas da comunidade.",
       },
-      { property: "og:title", content: "Estudos Bíblicos — IPRB Renovada" },
+      { property: "og:title", content: "Estudos Gerais — IPRB Renovada" },
       {
         property: "og:description",
         content: "Leia, estude e participe das discussões bíblicas da igreja.",
