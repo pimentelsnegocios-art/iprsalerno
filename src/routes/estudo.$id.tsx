@@ -36,7 +36,7 @@ import {
   listarReferencias,
   ordenarPerguntas,
   ORDENS,
-  podeGerirEstudos,
+  podeGerirCategoria,
   registrarModeracao,
   rotuloReferencia,
   type Curiosidade,
@@ -79,10 +79,10 @@ function Avatar({ url, nome }: { url: string | null; nome: string }) {
 function LeituraEstudo() {
   const { id } = Route.useParams();
   const { perfil, permissao } = usePerfil();
-  const gestor = podeGerirEstudos(permissao);
+  const [estudo, setEstudo] = useState<Estudo | null>(null);
+  const gestor = podeGerirCategoria(permissao, estudo?.categoria ?? "geral");
   const meuId = perfil?.id ?? null;
 
-  const [estudo, setEstudo] = useState<Estudo | null>(null);
   const [curiosidades, setCuriosidades] = useState<Curiosidade[]>([]);
   const [referencias, setReferencias] = useState<Referencia[]>([]);
   const [perguntas, setPerguntas] = useState<Pergunta[]>([]);
