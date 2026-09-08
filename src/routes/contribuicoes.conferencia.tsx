@@ -6,7 +6,8 @@ import { AppShell, PageHeader } from "@/components/AppShell";
 import { usePerfil } from "@/hooks/usePerfil";
 import { podeVerCaixaPerfil } from "@/lib/permissoes";
 import { acoesPix, brlPix, rotuloMes, usePixStore, type Contribuicao } from "@/lib/pix-store";
-import { StatusBadge, VisualizadorComprovante } from "./contribuicoes.index";
+import { StatusBadge, VisualizadorComprovante } from "@/components/ContribuicaoUI";
+import { appPrompt } from "@/components/ui/AppDialog";
 
 export const Route = createFileRoute("/contribuicoes/conferencia")({
   ssr: false,
@@ -69,8 +70,8 @@ function Conferencia() {
     acoesPix.confirmar(c.id, perfil?.nome ?? "Liderança");
   }
 
-  function rejeitar(c: Contribuicao) {
-    const motivo = window.prompt("Motivo da rejeição (opcional):") ?? "";
+  async function rejeitar(c: Contribuicao) {
+    const motivo = (await appPrompt("Motivo da rejeição (opcional):")) ?? "";
     acoesPix.rejeitar(c.id, perfil?.nome ?? "Liderança", motivo.trim() || "Não informado");
   }
 
@@ -138,7 +139,7 @@ function Conferencia() {
                     </button>
                     <button
                       type="button"
-                      onClick={() => rejeitar(c)}
+                      onClick={() => void rejeitar(c)}
                       className="flex items-center justify-center gap-1.5 rounded-xl bg-red-600 px-3 py-2.5 text-xs font-semibold text-white"
                     >
                       <X className="size-4" /> Rejeitar
