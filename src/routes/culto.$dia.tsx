@@ -67,9 +67,7 @@ function CultoPage() {
             </ol>
           </div>
         ) : (
-          <p className="text-sm text-soft">
-            Culto de oração e doutrina — sem lista de louvores do dia.
-          </p>
+          <p className="text-sm text-soft">Sem lista de louvores do dia.</p>
         )}
       </div>
     </AppShell>
