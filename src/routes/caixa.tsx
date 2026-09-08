@@ -1,5 +1,5 @@
 import { appConfirm, appPrompt } from "@/components/ui/AppDialog";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowDownCircle,
@@ -25,6 +25,7 @@ import {
 } from "recharts";
 
 import { AppShell, PageHeader } from "@/components/AppShell";
+import { usePixStore } from "@/lib/pix-store";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -88,7 +89,30 @@ function Caixa() {
   const { perfil, permissao, carregando } = usePerfil();
   const nomeResponsavel = perfil?.nome ?? "Tesouraria";
   const [editandoId, setEditandoId] = useState<string | null>(null);
-  const [itens, setItens] = useState<Lancamento[]>(iniciais);
+  const [manuais, setItens] = useState<Lancamento[]>(iniciais);
+  const { contribuicoes } = usePixStore();
+  const pendentesPix = contribuicoes.filter((c) => c.status === "pendente").length;
+  const itens = useMemo<Lancamento[]>(
+    () => [
+      ...manuais,
+      ...contribuicoes
+        .filter((c) => c.status === "confirmado")
+        .map((c) => ({
+          id: `pix-${c.id}`,
+          tipo: "entrada" as const,
+          categoria: c.tipo === "Dízimo" ? "Dízimo" : "Oferta",
+          descricao: `${c.tipo} PIX — ${c.usuarioNome}`,
+          valor: c.valor,
+          data: new Date(c.enviadoEm).toLocaleDateString("pt-BR"),
+          dataISO: c.enviadoEm.slice(0, 10),
+          responsavel: c.revisadoPor ?? "Tesouraria",
+          forma: "Pix" as const,
+          observacao: `Comprovante confirmado (${c.mesRef})`,
+          comprovante: c.comprovanteUrl,
+        })),
+    ],
+    [manuais, contribuicoes],
+  );
   const [mesesFechados, setMesesFechados] = useState<string[]>([]);
   const [montado, setMontado] = useState(false);
   useEffect(() => setMontado(true), []);
@@ -315,6 +339,18 @@ ${linhas
     <AppShell>
       <PageHeader title="Livro Caixa" subtitle="Saldo em tempo real" />
       <div className="px-5 py-5">
+        <Link
+          to="/contribuicoes/conferencia"
+          className="surface-card mb-4 flex items-center justify-between gap-3 p-4"
+        >
+          <div>
+            <p className="font-semibold">Comprovantes PIX</p>
+            <p className="text-xs text-soft">Conferir dízimos e ofertas enviados</p>
+          </div>
+          <span className="rounded-full border border-amber-500/30 bg-amber-500/15 px-2.5 py-1 text-[11px] font-semibold text-amber-500">
+            {pendentesPix} aguardando
+          </span>
+        </Link>
         {/* Saldo + gráfico */}
         <div className="surface-card p-4">
           <p className="text-center text-xs text-soft">Saldo atual</p>
@@ -640,7 +676,7 @@ ${linhas
                 {i.tipo === "entrada" ? "+" : "-"}
                 {brl(i.valor)}
               </span>
-              <div className="flex shrink-0 flex-col gap-1">
+              <div className={`flex shrink-0 flex-col gap-1 ${i.id.startsWith("pix-") ? "hidden" : ""}`}>
                 <button
                   aria-label={`Editar ${i.descricao}`}
                   onClick={() => editar(i)}

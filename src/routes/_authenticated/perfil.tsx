@@ -1,6 +1,7 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import {
+  HandCoins,
   Camera,
   CalendarHeart,
   Check,
@@ -463,6 +464,12 @@ function Perfil() {
         </div>
 
         <div className="grid gap-2">
+          <Link
+            to="/contribuicoes"
+            className="surface-card flex items-center gap-3 px-4 py-3 text-sm font-medium"
+          >
+            <HandCoins className="size-4 text-primary" /> Minhas Contribuições
+          </Link>
           <button
             onClick={() => setModalEditar(true)}
             className="surface-card flex items-center gap-3 px-4 py-3 text-sm font-medium"
