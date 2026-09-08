@@ -3,16 +3,12 @@ import { ehSuperAdmin, type PerfilPermissao } from "@/lib/permissoes";
 
 export type CategoriaEstudo = "geral" | "jovens";
 
+/** Somente "geral" aqui: o Estudo Mensal de Jovens vive dentro do Ministério de Jovens. */
 export const CATEGORIAS: { slug: CategoriaEstudo; label: string; descricao: string }[] = [
   {
     slug: "geral",
     label: "Estudos Gerais",
     descricao: "Conteúdo bíblico para toda a igreja",
-  },
-  {
-    slug: "jovens",
-    label: "Estudos de Jovens",
-    descricao: "Conteúdo bíblico para a juventude",
   },
 ];
 
