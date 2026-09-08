@@ -38,7 +38,7 @@ export function parseCifraTexto(texto: string): { acordes: string; letra: string
   const resultado: { acordes: string; letra: string }[] = [];
 
   for (let i = 0; i < linhas.length; i++) {
-    const linha = linhas[i];
+    const linha = linhas[i] ?? "";
     const tokens = tokenize(linha);
 
     if (tokens.length === 0) {
