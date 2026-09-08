@@ -1,13 +1,18 @@
-import { appConfirm, appPrompt } from "@/components/ui/AppDialog";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Pencil, Trash2 } from "lucide-react";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
+import { Pencil, Plus, Trash2 } from "lucide-react";
+import { useState } from "react";
 
 import { AppShell, PageHeader } from "@/components/AppShell";
+import { appConfirm } from "@/components/ui/AppDialog";
 import { usePerfil } from "@/hooks/usePerfil";
-import { carregarCultos, salvarCultos } from "@/lib/agenda-cultos";
-import { cultos as cultosIniciais, type Culto } from "@/lib/church-data";
+import {
+  dataCultoBR,
+  excluirCulto,
+  salvarCulto,
+  useCultos,
+  type Culto,
+  type LouvorCulto,
+} from "@/lib/agenda-cultos";
 import { podeGerirAgenda } from "@/lib/permissoes";
 
 export const Route = createFileRoute("/agenda")({
@@ -28,39 +33,157 @@ export const Route = createFileRoute("/agenda")({
   component: Agenda,
 });
 
-function Agenda() {
-  const { permissao } = usePerfil();
-  const gestor = podeGerirAgenda(permissao);
-  const [itens, setItensState] = useState<Culto[]>(cultosIniciais);
-  const [editando, setEditando] = useState<string | null>(null);
+const vazio = {
+  dia: "",
+  data: "",
+  horario: "",
+  tema: "",
+  pregador: "",
+  dirigente: "",
+  louvores: "",
+};
 
-  useEffect(() => {
-    setItensState(carregarCultos());
-  }, []);
+const paraTexto = (l: LouvorCulto[]) =>
+  l.map((x) => [x.titulo, x.artista, x.tom].join(" | ")).join("\n");
 
-  const setItens = (fn: (atual: Culto[]) => Culto[]) =>
-    setItensState((atual) => {
-      const proximo = fn(atual);
-      salvarCultos(proximo);
-      return proximo;
+const paraLista = (texto: string): LouvorCulto[] =>
+  texto
+    .split("\n")
+    .map((linha) => linha.trim())
+    .filter(Boolean)
+    .map((linha) => {
+      const [titulo = "", artista = "", tom = ""] = linha.split("|").map((p) => p.trim());
+      return { titulo, artista, tom: tom || "C" };
     });
 
-  const atualizar = (slug: string, campos: Partial<Culto>) =>
-    setItens((atual) => atual.map((c) => (c.slug === slug ? { ...c, ...campos } : c)));
+function Agenda() {
+  const { perfil, permissao } = usePerfil();
+  const gestor = podeGerirAgenda(permissao);
+  const { cultos, carregando, recarregar } = useCultos();
+  const [editando, setEditando] = useState<string | null>(null);
+  const [aberto, setAberto] = useState(false);
+  const [form, setForm] = useState(vazio);
+  const [salvando, setSalvando] = useState(false);
+
+  const abrirNovo = () => {
+    setForm(vazio);
+    setEditando(null);
+    setAberto(true);
+  };
+
+  const abrirEdicao = (c: Culto) => {
+    setForm({
+      dia: c.dia,
+      data: c.data ?? "",
+      horario: c.horario,
+      tema: c.tema,
+      pregador: c.pregador,
+      dirigente: c.dirigente,
+      louvores: paraTexto(c.louvores),
+    });
+    setEditando(c.id);
+    setAberto(true);
+  };
+
+  const salvar = async (ev: React.FormEvent) => {
+    ev.preventDefault();
+    if (!form.dia.trim() || !form.data) return;
+    setSalvando(true);
+    const ok = await salvarCulto(editando, {
+      titulo: form.dia.trim(),
+      dia: form.dia.trim(),
+      slug: form.dia.trim().toLowerCase().replace(/\s+/g, "-"),
+      data: form.data,
+      horario: form.horario.trim(),
+      tipo: "Culto",
+      descricao: form.tema.trim(),
+      tema: form.tema.trim(),
+      pregador: form.pregador.trim(),
+      dirigente: form.dirigente.trim(),
+      louvores: paraLista(form.louvores),
+      ...(editando ? {} : { created_by: perfil?.id ?? null }),
+    });
+    setSalvando(false);
+    if (!ok) return;
+    setAberto(false);
+    setEditando(null);
+    await recarregar();
+  };
 
   return (
     <AppShell>
       <PageHeader title="Agenda" subtitle="Cultos e eventos da igreja" />
       <div className="space-y-3 px-5 py-5">
-        {itens.map((c) => (
-          <div key={c.slug} className="surface-card p-4">
-            <Link to="/culto/$dia" params={{ dia: c.slug }} className="block">
+        {gestor ? (
+          <button
+            onClick={abrirNovo}
+            className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground"
+          >
+            <Plus className="size-4" /> Adicionar culto
+          </button>
+        ) : null}
+
+        {gestor && aberto ? (
+          <form onSubmit={salvar} className="surface-card space-y-2 p-4">
+            <h2 className="font-display text-lg">{editando ? "Editar culto" : "Novo culto"}</h2>
+            {(
+              [
+                ["dia", "Dia (ex.: Domingo)", "text"],
+                ["data", "Data", "date"],
+                ["horario", "Horário (ex.: 18h00)", "text"],
+                ["tema", "Tema", "text"],
+                ["pregador", "Pregador", "text"],
+                ["dirigente", "Dirigente", "text"],
+              ] as const
+            ).map(([campo, label, tipo]) => (
+              <label key={campo} className="block text-xs text-soft">
+                {label}
+                <input
+                  type={tipo}
+                  value={form[campo]}
+                  onChange={(e) => setForm({ ...form, [campo]: e.target.value })}
+                  className="mt-1 w-full rounded-lg border border-border bg-secondary px-3 py-2 text-sm text-foreground"
+                />
+              </label>
+            ))}
+            <label className="block text-xs text-soft">
+              Louvores do dia — uma por linha: Título | Artista | Tom
+              <textarea
+                rows={4}
+                value={form.louvores}
+                onChange={(e) => setForm({ ...form, louvores: e.target.value })}
+                className="mt-1 w-full rounded-lg border border-border bg-secondary px-3 py-2 text-sm text-foreground"
+              />
+            </label>
+            <div className="flex gap-2">
+              <button
+                disabled={salvando}
+                className="flex-1 rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground disabled:opacity-50"
+              >
+                {salvando ? "Salvando…" : "Salvar"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setAberto(false)}
+                className="rounded-xl border border-border px-4 text-sm font-semibold"
+              >
+                Cancelar
+              </button>
+            </div>
+          </form>
+        ) : null}
+
+        {carregando ? <p className="text-sm text-soft">Carregando…</p> : null}
+
+        {cultos.map((c) => (
+          <div key={c.id} className="surface-card p-4">
+            <Link to="/culto/$dia" params={{ dia: c.id }} className="block">
               <div className="flex items-baseline justify-between">
                 <h2 className="font-display text-lg">{c.dia}</h2>
                 <span className="font-semibold text-primary">{c.horario}</span>
               </div>
               <p className="mt-1 text-sm text-soft">
-                {c.data} · {c.tema}
+                {dataCultoBR(c)} · {c.tema}
               </p>
               <dl className="mt-3 grid grid-cols-2 gap-2 text-xs">
                 <div>
@@ -82,16 +205,15 @@ function Agenda() {
             {gestor ? (
               <div className="mt-3 flex gap-2 border-t border-border pt-3">
                 <button
-                  onClick={() => setEditando(editando === c.slug ? null : c.slug)}
+                  onClick={() => abrirEdicao(c)}
                   className="inline-flex items-center gap-1.5 rounded-lg bg-secondary px-3 py-1.5 text-xs font-semibold text-primary"
                 >
                   <Pencil className="size-3.5" /> Editar
                 </button>
                 <button
                   onClick={async () => {
-                    if (!await appConfirm(`Excluir o culto de ${c.dia}?`)) return;
-                    setItens((atual) => atual.filter((x) => x.slug !== c.slug));
-                    toast.success("Culto removido da agenda.");
+                    if (!(await appConfirm(`Excluir o culto de ${c.dia}?`))) return;
+                    if (await excluirCulto(c.id)) await recarregar();
                   }}
                   className="inline-flex items-center gap-1.5 rounded-lg bg-secondary px-3 py-1.5 text-xs font-semibold text-destructive"
                 >
@@ -99,40 +221,10 @@ function Agenda() {
                 </button>
               </div>
             ) : null}
-
-            {gestor && editando === c.slug ? (
-              <div className="mt-3 space-y-2">
-                {(
-                  [
-                    ["tema", "Tema"],
-                    ["horario", "Horário"],
-                    ["pregador", "Pregador"],
-                    ["dirigente", "Dirigente"],
-                  ] as const
-                ).map(([campo, rotulo]) => (
-                  <label key={campo} className="block text-xs text-soft">
-                    {rotulo}
-                    <input
-                      value={c[campo]}
-                      onChange={(e) => atualizar(c.slug, { [campo]: e.target.value })}
-                      className="mt-1 w-full rounded-lg border border-border bg-secondary px-3 py-2 text-sm text-foreground"
-                    />
-                  </label>
-                ))}
-                <button
-                  onClick={async () => {
-                    setEditando(null);
-                    toast.success("Culto atualizado.");
-                  }}
-                  className="w-full rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
-                >
-                  Salvar
-                </button>
-              </div>
-            ) : null}
           </div>
         ))}
-        {itens.length === 0 ? (
+
+        {!carregando && cultos.length === 0 ? (
           <p className="text-sm text-soft">Nenhum culto na agenda.</p>
         ) : null}
       </div>
