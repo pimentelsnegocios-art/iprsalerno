@@ -135,6 +135,8 @@ function RootComponent() {
       <GuardaSessao>
         <Outlet />
       </GuardaSessao>
+      <AppDialogHost />
+
     </QueryClientProvider>
   );
 }
