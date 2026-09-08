@@ -1,0 +1,5 @@
+
+ALTER TABLE public.agenda_cultos
+  ADD COLUMN IF NOT EXISTS slug text NOT NULL DEFAULT '',
+  ADD COLUMN IF NOT EXISTS dia text NOT NULL DEFAULT '',
+  ADD COLUMN IF NOT EXISTS louvores jsonb NOT NULL DEFAULT '[]'::jsonb;

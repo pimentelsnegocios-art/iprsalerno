@@ -1,36 +1,48 @@
-import { createFileRoute, notFound } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 
 import { AppShell, PageHeader } from "@/components/AppShell";
-import { useCultos } from "@/lib/agenda-cultos";
+import { dataCultoBR, useCultos } from "@/lib/agenda-cultos";
 
 export const Route = createFileRoute("/culto/$dia")({
+  ssr: false,
   head: () => ({
     meta: [
-      { title: "Culto — IPR" },
-      { name: "description", content: "Detalhes do culto: tema, pregador, dirigente e louvores do dia." },
-      { property: "og:title", content: "Culto — IPR" },
+      { title: "Culto — IPRB Renovada" },
+      {
+        name: "description",
+        content: "Detalhes do culto: tema, pregador, dirigente e louvores do dia.",
+      },
+      { property: "og:title", content: "Culto — IPRB Renovada" },
       { property: "og:description", content: "Tema, pregador, dirigente e louvores do dia." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: CultoPage,
-  notFoundComponent: () => (
-    <AppShell>
-      <PageHeader title="Culto não encontrado" />
-    </AppShell>
-  ),
 });
 
 function CultoPage() {
   const { dia } = Route.useParams();
-  const cultos = useCultos();
-  const culto = cultos.find((c) => c.slug === dia);
-  if (!culto) throw notFound();
+  const { cultos, carregando } = useCultos();
+  const culto = cultos.find((c) => c.id === dia || c.slug === dia);
+
+  if (!culto) {
+    return (
+      <AppShell>
+        <PageHeader back title="Culto" />
+        <p className="px-5 py-5 text-sm text-soft">
+          {carregando ? "Carregando…" : "Este culto não está mais na agenda."}
+        </p>
+      </AppShell>
+    );
+  }
 
   return (
     <AppShell>
       <PageHeader
+        back
         title={`Culto de ${culto.dia}`}
-        subtitle={`${culto.data} · ${culto.horario}`}
+        subtitle={`${dataCultoBR(culto)} · ${culto.horario}`}
       />
       <div className="space-y-4 px-5 py-5">
         <div className="surface-card p-4">
@@ -53,7 +65,7 @@ function CultoPage() {
             <p className="text-xs text-soft">Repertório exclusivo de {culto.dia}</p>
             <ol className="mt-3 divide-y divide-border">
               {culto.louvores.map((l, i) => (
-                <li key={l.titulo} className="flex items-center gap-3 py-3">
+                <li key={`${l.titulo}-${i}`} className="flex items-center gap-3 py-3">
                   <span className="w-5 text-sm font-bold text-primary">{i + 1}</span>
                   <div className="flex-1">
                     <p className="text-sm font-medium">{l.titulo}</p>

@@ -20,10 +20,13 @@ export type Database = {
           created_by: string | null
           data: string
           descricao: string
+          dia: string
           dirigente: string
           horario: string
           id: string
+          louvores: Json
           pregador: string
+          slug: string
           tema: string
           tipo: string
           titulo: string
@@ -34,10 +37,13 @@ export type Database = {
           created_by?: string | null
           data?: string
           descricao?: string
+          dia?: string
           dirigente?: string
           horario?: string
           id?: string
+          louvores?: Json
           pregador?: string
+          slug?: string
           tema?: string
           tipo?: string
           titulo: string
@@ -48,10 +54,13 @@ export type Database = {
           created_by?: string | null
           data?: string
           descricao?: string
+          dia?: string
           dirigente?: string
           horario?: string
           id?: string
+          louvores?: Json
           pregador?: string
+          slug?: string
           tema?: string
           tipo?: string
           titulo?: string
@@ -614,7 +623,10 @@ export type Database = {
           categoria: string
           conteudo_html: string
           created_at: string
+          data_estudo: string
           id: string
+          livro_biblico: string
+          ordem_livro: number
           status: string
           subtitulo: string
           titulo: string
@@ -626,7 +638,10 @@ export type Database = {
           categoria?: string
           conteudo_html?: string
           created_at?: string
+          data_estudo?: string
           id?: string
+          livro_biblico?: string
+          ordem_livro?: number
           status?: string
           subtitulo?: string
           titulo: string
@@ -638,7 +653,10 @@ export type Database = {
           categoria?: string
           conteudo_html?: string
           created_at?: string
+          data_estudo?: string
           id?: string
+          livro_biblico?: string
+          ordem_livro?: number
           status?: string
           subtitulo?: string
           titulo?: string
@@ -783,6 +801,333 @@ export type Database = {
           {
             foreignKeyName: "livro_caixa_created_by_fkey"
             columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ministerio_agenda: {
+        Row: {
+          autor_id: string | null
+          autor_nome: string
+          created_at: string
+          data: string | null
+          hora: string
+          id: string
+          louvores: Json
+          ministerio_slug: string
+          presencas: Json
+          tipo: string
+          titulo: string
+          updated_at: string
+        }
+        Insert: {
+          autor_id?: string | null
+          autor_nome?: string
+          created_at?: string
+          data?: string | null
+          hora?: string
+          id?: string
+          louvores?: Json
+          ministerio_slug: string
+          presencas?: Json
+          tipo?: string
+          titulo: string
+          updated_at?: string
+        }
+        Update: {
+          autor_id?: string | null
+          autor_nome?: string
+          created_at?: string
+          data?: string | null
+          hora?: string
+          id?: string
+          louvores?: Json
+          ministerio_slug?: string
+          presencas?: Json
+          tipo?: string
+          titulo?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ministerio_agenda_autor_id_fkey"
+            columns: ["autor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ministerio_avisos: {
+        Row: {
+          autor_id: string | null
+          autor_nome: string
+          created_at: string
+          fixado: boolean
+          id: string
+          ministerio_slug: string
+          texto: string
+          titulo: string
+          updated_at: string
+        }
+        Insert: {
+          autor_id?: string | null
+          autor_nome?: string
+          created_at?: string
+          fixado?: boolean
+          id?: string
+          ministerio_slug: string
+          texto?: string
+          titulo: string
+          updated_at?: string
+        }
+        Update: {
+          autor_id?: string | null
+          autor_nome?: string
+          created_at?: string
+          fixado?: boolean
+          id?: string
+          ministerio_slug?: string
+          texto?: string
+          titulo?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ministerio_avisos_autor_id_fkey"
+            columns: ["autor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ministerio_checkins: {
+        Row: {
+          autor_id: string | null
+          autor_nome: string
+          created_at: string
+          id: string
+          ministerio_slug: string
+          texto: string
+          updated_at: string
+        }
+        Insert: {
+          autor_id?: string | null
+          autor_nome?: string
+          created_at?: string
+          id?: string
+          ministerio_slug: string
+          texto: string
+          updated_at?: string
+        }
+        Update: {
+          autor_id?: string | null
+          autor_nome?: string
+          created_at?: string
+          id?: string
+          ministerio_slug?: string
+          texto?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ministerio_checkins_autor_id_fkey"
+            columns: ["autor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ministerio_ensaios: {
+        Row: {
+          artista: string
+          autor_id: string | null
+          autor_nome: string
+          created_at: string
+          data: string | null
+          horario: string
+          id: string
+          link: string
+          local: string
+          ministerio_slug: string
+          observacoes: string[]
+          partes: Json
+          solistas: string[]
+          titulo: string
+          tom: string
+          updated_at: string
+        }
+        Insert: {
+          artista?: string
+          autor_id?: string | null
+          autor_nome?: string
+          created_at?: string
+          data?: string | null
+          horario?: string
+          id?: string
+          link?: string
+          local?: string
+          ministerio_slug: string
+          observacoes?: string[]
+          partes?: Json
+          solistas?: string[]
+          titulo: string
+          tom?: string
+          updated_at?: string
+        }
+        Update: {
+          artista?: string
+          autor_id?: string | null
+          autor_nome?: string
+          created_at?: string
+          data?: string | null
+          horario?: string
+          id?: string
+          link?: string
+          local?: string
+          ministerio_slug?: string
+          observacoes?: string[]
+          partes?: Json
+          solistas?: string[]
+          titulo?: string
+          tom?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ministerio_ensaios_autor_id_fkey"
+            columns: ["autor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ministerio_oracao: {
+        Row: {
+          created_at: string
+          ministerio_slug: string
+          proposito: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          ministerio_slug: string
+          proposito?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          ministerio_slug?: string
+          proposito?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      ministerio_repertorio: {
+        Row: {
+          aba: string
+          artista: string
+          autor_id: string | null
+          autor_nome: string
+          created_at: string
+          id: string
+          letra: string[]
+          link: string
+          ministerio_slug: string
+          titulo: string
+          tom: string
+          updated_at: string
+        }
+        Insert: {
+          aba?: string
+          artista?: string
+          autor_id?: string | null
+          autor_nome?: string
+          created_at?: string
+          id?: string
+          letra?: string[]
+          link?: string
+          ministerio_slug: string
+          titulo: string
+          tom?: string
+          updated_at?: string
+        }
+        Update: {
+          aba?: string
+          artista?: string
+          autor_id?: string | null
+          autor_nome?: string
+          created_at?: string
+          id?: string
+          letra?: string[]
+          link?: string
+          ministerio_slug?: string
+          titulo?: string
+          tom?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ministerio_repertorio_autor_id_fkey"
+            columns: ["autor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ministerio_visitas: {
+        Row: {
+          autor_id: string | null
+          autor_nome: string
+          created_at: string
+          data: string | null
+          endereco: string
+          hora: string
+          id: string
+          irmas: string[]
+          ministerio_slug: string
+          nome: string
+          realizada: boolean
+          updated_at: string
+        }
+        Insert: {
+          autor_id?: string | null
+          autor_nome?: string
+          created_at?: string
+          data?: string | null
+          endereco?: string
+          hora?: string
+          id?: string
+          irmas?: string[]
+          ministerio_slug?: string
+          nome: string
+          realizada?: boolean
+          updated_at?: string
+        }
+        Update: {
+          autor_id?: string | null
+          autor_nome?: string
+          created_at?: string
+          data?: string | null
+          endereco?: string
+          hora?: string
+          id?: string
+          irmas?: string[]
+          ministerio_slug?: string
+          nome?: string
+          realizada?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ministerio_visitas_autor_id_fkey"
+            columns: ["autor_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -1049,6 +1394,10 @@ export type Database = {
       }
       pode_gerir_estudos: {
         Args: { _categoria: string; _user_id: string }
+        Returns: boolean
+      }
+      pode_gerir_ministerio: {
+        Args: { _slug: string; _user_id: string }
         Returns: boolean
       }
       promote_user: {

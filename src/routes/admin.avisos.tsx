@@ -1,39 +1,51 @@
-import { appConfirm, appPrompt } from "@/components/ui/AppDialog";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Lock, Pencil, Plus, Trash2, X } from "lucide-react";
 
 import { AppShell, PageHeader } from "@/components/AppShell";
-import { acoes, hojeBR, useAppStore, type Aviso } from "@/lib/app-store";
+import { appConfirm } from "@/components/ui/AppDialog";
 import { usePerfil } from "@/hooks/usePerfil";
+import {
+  dataAvisoBR,
+  excluirAviso,
+  salvarAviso,
+  useAvisos,
+  type AvisoIgreja,
+} from "@/lib/avisos-db";
+import { hojeIso } from "@/lib/livros-biblia";
 import { ehAdmin } from "@/lib/permissoes";
 
 export const Route = createFileRoute("/admin/avisos")({
+  ssr: false,
   head: () => ({
     meta: [
-      { title: "Gestão de Avisos — IPR" },
+      { title: "Gestão de Avisos — IPRB Renovada" },
       {
         name: "description",
         content: "Criar, editar e excluir avisos da Igreja Presbiteriana Renovada.",
       },
-      { property: "og:title", content: "Gestão de Avisos — IPR" },
+      { property: "og:title", content: "Gestão de Avisos — IPRB Renovada" },
       { property: "og:description", content: "Painel de avisos da liderança." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: AdminAvisos,
 });
 
-const vazio = { titulo: "", texto: "", data: "", fixadoHome: false };
+const vazio = { titulo: "", descricao: "", data: hojeIso(), fixado_home: false };
 
 function AdminAvisos() {
-  const { avisos } = useAppStore();
+  const { avisos, carregando, recarregar } = useAvisos();
   const [aberto, setAberto] = useState(false);
-  const [editando, setEditando] = useState<Aviso | null>(null);
+  const [editando, setEditando] = useState<AvisoIgreja | null>(null);
   const [form, setForm] = useState(vazio);
+  const [salvando, setSalvando] = useState(false);
 
   const { perfil, permissao } = usePerfil();
   const admin = ehAdmin(permissao);
   const meuNome = perfil?.nome ?? "Liderança";
+
   if (!admin) {
     return (
       <AppShell>
@@ -50,42 +62,40 @@ function AdminAvisos() {
 
   const abrirNovo = () => {
     setEditando(null);
-    setForm({ ...vazio, data: new Date().toISOString().slice(0, 10) });
+    setForm({ ...vazio, data: hojeIso() });
     setAberto(true);
   };
 
-  const abrirEdicao = (a: Aviso) => {
+  const abrirEdicao = (a: AvisoIgreja) => {
     setEditando(a);
-    setForm({ titulo: a.titulo, texto: a.texto, data: "", fixadoHome: a.fixadoHome });
+    setForm({
+      titulo: a.titulo,
+      descricao: a.descricao,
+      data: a.data_publicacao,
+      fixado_home: a.fixado_home,
+    });
     setAberto(true);
   };
 
-  const salvar = () => {
+  const salvar = async () => {
     if (!form.titulo.trim()) return;
-    const data = form.data
-      ? new Date(`${form.data}T12:00:00`).toLocaleDateString("pt-BR")
-      : hojeBR();
-    if (editando) {
-      acoes.atualizarAviso(editando.id, {
-        titulo: form.titulo,
-        texto: form.texto,
-        fixadoHome: form.fixadoHome,
-        ...(form.data ? { data } : {}),
-      });
-    } else {
-      acoes.criarAviso({
-        titulo: form.titulo,
-        texto: form.texto,
-        data,
-        autor: meuNome,
-        fixadoHome: form.fixadoHome,
-      });
-    }
+    setSalvando(true);
+    const ok = await salvarAviso(editando?.id ?? null, {
+      titulo: form.titulo.trim(),
+      descricao: form.descricao.trim(),
+      data_publicacao: form.data || hojeIso(),
+      fixado_home: form.fixado_home,
+      ...(editando ? {} : { autor: meuNome, tipo: "geral" }),
+    });
+    setSalvando(false);
+    if (!ok) return;
     setAberto(false);
+    await recarregar();
   };
 
-  const excluir = async (a: Aviso) => {
-    if (await appConfirm(`Excluir o aviso "${a.titulo}"?`)) acoes.excluirAviso(a.id);
+  const excluir = async (a: AvisoIgreja) => {
+    if (!(await appConfirm(`Excluir o aviso "${a.titulo}"?`))) return;
+    if (await excluirAviso(a.id)) await recarregar();
   };
 
   return (
@@ -99,15 +109,17 @@ function AdminAvisos() {
           <Plus className="size-4" /> Novo Aviso
         </button>
 
+        {carregando ? <p className="text-sm text-soft">Carregando…</p> : null}
+
         {avisos.map((a) => (
           <article key={a.id} className="surface-card p-4">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <h2 className="font-display text-lg text-primary">{a.titulo}</h2>
-                <p className="mt-1 text-sm">{a.texto}</p>
+                <p className="mt-1 text-sm">{a.descricao}</p>
                 <p className="mt-2 text-xs text-soft">
-                  {a.autor} · {a.data}
-                  {a.fixadoHome ? " · fixado na Home" : ""}
+                  {a.autor} · {dataAvisoBR(a)}
+                  {a.fixado_home ? " · fixado na Home" : ""}
                 </p>
               </div>
               <div className="flex shrink-0 gap-1.5">
@@ -120,7 +132,7 @@ function AdminAvisos() {
                 </button>
                 <button
                   aria-label={`Excluir ${a.titulo}`}
-                  onClick={() => excluir(a)}
+                  onClick={() => void excluir(a)}
                   className="rounded-lg bg-secondary p-2 text-destructive"
                 >
                   <Trash2 className="size-4" />
@@ -129,7 +141,9 @@ function AdminAvisos() {
             </div>
           </article>
         ))}
-        {avisos.length === 0 ? <p className="text-sm text-soft">Nenhum aviso cadastrado.</p> : null}
+        {!carregando && avisos.length === 0 ? (
+          <p className="text-sm text-soft">Nenhum aviso cadastrado.</p>
+        ) : null}
       </div>
 
       {aberto ? (
@@ -155,14 +169,14 @@ function AdminAvisos() {
               Descrição
               <textarea
                 rows={4}
-                value={form.texto}
-                onChange={(e) => setForm({ ...form, texto: e.target.value })}
+                value={form.descricao}
+                onChange={(e) => setForm({ ...form, descricao: e.target.value })}
                 className="mt-1 w-full rounded-lg border border-border bg-secondary px-3 py-2 text-sm font-normal normal-case tracking-normal text-foreground"
               />
             </label>
 
             <label className="mt-3 block text-xs font-semibold uppercase tracking-wide text-soft">
-              Data do evento
+              Data do aviso
               <input
                 type="date"
                 value={form.data}
@@ -183,8 +197,8 @@ function AdminAvisos() {
             <label className="mt-4 flex items-center gap-2 text-sm">
               <input
                 type="checkbox"
-                checked={form.fixadoHome}
-                onChange={(e) => setForm({ ...form, fixadoHome: e.target.checked })}
+                checked={form.fixado_home}
+                onChange={(e) => setForm({ ...form, fixado_home: e.target.checked })}
                 className="size-4 accent-current text-primary"
               />
               Fixar na Home?
@@ -192,10 +206,11 @@ function AdminAvisos() {
 
             <div className="mt-5 flex gap-2">
               <button
-                onClick={salvar}
-                className="flex-1 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground"
+                onClick={() => void salvar()}
+                disabled={salvando}
+                className="flex-1 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground disabled:opacity-50"
               >
-                Salvar
+                {salvando ? "Salvando…" : "Salvar"}
               </button>
               <button
                 onClick={() => setAberto(false)}
