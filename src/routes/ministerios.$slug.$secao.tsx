@@ -721,11 +721,13 @@ function EstudoView({ c }: { c: MinisterioConteudo }) {
   const { perfil, permissao } = usePerfil();
   const nome = perfil?.nome ?? usuarioAtual.nome;
   const cargo = perfil?.cargo ?? "Membro";
-  const meses = c.estudo ?? [];
-  const [sel, setSel] = useState(meses[meses.length - 1]?.id);
+  const mesesBase = c.estudo ?? [];
+  const [mesesState, setMesesState] = useState(mesesBase);
+  const [sel, setSel] = useState(mesesBase[mesesBase.length - 1]?.id);
   const [pergunta, setPergunta] = useState("");
-  const [mural, setMural] = useState(meses.find((m) => m.id === sel)?.mural ?? []);
-  const mes = meses.find((m) => m.id === sel);
+  const [mural, setMural] = useState(mesesBase.find((m) => m.id === sel)?.mural ?? []);
+  const [editandoMes, setEditandoMes] = useState<{ id: string; resumo: string; curiosidades: string } | null>(null);
+  const mes = mesesState.find((m) => m.id === sel);
   const podeEditar =
     podeEditarEstudo(cargo) || podeAdministrarMinisterio(permissao, c.slug as SlugMinisterio);
 
@@ -819,7 +821,7 @@ function EstudoView({ c }: { c: MinisterioConteudo }) {
         </article>
       ))}
       <div className="flex gap-2 overflow-x-auto">
-        {meses.map((m) => (
+        {mesesState.map((m) => (
           <button
             key={m.id}
             onClick={() => {
@@ -844,8 +846,39 @@ function EstudoView({ c }: { c: MinisterioConteudo }) {
       {mes ? (
         <>
           <div className="surface-card p-4">
-            <h2 className="font-display text-xl">📝 Resumo — {mes.livro}</h2>
-            <p className="mt-2 text-sm">{mes.resumo}</p>
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <h2 className="font-display text-xl">📝 Resumo — {mes.livro}</h2>
+                <p className="mt-2 text-sm">{mes.resumo}</p>
+              </div>
+              {podeGerir ? (
+                <div className="flex shrink-0 gap-2">
+                  <AcaoBtn
+                    onClick={() =>
+                      setEditandoMes({
+                        id: mes.id,
+                        resumo: mes.resumo,
+                        curiosidades: mes.curiosidades.join("\n"),
+                      })
+                    }
+                  >
+                    <Pencil className="size-3.5" /> Editar
+                  </AcaoBtn>
+                  <AcaoBtn
+                    perigo
+                    onClick={() => {
+                      if (window.confirm(`Excluir o estudo de ${mes.mes}?`)) {
+                        const restante = mesesState.filter((m) => m.id !== mes.id);
+                        setMesesState(restante);
+                        setSel(restante[restante.length - 1]?.id);
+                      }
+                    }}
+                  >
+                    <Trash2 className="size-3.5" /> Excluir
+                  </AcaoBtn>
+                </div>
+              ) : null}
+            </div>
           </div>
 
           <div className="surface-card p-4">
@@ -857,6 +890,64 @@ function EstudoView({ c }: { c: MinisterioConteudo }) {
             </ul>
           </div>
         </>
+      ) : null}
+
+      {editandoMes ? (
+        <form
+          onSubmit={(ev) => {
+            ev.preventDefault();
+            setMesesState((ms) =>
+              ms.map((m) =>
+                m.id === editandoMes.id
+                  ? {
+                      ...m,
+                      resumo: editandoMes.resumo.trim(),
+                      curiosidades: editandoMes.curiosidades
+                        .split("\n")
+                        .map((s) => s.trim())
+                        .filter(Boolean),
+                    }
+                  : m,
+              ),
+            );
+            setEditandoMes(null);
+          }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+        >
+          <div className="w-full max-w-md space-y-3 rounded-2xl bg-background p-4 shadow-xl">
+            <h2 className="font-display text-lg">Editar resumo do estudo</h2>
+            <div>
+              <label className="text-xs font-semibold text-soft">Resumo</label>
+              <textarea
+                value={editandoMes.resumo}
+                onChange={(ev) => setEditandoMes({ ...editandoMes, resumo: ev.target.value })}
+                rows={4}
+                className="mt-1 w-full rounded-xl border border-border bg-transparent p-3 text-sm outline-none focus:ring-2 focus:ring-ring"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-soft">Curiosidades (uma por linha)</label>
+              <textarea
+                value={editandoMes.curiosidades}
+                onChange={(ev) => setEditandoMes({ ...editandoMes, curiosidades: ev.target.value })}
+                rows={4}
+                className="mt-1 w-full rounded-xl border border-border bg-transparent p-3 text-sm outline-none focus:ring-2 focus:ring-ring"
+              />
+            </div>
+            <div className="flex gap-2">
+              <button className="flex-1 rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground">
+                Salvar
+              </button>
+              <button
+                type="button"
+                onClick={() => setEditandoMes(null)}
+                className="rounded-xl border border-border px-4 text-sm font-semibold"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </form>
       ) : null}
 
       <div className="surface-card p-4">
@@ -911,7 +1002,7 @@ function EstudoView({ c }: { c: MinisterioConteudo }) {
                     <Pencil className="size-3.5" /> Responder
                   </AcaoBtn>
                 ) : null}
-                {podeEditar || q.autor === nome ? (
+                {podeEditar ? (
                   <AcaoBtn
                     perigo
                     onClick={() => {
