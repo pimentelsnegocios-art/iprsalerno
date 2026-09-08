@@ -1,7 +1,7 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 
 import { AppShell, PageHeader } from "@/components/AppShell";
-import { cultos } from "@/lib/church-data";
+import { useCultos } from "@/lib/agenda-cultos";
 
 export const Route = createFileRoute("/culto/$dia")({
   head: () => ({
@@ -22,6 +22,7 @@ export const Route = createFileRoute("/culto/$dia")({
 
 function CultoPage() {
   const { dia } = Route.useParams();
+  const cultos = useCultos();
   const culto = cultos.find((c) => c.slug === dia);
   if (!culto) throw notFound();
 
@@ -66,9 +67,7 @@ function CultoPage() {
             </ol>
           </div>
         ) : (
-          <p className="text-sm text-soft">
-            Culto de oração e doutrina — sem lista de louvores do dia.
-          </p>
+          <p className="text-sm text-soft">Sem lista de louvores do dia.</p>
         )}
       </div>
     </AppShell>

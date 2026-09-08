@@ -17,6 +17,7 @@ import { Route as AvisosRouteImport } from './routes/avisos'
 import { Route as CadastroRouteImport } from './routes/cadastro'
 import { Route as CaixaRouteImport } from './routes/caixa'
 import { Route as ConfiguracaoRouteImport } from './routes/configuracao'
+import { Route as CultosRouteImport } from './routes/cultos'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as MaisRouteImport } from './routes/mais'
 import { Route as MinisteriosRouteImport } from './routes/ministerios'
@@ -72,6 +73,11 @@ const CaixaRoute = CaixaRouteImport.update({
 const ConfiguracaoRoute = ConfiguracaoRouteImport.update({
   id: '/configuracao',
   path: '/configuracao',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CultosRoute = CultosRouteImport.update({
+  id: '/cultos',
+  path: '/cultos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -169,6 +175,7 @@ export interface FileRoutesByFullPath {
   '/cadastro': typeof CadastroRoute
   '/caixa': typeof CaixaRoute
   '/configuracao': typeof ConfiguracaoRoute
+  '/cultos': typeof CultosRoute
   '/login': typeof LoginRoute
   '/mais': typeof MaisRoute
   '/ministerios': typeof MinisteriosRouteWithChildren
@@ -195,6 +202,7 @@ export interface FileRoutesByTo {
   '/cadastro': typeof CadastroRoute
   '/caixa': typeof CaixaRoute
   '/configuracao': typeof ConfiguracaoRoute
+  '/cultos': typeof CultosRoute
   '/login': typeof LoginRoute
   '/mais': typeof MaisRoute
   '/oracao': typeof OracaoRoute
@@ -222,6 +230,7 @@ export interface FileRoutesById {
   '/cadastro': typeof CadastroRoute
   '/caixa': typeof CaixaRoute
   '/configuracao': typeof ConfiguracaoRoute
+  '/cultos': typeof CultosRoute
   '/login': typeof LoginRoute
   '/mais': typeof MaisRoute
   '/ministerios': typeof MinisteriosRouteWithChildren
@@ -250,6 +259,7 @@ export interface FileRouteTypes {
     | '/cadastro'
     | '/caixa'
     | '/configuracao'
+    | '/cultos'
     | '/login'
     | '/mais'
     | '/ministerios'
@@ -276,6 +286,7 @@ export interface FileRouteTypes {
     | '/cadastro'
     | '/caixa'
     | '/configuracao'
+    | '/cultos'
     | '/login'
     | '/mais'
     | '/oracao'
@@ -302,6 +313,7 @@ export interface FileRouteTypes {
     | '/cadastro'
     | '/caixa'
     | '/configuracao'
+    | '/cultos'
     | '/login'
     | '/mais'
     | '/ministerios'
@@ -330,6 +342,7 @@ export interface RootRouteChildren {
   CadastroRoute: typeof CadastroRoute
   CaixaRoute: typeof CaixaRoute
   ConfiguracaoRoute: typeof ConfiguracaoRoute
+  CultosRoute: typeof CultosRoute
   LoginRoute: typeof LoginRoute
   MaisRoute: typeof MaisRoute
   MinisteriosRoute: typeof MinisteriosRouteWithChildren
@@ -401,6 +414,13 @@ declare module '@tanstack/react-router' {
       path: '/configuracao'
       fullPath: '/configuracao'
       preLoaderRoute: typeof ConfiguracaoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cultos': {
+      id: '/cultos'
+      path: '/cultos'
+      fullPath: '/cultos'
+      preLoaderRoute: typeof CultosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -561,6 +581,7 @@ const rootRouteChildren: RootRouteChildren = {
   CadastroRoute: CadastroRoute,
   CaixaRoute: CaixaRoute,
   ConfiguracaoRoute: ConfiguracaoRoute,
+  CultosRoute: CultosRoute,
   LoginRoute: LoginRoute,
   MaisRoute: MaisRoute,
   MinisteriosRoute: MinisteriosRouteWithChildren,
