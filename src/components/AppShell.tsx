@@ -1,18 +1,15 @@
 import { Link, useRouter, useRouterState } from "@tanstack/react-router";
-import { Home, Book, CalendarDays, Sun, MoreHorizontal, ChevronLeft } from "lucide-react";
+import { Home, CalendarDays, HandHeart, User, MoreHorizontal, ChevronLeft } from "lucide-react";
 
 import type { ReactNode } from "react";
 
-const cultoTabs = [
-  { dia: "quinta", label: "Quinta", Icon: Book },
-  { dia: "sabado", label: "Sábado", Icon: CalendarDays },
-  { dia: "domingo", label: "Domingo", Icon: Sun },
+const navItens = [
+  { to: "/", label: "Início", Icon: Home, match: (p: string) => p === "/" },
+  { to: "/cultos", label: "Cultos", Icon: CalendarDays, match: (p: string) => p.startsWith("/culto") },
+  { to: "/pastoral", label: "Pastoral", Icon: HandHeart, match: (p: string) => p.startsWith("/pastoral") },
+  { to: "/perfil", label: "Meu Perfil", Icon: User, match: (p: string) => p.startsWith("/perfil") },
+  { to: "/mais", label: "Mais", Icon: MoreHorizontal, match: (p: string) => p.startsWith("/mais") },
 ] as const;
-
-const linkClass = (active: boolean) =>
-  `flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium transition-colors ${
-    active ? "text-primary" : "text-soft"
-  }`;
 
 export function BottomNav() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -23,23 +20,26 @@ export function BottomNav() {
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
       <div className="mx-auto flex max-w-lg items-stretch">
-        <Link to="/" className={linkClass(pathname === "/")}>
-          <Home className="size-5" strokeWidth={pathname === "/" ? 2.4 : 1.8} />
-          Início
-        </Link>
-        {cultoTabs.map(({ dia, label, Icon }) => {
-          const active = pathname === `/culto/${dia}`;
+        {navItens.map(({ to, label, Icon, match }) => {
+          const active = match(pathname);
           return (
-            <Link key={dia} to="/culto/$dia" params={{ dia }} className={linkClass(active)}>
+            <Link
+              key={to}
+              to={to}
+              className={`flex flex-1 flex-col items-center gap-0.5 py-2 text-[11px] font-medium transition-colors ${
+                active ? "text-primary" : "text-soft"
+              }`}
+            >
               <Icon className="size-5" strokeWidth={active ? 2.4 : 1.8} />
               {label}
+              <span
+                className={`h-0.5 w-6 rounded-full transition-colors ${
+                  active ? "bg-primary" : "bg-transparent"
+                }`}
+              />
             </Link>
           );
         })}
-        <Link to="/mais" className={linkClass(pathname === "/mais")}>
-          <MoreHorizontal className="size-5" strokeWidth={pathname === "/mais" ? 2.4 : 1.8} />
-          Mais
-        </Link>
       </div>
     </nav>
   );
