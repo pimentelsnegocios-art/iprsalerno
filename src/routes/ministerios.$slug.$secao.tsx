@@ -821,7 +821,7 @@ function EstudoView({ c }: { c: MinisterioConteudo }) {
         </article>
       ))}
       <div className="flex gap-2 overflow-x-auto">
-        {meses.map((m) => (
+        {mesesState.map((m) => (
           <button
             key={m.id}
             onClick={() => {
