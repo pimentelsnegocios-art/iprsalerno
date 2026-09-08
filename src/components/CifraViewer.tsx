@@ -82,7 +82,11 @@ export function parseCifraTexto(texto: string): { acordes: string; letra: string
   }
 
   // remove linhas vazias no fim
-  while (resultado.length && !resultado[resultado.length - 1].acordes && !resultado[resultado.length - 1].letra) {
+  while (
+    resultado.length &&
+    !resultado[resultado.length - 1]?.acordes &&
+    !resultado[resultado.length - 1]?.letra
+  ) {
     resultado.pop();
   }
 
