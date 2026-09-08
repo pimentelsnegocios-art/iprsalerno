@@ -42,7 +42,7 @@ export const Route = createFileRoute("/estudo/")({
 function EstudosBiblicos() {
   const { perfil, permissao } = usePerfil();
   const navigate = useNavigate();
-  const [aba, setAba] = useState<CategoriaEstudo>("geral");
+  const [aba] = useState<CategoriaEstudo>("geral");
   const [cache, setCache] = useState<Partial<Record<CategoriaEstudo, Estudo[]>>>({});
   const [carregando, setCarregando] = useState(true);
   const [busca, setBusca] = useState("");
