@@ -17,6 +17,7 @@ import {
   type CategoriaEstudo,
   type Estudo,
 } from "@/lib/estudos-biblicos";
+import { brParaIso, hojeIso, isoParaBR, mascaraData } from "@/lib/livros-biblia";
 
 export const Route = createFileRoute("/estudo/")({
   head: () => ({
@@ -48,7 +49,7 @@ function EstudosBiblicos() {
   const [busca, setBusca] = useState("");
   const [criando, setCriando] = useState(false);
   const [salvando, setSalvando] = useState(false);
-  const [form, setForm] = useState({ titulo: "", subtitulo: "", conteudo: "" });
+  const [form, setForm] = useState({ titulo: "", subtitulo: "", conteudo: "", data: hojeIso() });
 
   const gestor = podeGerirEstudos(permissao);
   const lista = cache[aba];
@@ -73,7 +74,7 @@ function EstudosBiblicos() {
   );
 
   const abrirCriacao = () => {
-    setForm({ titulo: "", subtitulo: "", conteudo: "" });
+    setForm({ titulo: "", subtitulo: "", conteudo: "", data: hojeIso() });
     setCriando(true);
   };
 
@@ -87,6 +88,7 @@ function EstudosBiblicos() {
         titulo: form.titulo.trim(),
         subtitulo: form.subtitulo.trim(),
         conteudo_html: form.conteudo,
+        data_estudo: form.data || hojeIso(),
         autor_id: perfil.id,
         autor_nome: perfil.nome,
       })
@@ -150,7 +152,8 @@ function EstudosBiblicos() {
               <h2 className="mt-2 font-display text-lg leading-snug">{e.titulo}</h2>
               {e.subtitulo ? <p className="mt-0.5 text-sm text-soft">{e.subtitulo}</p> : null}
               <p className="mt-2 text-xs text-soft">
-                {e.autor_nome || "Liderança"} · {formatarData(e.created_at)}
+                {e.autor_nome || "Liderança"} ·{" "}
+                {e.data_estudo ? isoParaBR(e.data_estudo) : formatarData(e.created_at)}
               </p>
             </Link>
           ))
@@ -210,6 +213,30 @@ function EstudosBiblicos() {
               placeholder="Subtítulo (opcional)"
               className="h-12 bg-surface"
             />
+            <div className="grid grid-cols-2 gap-2">
+              <label className="block text-xs text-soft">
+                Data do estudo
+                <input
+                  type="date"
+                  value={form.data}
+                  onChange={(e) => setForm({ ...form, data: e.target.value })}
+                  className="mt-1 h-12 w-full rounded-xl border border-border bg-surface px-3 text-sm text-foreground"
+                />
+              </label>
+              <label className="block text-xs text-soft">
+                Ou digite DD/MM/AAAA
+                <input
+                  inputMode="numeric"
+                  placeholder="DD/MM/AAAA"
+                  value={form.data ? isoParaBR(form.data) : ""}
+                  onChange={(e) => {
+                    const br = mascaraData(e.target.value);
+                    setForm({ ...form, data: (br.length === 10 ? brParaIso(br) : "") ?? "" });
+                  }}
+                  className="mt-1 h-12 w-full rounded-xl border border-border bg-surface px-3 text-sm text-foreground"
+                />
+              </label>
+            </div>
             <RichTextEditor
               valor={form.conteudo}
               onChange={(html) => setForm((f) => ({ ...f, conteudo: html }))}

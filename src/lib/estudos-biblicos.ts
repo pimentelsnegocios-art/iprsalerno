@@ -34,6 +34,9 @@ export interface Estudo {
   titulo: string;
   subtitulo: string;
   conteudo_html: string;
+  livro_biblico: string | null;
+  ordem_livro: number | null;
+  data_estudo: string | null;
   autor_id: string | null;
   autor_nome: string;
   status: string;
@@ -202,6 +205,10 @@ export async function listarEstudos(categoria: CategoriaEstudo): Promise<Estudo[
     .from("estudos")
     .select("*")
     .eq("categoria", categoria)
+    .order(categoria === "jovens" ? "ordem_livro" : "data_estudo", {
+      ascending: categoria === "jovens",
+      nullsFirst: false,
+    })
     .order("created_at", { ascending: false });
   return (data ?? []) as Estudo[];
 }
