@@ -231,7 +231,7 @@ function EstudosBiblicos() {
                   value={form.data ? isoParaBR(form.data) : ""}
                   onChange={(e) => {
                     const br = mascaraData(e.target.value);
-                    setForm({ ...form, data: br.length === 10 ? brParaIso(br) : "" });
+                    setForm({ ...form, data: (br.length === 10 ? brParaIso(br) : "") ?? "" });
                   }}
                   className="mt-1 h-12 w-full rounded-xl border border-border bg-surface px-3 text-sm text-foreground"
                 />
