@@ -1,4 +1,7 @@
 import { useSyncExternalStore } from "react";
+import { toast } from "sonner";
+
+import { supabase } from "@/integrations/supabase/client";
 
 export type TipoContribuicao = "Dízimo" | "Oferta";
 export type StatusContribuicao = "pendente" | "confirmado" | "rejeitado";
@@ -12,7 +15,6 @@ export interface Contribuicao {
   /** yyyy-MM */
   mesRef: string;
   comprovanteNome: string;
-  /** data URL da imagem ou PDF */
   comprovanteUrl: string;
   comprovanteTipo: "imagem" | "pdf";
   status: StatusContribuicao;
@@ -29,49 +31,64 @@ export const DADOS_PIX = {
   banco: "Banco do Brasil",
 };
 
-interface PixState {
-  contribuicoes: Contribuicao[];
+interface LinhaDB {
+  id: string;
+  usuario_id: string;
+  usuario_nome: string;
+  tipo: string;
+  valor: number | string;
+  mes_ref: string;
+  comprovante_nome: string;
+  comprovante_url: string;
+  comprovante_tipo: string;
+  status: string;
+  motivo: string;
+  revisado_por: string;
+  revisado_em: string | null;
+  created_at: string;
 }
 
-const KEY = "ipr-pix-store-v1";
+const mapear = (l: LinhaDB): Contribuicao => ({
+  id: l.id,
+  usuarioId: l.usuario_id,
+  usuarioNome: l.usuario_nome,
+  tipo: (l.tipo as TipoContribuicao) ?? "Oferta",
+  valor: Number(l.valor),
+  mesRef: l.mes_ref,
+  comprovanteNome: l.comprovante_nome,
+  comprovanteUrl: l.comprovante_url,
+  comprovanteTipo: l.comprovante_tipo === "pdf" ? "pdf" : "imagem",
+  status: (l.status as StatusContribuicao) ?? "pendente",
+  motivo: l.motivo || undefined,
+  enviadoEm: l.created_at,
+  revisadoPor: l.revisado_por || undefined,
+  revisadoEm: l.revisado_em ?? undefined,
+});
 
-let state: PixState = { contribuicoes: [] };
-let hydrated = false;
+let state: { contribuicoes: Contribuicao[] } = { contribuicoes: [] };
+let carregado = false;
 const listeners = new Set<() => void>();
+const emit = () => listeners.forEach((l) => l());
 
-function persist() {
-  if (typeof window === "undefined") return;
-  try {
-    window.localStorage.setItem(KEY, JSON.stringify(state));
-  } catch {
-    /* ignore */
-  }
-}
-
-function hydrate() {
-  if (hydrated || typeof window === "undefined") return;
-  hydrated = true;
-  try {
-    const raw = window.localStorage.getItem(KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw) as Partial<PixState>;
-      state = { contribuicoes: parsed.contribuicoes ?? [] };
-    }
-  } catch {
-    /* ignore */
-  }
-}
-
-function emit() {
-  persist();
-  listeners.forEach((l) => l());
+export async function recarregarContribuicoes() {
+  const { data, error } = await supabase
+    .from("contribuicoes")
+    .select("*")
+    .order("created_at", { ascending: false });
+  if (error) return;
+  state = { contribuicoes: ((data ?? []) as unknown as LinhaDB[]).map(mapear) };
+  emit();
 }
 
 function subscribe(listener: () => void) {
-  hydrate();
   listeners.add(listener);
-  listener();
-  return () => listeners.delete(listener);
+  if (!carregado) {
+    carregado = true;
+    void recarregarContribuicoes();
+  }
+  return () => {
+    listeners.delete(listener);
+  };
 }
 
 const getSnapshot = () => state;
@@ -93,6 +110,16 @@ export function rotuloMes(mesRef: string) {
 export const brlPix = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
+async function atualizar(id: string, campos: Record<string, unknown>, sucesso: string) {
+  const { error } = await supabase.from("contribuicoes").update(campos as never).eq("id", id);
+  if (error) {
+    toast.error("Não foi possível salvar agora. Tente novamente.");
+    return;
+  }
+  toast.success(sucesso);
+  await recarregarContribuicoes();
+}
+
 export const acoesPix = {
   possivelDuplicidade(usuarioId: string, mesRef: string, valor: number) {
     return state.contribuicoes.some(
@@ -103,47 +130,38 @@ export const acoesPix = {
         c.status !== "rejeitado",
     );
   },
-  enviar(dados: Omit<Contribuicao, "id" | "status" | "enviadoEm">) {
-    const nova: Contribuicao = {
-      ...dados,
-      id: crypto.randomUUID(),
+  async enviar(dados: Omit<Contribuicao, "id" | "status" | "enviadoEm">) {
+    const { error } = await supabase.from("contribuicoes").insert({
+      usuario_id: dados.usuarioId,
+      usuario_nome: dados.usuarioNome,
+      tipo: dados.tipo,
+      valor: dados.valor,
+      mes_ref: dados.mesRef,
+      comprovante_nome: dados.comprovanteNome,
+      comprovante_url: dados.comprovanteUrl,
+      comprovante_tipo: dados.comprovanteTipo,
       status: "pendente",
-      enviadoEm: new Date().toISOString(),
-    };
-    state = { contribuicoes: [nova, ...state.contribuicoes] };
-    emit();
-    return nova;
+    } as never);
+    if (error) {
+      toast.error("Não conseguimos registrar sua contribuição. Tente novamente.");
+      return null;
+    }
+    toast.success("Comprovante enviado para conferência.");
+    await recarregarContribuicoes();
+    return true;
   },
-  confirmar(id: string, revisor: string) {
-    state = {
-      contribuicoes: state.contribuicoes.map((c) =>
-        c.id === id
-          ? {
-              ...c,
-              status: "confirmado" as const,
-              motivo: undefined,
-              revisadoPor: revisor,
-              revisadoEm: new Date().toISOString(),
-            }
-          : c,
-      ),
-    };
-    emit();
+  async confirmar(id: string, revisor: string) {
+    await atualizar(
+      id,
+      { status: "confirmado", motivo: "", revisado_por: revisor, revisado_em: new Date().toISOString() },
+      "Contribuição confirmada.",
+    );
   },
-  rejeitar(id: string, revisor: string, motivo: string) {
-    state = {
-      contribuicoes: state.contribuicoes.map((c) =>
-        c.id === id
-          ? {
-              ...c,
-              status: "rejeitado" as const,
-              motivo,
-              revisadoPor: revisor,
-              revisadoEm: new Date().toISOString(),
-            }
-          : c,
-      ),
-    };
-    emit();
+  async rejeitar(id: string, revisor: string, motivo: string) {
+    await atualizar(
+      id,
+      { status: "rejeitado", motivo, revisado_por: revisor, revisado_em: new Date().toISOString() },
+      "Contribuição rejeitada.",
+    );
   },
 };
