@@ -18,7 +18,8 @@ import { AppShell, BackButton } from "@/components/AppShell";
 import { ministerios } from "@/lib/church-data";
 import { BloqueioMinisterio } from "@/components/BloqueioMinisterio";
 import { usePerfil } from "@/hooks/usePerfil";
-import { podeVerMinisterio, type SlugMinisterio } from "@/lib/permissoes";
+import { motivoBloqueio, podeVerMinisterio, type SlugMinisterio } from "@/lib/permissoes";
+import { listarAvisosMin, useLista, type AvisoMinDB } from "@/lib/ministerio-db";
 import { ministeriosConteudo, type SecaoKey } from "@/lib/ministerio-data";
 import heroJovens from "@/assets/hero-jovens.jpg";
 import heroIrmas from "@/assets/hero-irmas.jpg";
@@ -68,13 +69,14 @@ const titulos = {
 function MinisterioPage() {
   const { permissao } = usePerfil();
   const { slug } = Route.useParams();
+  const { lista: avisos } = useLista<AvisoMinDB>(() => listarAvisosMin(slug));
   const min = ministerios.find((m) => m.slug === slug);
   if (!min) throw notFound();
   const conteudo = ministeriosConteudo[min.slug];
   const titulo = titulos[min.slug];
 
   const temAcesso = podeVerMinisterio(permissao, min.slug as SlugMinisterio);
-  const fixado = conteudo.avisos.find((a) => a.fixado) ?? conteudo.avisos[0];
+  const fixado = (avisos ?? []).find((a) => a.fixado) ?? (avisos ?? [])[0] ?? null;
 
   return (
     <AppShell theme={min.slug}>
@@ -120,7 +122,8 @@ function MinisterioPage() {
             <p className="mt-1 font-display text-lg">{fixado.titulo}</p>
             <p className="mt-1 text-sm">{fixado.texto}</p>
             <p className="mt-2 text-xs text-soft">
-              {fixado.autor} · {fixado.data}
+              {fixado.autor_nome || "Liderança"} ·{" "}
+              {new Date(fixado.created_at).toLocaleDateString("pt-BR")}
             </p>
           </div>
         ) : null}
@@ -153,7 +156,10 @@ function MinisterioPage() {
             })}
           </div>
         ) : (
-          <BloqueioMinisterio slug={min.slug as SlugMinisterio} />
+          <BloqueioMinisterio
+            slug={min.slug as SlugMinisterio}
+            motivo={motivoBloqueio(permissao)}
+          />
         )}
 
         <div className="surface-card px-4 py-5 text-center">

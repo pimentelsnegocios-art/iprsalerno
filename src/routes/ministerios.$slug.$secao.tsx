@@ -57,7 +57,12 @@ import {
   type MinisterioConteudo,
   type SecaoKey,
 } from "@/lib/ministerio-data";
-import { podeAdministrarMinisterio, podeVerMinisterio, type SlugMinisterio } from "@/lib/permissoes";
+import {
+  motivoBloqueio,
+  podeAdministrarMinisterio,
+  podeVerMinisterio,
+  type SlugMinisterio,
+} from "@/lib/permissoes";
 import type { MinisterioSlug } from "@/lib/church-data";
 
 export const Route = createFileRoute("/ministerios/$slug/$secao")({
@@ -102,7 +107,10 @@ function SecaoPage() {
       />
       <div className="px-5 py-5">
         {!temAcesso ? (
-          <BloqueioMinisterio slug={conteudo.slug as SlugMinisterio} />
+          <BloqueioMinisterio
+            slug={conteudo.slug as SlugMinisterio}
+            motivo={motivoBloqueio(permissao)}
+          />
         ) : (
           <Conteudo secao={secao as SecaoKey} c={conteudo} />
         )}
@@ -222,7 +230,11 @@ function EnsaioView({ c }: { c: MinisterioConteudo }) {
       link: e.link,
       solistas: e.solistas.join(", "),
       partes: e.partes
-        .map((p) => `${p.quem} | ${p.texto}${p.marcacao ? ` | ${p.marcacao}` : ""}`)
+        .map((p) =>
+          p.quem
+            ? `${p.quem} | ${p.texto}${p.marcacao ? ` | ${p.marcacao}` : ""}`
+            : `${p.texto}${p.marcacao ? ` | | ${p.marcacao}` : ""}`,
+        )
         .join("\n"),
       observacoes: e.observacoes.join("\n"),
     });
@@ -248,7 +260,10 @@ function EnsaioView({ c }: { c: MinisterioConteudo }) {
         .map((l) => l.trim())
         .filter(Boolean)
         .map((linha) => {
-          const [quem = "Conjunto", texto = "", marcacao] = linha.split("|").map((p) => p.trim());
+          const partes = linha.split("|").map((p) => p.trim());
+          const quem = partes.length > 1 ? (partes[0] ?? "") : "";
+          const texto = (partes.length > 1 ? partes[1] : partes[0]) ?? "";
+          const marcacao = partes[2] ?? "";
           return marcacao ? { quem, texto, marcacao } : { quem, texto };
         }),
       observacoes: form.observacoes.split("\n").map((o) => o.trim()).filter(Boolean),
@@ -277,9 +292,9 @@ function EnsaioView({ c }: { c: MinisterioConteudo }) {
             <Campo label="Horário" tipo="time" valor={form.horario} onChange={(v) => setForm({ ...form, horario: v })} />
             <Campo label="Local" valor={form.local} onChange={(v) => setForm({ ...form, local: v })} />
             <Campo label="Referência (link do vídeo/áudio)" valor={form.link} onChange={(v) => setForm({ ...form, link: v })} />
-            <Campo label="Solistas / ministros (separados por vírgula)" valor={form.solistas} onChange={(v) => setForm({ ...form, solistas: v })} />
+            <Campo label="Solistas / ministros (opcional, separados por vírgula)" valor={form.solistas} onChange={(v) => setForm({ ...form, solistas: v })} />
             <label className="block text-xs text-soft">
-              Letra com as partes — uma por linha: Quem canta | trecho | marcação (opcional)
+              Letra — uma linha por trecho. Quem canta é opcional: “Quem | trecho | marcação”
               <textarea
                 rows={6}
                 value={form.partes}
@@ -331,10 +346,10 @@ function EnsaioView({ c }: { c: MinisterioConteudo }) {
                 {e.horario ? ` · ${e.horario}` : ""}
                 {e.local ? ` · ${e.local}` : ""}
               </p>
-              <h2 className="font-display text-xl">{e.titulo}</h2>
-              <p className="text-sm text-soft">{e.artista}</p>
+              <h2 className="font-display text-2xl">{e.titulo}</h2>
+              <p className="text-base text-soft">{e.artista}</p>
             </div>
-            <span className="rounded-lg bg-primary px-3 py-1.5 text-sm font-bold text-primary-foreground">
+            <span className="rounded-lg bg-primary px-3 py-1.5 text-base font-bold text-primary-foreground">
               Tom {e.tom}
             </span>
           </div>
@@ -344,7 +359,7 @@ function EnsaioView({ c }: { c: MinisterioConteudo }) {
               href={e.link}
               target="_blank"
               rel="noreferrer"
-              className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-primary"
+              className="mt-3 inline-flex items-center gap-1.5 text-base font-semibold text-primary"
             >
               <ExternalLink className="size-4" /> Referência (vídeo/áudio)
             </a>
@@ -353,7 +368,7 @@ function EnsaioView({ c }: { c: MinisterioConteudo }) {
           {e.solistas.length ? (
             <ul className="mt-3 flex flex-wrap gap-2">
               {e.solistas.map((s) => (
-                <li key={s} className="rounded-full border border-border px-3 py-1 text-xs">
+                <li key={s} className="rounded-full border border-border px-3 py-1 text-sm">
                   {s}
                 </li>
               ))}
@@ -364,10 +379,12 @@ function EnsaioView({ c }: { c: MinisterioConteudo }) {
             <div className="mt-3 space-y-3">
               {e.partes.map((p, i) => (
                 <div key={i} className="border-l-2 border-primary/60 pl-3">
-                  <p className="text-xs font-semibold text-primary">{p.quem}</p>
-                  <p className="text-sm">{p.texto}</p>
+                  {p.quem ? (
+                    <p className="text-sm font-semibold text-primary">{p.quem}</p>
+                  ) : null}
+                  <p className="text-lg leading-relaxed">{p.texto}</p>
                   {p.marcacao ? (
-                    <p className="mt-0.5 text-[11px] italic text-soft">▸ {p.marcacao}</p>
+                    <p className="mt-0.5 text-sm italic text-soft">▸ {p.marcacao}</p>
                   ) : null}
                 </div>
               ))}
@@ -375,14 +392,14 @@ function EnsaioView({ c }: { c: MinisterioConteudo }) {
           ) : null}
 
           {e.observacoes.length ? (
-            <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-soft">
+            <ul className="mt-3 list-disc space-y-1 pl-5 text-base text-soft">
               {e.observacoes.map((o) => (
                 <li key={o}>{o}</li>
               ))}
             </ul>
           ) : null}
 
-          <p className="mt-3 text-xs text-soft">Por {e.autor_nome || "Liderança"}</p>
+          <p className="mt-3 text-sm text-soft">Por {e.autor_nome || "Liderança"}</p>
 
           {lider ? (
             <div className="mt-3 flex gap-2 border-t border-border pt-3">

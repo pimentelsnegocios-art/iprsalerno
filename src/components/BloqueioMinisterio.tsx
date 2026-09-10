@@ -1,12 +1,55 @@
-import { HeartHandshake } from "lucide-react";
+import { Clock, HeartHandshake, ShieldAlert } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
 import { NOME_MINISTERIO, type SlugMinisterio } from "@/lib/permissoes";
 
-export function BloqueioMinisterio({ slug }: { slug: SlugMinisterio }) {
+type Motivo = "pendente" | "rejeitado" | "visitante" | "sem-acesso";
+
+export function BloqueioMinisterio({
+  slug,
+  motivo = "sem-acesso",
+}: {
+  slug: SlugMinisterio;
+  motivo?: Motivo;
+}) {
   const [enviado, setEnviado] = useState(false);
   const nome = NOME_MINISTERIO[slug];
+
+  if (motivo === "pendente") {
+    return (
+      <div className="surface-card mx-auto max-w-md p-6 text-center">
+        <Clock className="mx-auto size-9 text-primary" />
+        <p className="mt-4 text-sm leading-relaxed">
+          Aguardando aprovação da liderança. Assim que seu cadastro for aprovado, você terá acesso
+          aos ministérios.
+        </p>
+      </div>
+    );
+  }
+
+  if (motivo === "rejeitado") {
+    return (
+      <div className="surface-card mx-auto max-w-md p-6 text-center">
+        <ShieldAlert className="mx-auto size-9 text-destructive" />
+        <p className="mt-4 text-sm leading-relaxed">
+          Cadastro não aprovado. Procure a liderança.
+        </p>
+      </div>
+    );
+  }
+
+  if (motivo === "visitante") {
+    return (
+      <div className="surface-card mx-auto max-w-md p-6 text-center">
+        <HeartHandshake className="mx-auto size-9 text-primary" />
+        <p className="mt-4 text-sm leading-relaxed">
+          Que bom ter você conosco! Os ministérios são exclusivos para membros. Fale com a
+          liderança para fazer parte 🙏
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="surface-card mx-auto max-w-md p-6 text-center">
