@@ -156,7 +156,10 @@ function MinisterioPage() {
             })}
           </div>
         ) : (
-          <BloqueioMinisterio slug={min.slug as SlugMinisterio} />
+          <BloqueioMinisterio
+            slug={min.slug as SlugMinisterio}
+            motivo={motivoBloqueio(permissao)}
+          />
         )}
 
         <div className="surface-card px-4 py-5 text-center">
