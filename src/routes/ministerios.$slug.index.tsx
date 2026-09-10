@@ -122,7 +122,8 @@ function MinisterioPage() {
             <p className="mt-1 font-display text-lg">{fixado.titulo}</p>
             <p className="mt-1 text-sm">{fixado.texto}</p>
             <p className="mt-2 text-xs text-soft">
-              {fixado.autor} · {fixado.data}
+              {fixado.autor_nome || "Liderança"} ·{" "}
+              {new Date(fixado.created_at).toLocaleDateString("pt-BR")}
             </p>
           </div>
         ) : null}
