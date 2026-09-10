@@ -57,7 +57,12 @@ import {
   type MinisterioConteudo,
   type SecaoKey,
 } from "@/lib/ministerio-data";
-import { podeAdministrarMinisterio, podeVerMinisterio, type SlugMinisterio } from "@/lib/permissoes";
+import {
+  motivoBloqueio,
+  podeAdministrarMinisterio,
+  podeVerMinisterio,
+  type SlugMinisterio,
+} from "@/lib/permissoes";
 import type { MinisterioSlug } from "@/lib/church-data";
 
 export const Route = createFileRoute("/ministerios/$slug/$secao")({
