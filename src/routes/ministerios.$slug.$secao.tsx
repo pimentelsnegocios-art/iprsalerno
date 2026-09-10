@@ -230,7 +230,11 @@ function EnsaioView({ c }: { c: MinisterioConteudo }) {
       link: e.link,
       solistas: e.solistas.join(", "),
       partes: e.partes
-        .map((p) => `${p.quem} | ${p.texto}${p.marcacao ? ` | ${p.marcacao}` : ""}`)
+        .map((p) =>
+          p.quem
+            ? `${p.quem} | ${p.texto}${p.marcacao ? ` | ${p.marcacao}` : ""}`
+            : `${p.texto}${p.marcacao ? ` | | ${p.marcacao}` : ""}`,
+        )
         .join("\n"),
       observacoes: e.observacoes.join("\n"),
     });
@@ -256,7 +260,10 @@ function EnsaioView({ c }: { c: MinisterioConteudo }) {
         .map((l) => l.trim())
         .filter(Boolean)
         .map((linha) => {
-          const [quem = "Conjunto", texto = "", marcacao] = linha.split("|").map((p) => p.trim());
+          const partes = linha.split("|").map((p) => p.trim());
+          const quem = partes.length > 1 ? (partes[0] ?? "") : "";
+          const texto = (partes.length > 1 ? partes[1] : partes[0]) ?? "";
+          const marcacao = partes[2] ?? "";
           return marcacao ? { quem, texto, marcacao } : { quem, texto };
         }),
       observacoes: form.observacoes.split("\n").map((o) => o.trim()).filter(Boolean),
