@@ -107,7 +107,10 @@ function SecaoPage() {
       />
       <div className="px-5 py-5">
         {!temAcesso ? (
-          <BloqueioMinisterio slug={conteudo.slug as SlugMinisterio} />
+          <BloqueioMinisterio
+            slug={conteudo.slug as SlugMinisterio}
+            motivo={motivoBloqueio(permissao)}
+          />
         ) : (
           <Conteudo secao={secao as SecaoKey} c={conteudo} />
         )}
