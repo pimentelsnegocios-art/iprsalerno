@@ -69,13 +69,14 @@ const titulos = {
 function MinisterioPage() {
   const { permissao } = usePerfil();
   const { slug } = Route.useParams();
+  const { lista: avisos } = useLista<AvisoMinDB>(() => listarAvisosMin(slug));
   const min = ministerios.find((m) => m.slug === slug);
   if (!min) throw notFound();
   const conteudo = ministeriosConteudo[min.slug];
   const titulo = titulos[min.slug];
 
   const temAcesso = podeVerMinisterio(permissao, min.slug as SlugMinisterio);
-  const fixado = conteudo.avisos.find((a) => a.fixado) ?? conteudo.avisos[0];
+  const fixado = (avisos ?? []).find((a) => a.fixado) ?? (avisos ?? [])[0] ?? null;
 
   return (
     <AppShell theme={min.slug}>
