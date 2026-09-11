@@ -4,7 +4,7 @@ import { Wallet, ShieldCheck, LogOut, Users, Megaphone, HandCoins, Settings } fr
 import { AppShell, PageHeader } from "@/components/AppShell";
 import { usePerfil } from "@/hooks/usePerfil";
 import { supabase } from "@/integrations/supabase/client";
-import { podeAprovarCadastros, podeVerCaixaPerfil } from "@/lib/permissoes";
+import { ehVisitante, podeAprovarCadastros, podeVerCaixaPerfil } from "@/lib/permissoes";
 
 export const Route = createFileRoute("/mais")({
   ssr: false,
@@ -33,9 +33,10 @@ function Mais() {
     navigate({ to: "/login", replace: true });
   }
 
-  const caixa = podeVerCaixaPerfil(permissao);
-  const admin = podeAprovarCadastros(permissao);
-  const config = ["Fundador", "Admin"].includes(permissao.cargo);
+  const visitante = ehVisitante(permissao);
+  const caixa = !visitante && podeVerCaixaPerfil(permissao);
+  const admin = !visitante && podeAprovarCadastros(permissao);
+  const config = !visitante && ["Fundador", "Admin"].includes(permissao.cargo);
 
   return (
     <AppShell>
