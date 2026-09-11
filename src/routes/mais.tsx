@@ -1,5 +1,14 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Wallet, ShieldCheck, LogOut, Users, Megaphone, HandCoins, Settings } from "lucide-react";
+import {
+  Wallet,
+  ShieldCheck,
+  LogOut,
+  Users,
+  UserPlus,
+  Megaphone,
+  HandCoins,
+  Settings,
+} from "lucide-react";
 
 import { AppShell, PageHeader } from "@/components/AppShell";
 import { usePerfil } from "@/hooks/usePerfil";
@@ -77,6 +86,13 @@ function Mais() {
               <div>
                 <p className="font-semibold">Hall de Membros</p>
                 <p className="text-xs text-soft">Cargos, ministérios, bloqueio e exclusão</p>
+              </div>
+            </Link>
+            <Link to="/admin/visitantes" className="surface-card flex items-center gap-3 p-4">
+              <UserPlus className="size-5 text-primary" />
+              <div>
+                <p className="font-semibold">Hall de Visitantes</p>
+                <p className="text-xs text-soft">Visitantes cadastrados, converter em membro</p>
               </div>
             </Link>
             <Link to="/admin/avisos" className="surface-card flex items-center gap-3 p-4">
