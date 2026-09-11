@@ -222,7 +222,11 @@ function Caixa() {
 
   const limparForm = () => {
     setEditandoId(null);
-    limparForm();
+    setDescricao("");
+    setValor("R$ 0,00");
+    setObservacao("");
+    setComprovante(null);
+    if (fileRef.current) fileRef.current.value = "";
   };
 
   const editar = (i: Lancamento) => {
@@ -230,7 +234,7 @@ function Caixa() {
     setTipo(i.tipo);
     setCategoria(i.categoria);
     setDescricao(i.descricao);
-    setValor(String(i.valor).replace(".", ","));
+    setValor(numeroParaValorBRL(i.valor));
     setData(i.dataISO);
     setForma(i.forma);
     setObservacao(i.observacao ?? "");
@@ -245,7 +249,7 @@ function Caixa() {
   };
 
   const lancar = () => {
-    const v = Number(valor.replace(/\./g, "").replace(",", "."));
+    const v = valorBRLParaNumero(valor);
     if (!v || !descricao.trim() || mesTravado) return;
     if (editandoId) {
       setItens((atual) =>
@@ -285,11 +289,7 @@ function Caixa() {
       },
       ...itens,
     ]);
-    setDescricao("");
-    setValor("");
-    setObservacao("");
-    setComprovante(null);
-    if (fileRef.current) fileRef.current.value = "";
+    limparForm();
   };
 
   const mesRelatorio = fMes === "todos" ? mesDe(hojeISO()) : fMes;
