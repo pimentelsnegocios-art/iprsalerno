@@ -41,6 +41,7 @@ import {
 } from "@/lib/church-data";
 import { usePerfil } from "@/hooks/usePerfil";
 import { podeVerCaixaPerfil } from "@/lib/permissoes";
+import { formatarValorBRL, numeroParaValorBRL, valorBRLParaNumero } from "@/lib/moeda";
 
 export const Route = createFileRoute("/caixa")({
   head: () => ({
@@ -121,7 +122,8 @@ function Caixa() {
   const [tipo, setTipo] = useState<TipoLancamento>("entrada");
   const [categoria, setCategoria] = useState("Dízimo");
   const [descricao, setDescricao] = useState("");
-  const [valor, setValor] = useState("");
+  const [valor, setValor] = useState("R$ 0,00");
+  const [verComprovante, setVerComprovante] = useState<string | null>(null);
   const [data, setData] = useState(hojeISO());
   const [forma, setForma] = useState<FormaPagamento>("Pix");
   const [observacao, setObservacao] = useState("");
