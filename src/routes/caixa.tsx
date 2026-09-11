@@ -702,6 +702,57 @@ ${linhas
           ) : null}
         </div>
       </div>
+
+      {verComprovante ? (
+        <VerComprovante url={verComprovante} onClose={() => setVerComprovante(null)} />
+      ) : null}
     </AppShell>
+  );
+}
+
+function VerComprovante({ url, onClose }: { url: string; onClose: () => void }) {
+  const [erro, setErro] = useState(false);
+  const ehPdf = url.startsWith("data:application/pdf") || url.toLowerCase().includes(".pdf");
+
+  const abrirExterno = () => {
+    try {
+      const aba = window.open(url, "_blank", "noopener,noreferrer");
+      if (!aba) setErro(true);
+    } catch {
+      setErro(true);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex flex-col bg-black/90 p-4">
+      <div className="flex items-center justify-between text-white">
+        <p className="font-semibold">Comprovante</p>
+        <button type="button" onClick={onClose} aria-label="Fechar" className="p-2">
+          <X className="size-6" />
+        </button>
+      </div>
+      <div className="mt-4 flex flex-1 items-center justify-center overflow-auto text-center">
+        {erro ? (
+          <p className="rounded-xl bg-white/10 px-4 py-3 text-sm text-white">
+            Comprovante indisponível.
+          </p>
+        ) : ehPdf ? (
+          <button
+            type="button"
+            onClick={abrirExterno}
+            className="rounded-xl bg-white/10 px-4 py-3 text-sm font-semibold text-white"
+          >
+            Abrir PDF do comprovante
+          </button>
+        ) : (
+          <img
+            src={url}
+            alt="Comprovante do lançamento"
+            onError={() => setErro(true)}
+            className="max-h-full w-auto max-w-full rounded-xl object-contain"
+          />
+        )}
+      </div>
+    </div>
   );
 }
