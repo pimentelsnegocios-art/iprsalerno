@@ -8,6 +8,7 @@ import { appConfirm } from "@/components/ui/AppDialog";
 import { useConfigIgreja } from "@/hooks/useConfigIgreja";
 import { usePerfil } from "@/hooks/usePerfil";
 import { podeVerCaixaPerfil } from "@/lib/permissoes";
+import { formatarValorBRL, valorBRLParaNumero } from "@/lib/moeda";
 import {
   acoesPix,
   brlPix,
@@ -46,7 +47,7 @@ function Contribuicoes() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const [tipo, setTipo] = useState<TipoContribuicao | "">("");
-  const [valor, setValor] = useState("");
+  const [valor, setValor] = useState("R$ 0,00");
   const [mesRef, setMesRef] = useState(mesAtual());
   const [arquivo, setArquivo] = useState<{
     nome: string;
@@ -114,7 +115,7 @@ function Contribuicoes() {
       setErro("Escolha o tipo de contribuição.");
       return;
     }
-    const numero = Number(valor.replace(/\./g, "").replace(",", "."));
+    const numero = valorBRLParaNumero(valor);
     if (!Number.isFinite(numero) || numero <= 0) {
       setErro("Informe um valor maior que zero.");
       return;
@@ -142,7 +143,7 @@ function Contribuicoes() {
     });
 
     setTipo("");
-    setValor("");
+    setValor("R$ 0,00");
     setMesRef(mesAtual());
     setArquivo(null);
     if (inputRef.current) inputRef.current.value = "";
@@ -230,9 +231,9 @@ function Contribuicoes() {
           <label className="mt-3 block text-xs text-soft">
             Valor *
             <input
-              inputMode="decimal"
+              inputMode="numeric"
               value={valor}
-              onChange={(e) => setValor(e.target.value)}
+              onChange={(e) => setValor(formatarValorBRL(e.target.value))}
               placeholder="R$ 0,00"
               className="mt-1 w-full rounded-xl border border-border bg-background/40 px-3 py-2.5 text-sm text-foreground"
             />

@@ -41,6 +41,7 @@ import {
 } from "@/lib/church-data";
 import { usePerfil } from "@/hooks/usePerfil";
 import { podeVerCaixaPerfil } from "@/lib/permissoes";
+import { formatarValorBRL, numeroParaValorBRL, valorBRLParaNumero } from "@/lib/moeda";
 
 export const Route = createFileRoute("/caixa")({
   head: () => ({
@@ -121,7 +122,8 @@ function Caixa() {
   const [tipo, setTipo] = useState<TipoLancamento>("entrada");
   const [categoria, setCategoria] = useState("Dízimo");
   const [descricao, setDescricao] = useState("");
-  const [valor, setValor] = useState("");
+  const [valor, setValor] = useState("R$ 0,00");
+  const [verComprovante, setVerComprovante] = useState<string | null>(null);
   const [data, setData] = useState(hojeISO());
   const [forma, setForma] = useState<FormaPagamento>("Pix");
   const [observacao, setObservacao] = useState("");
@@ -220,7 +222,11 @@ function Caixa() {
 
   const limparForm = () => {
     setEditandoId(null);
-    limparForm();
+    setDescricao("");
+    setValor("R$ 0,00");
+    setObservacao("");
+    setComprovante(null);
+    if (fileRef.current) fileRef.current.value = "";
   };
 
   const editar = (i: Lancamento) => {
@@ -228,7 +234,7 @@ function Caixa() {
     setTipo(i.tipo);
     setCategoria(i.categoria);
     setDescricao(i.descricao);
-    setValor(String(i.valor).replace(".", ","));
+    setValor(numeroParaValorBRL(i.valor));
     setData(i.dataISO);
     setForma(i.forma);
     setObservacao(i.observacao ?? "");
@@ -243,7 +249,7 @@ function Caixa() {
   };
 
   const lancar = () => {
-    const v = Number(valor.replace(/\./g, "").replace(",", "."));
+    const v = valorBRLParaNumero(valor);
     if (!v || !descricao.trim() || mesTravado) return;
     if (editandoId) {
       setItens((atual) =>
@@ -283,11 +289,7 @@ function Caixa() {
       },
       ...itens,
     ]);
-    setDescricao("");
-    setValor("");
-    setObservacao("");
-    setComprovante(null);
-    if (fileRef.current) fileRef.current.value = "";
+    limparForm();
   };
 
   const mesRelatorio = fMes === "todos" ? mesDe(hojeISO()) : fMes;
@@ -505,9 +507,9 @@ ${linhas
           />
           <Input
             value={valor}
-            onChange={(e) => setValor(e.target.value)}
-            inputMode="decimal"
-            placeholder="Valor (R$)"
+            onChange={(e) => setValor(formatarValorBRL(e.target.value))}
+            inputMode="numeric"
+            placeholder="R$ 0,00"
             className="mt-2 bg-background"
           />
           <Textarea
@@ -657,15 +659,14 @@ ${linhas
                 {i.observacao ? (
                   <p className="mt-1 text-[11px] italic text-soft">{i.observacao}</p>
                 ) : null}
-                {i.comprovante ? (
-                  <a
-                    href={i.comprovante}
-                    target="_blank"
-                    rel="noreferrer"
+                {i.comprovante && i.comprovante.trim() ? (
+                  <button
+                    type="button"
+                    onClick={() => setVerComprovante(i.comprovante ?? null)}
                     className="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold text-primary"
                   >
                     <Paperclip className="size-3" /> Comprovante
-                  </a>
+                  </button>
                 ) : null}
               </div>
               <span
@@ -701,6 +702,57 @@ ${linhas
           ) : null}
         </div>
       </div>
+
+      {verComprovante ? (
+        <VerComprovante url={verComprovante} onClose={() => setVerComprovante(null)} />
+      ) : null}
     </AppShell>
+  );
+}
+
+function VerComprovante({ url, onClose }: { url: string; onClose: () => void }) {
+  const [erro, setErro] = useState(false);
+  const ehPdf = url.startsWith("data:application/pdf") || url.toLowerCase().includes(".pdf");
+
+  const abrirExterno = () => {
+    try {
+      const aba = window.open(url, "_blank", "noopener,noreferrer");
+      if (!aba) setErro(true);
+    } catch {
+      setErro(true);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex flex-col bg-black/90 p-4">
+      <div className="flex items-center justify-between text-white">
+        <p className="font-semibold">Comprovante</p>
+        <button type="button" onClick={onClose} aria-label="Fechar" className="p-2">
+          <X className="size-6" />
+        </button>
+      </div>
+      <div className="mt-4 flex flex-1 items-center justify-center overflow-auto text-center">
+        {erro ? (
+          <p className="rounded-xl bg-white/10 px-4 py-3 text-sm text-white">
+            Comprovante indisponível.
+          </p>
+        ) : ehPdf ? (
+          <button
+            type="button"
+            onClick={abrirExterno}
+            className="rounded-xl bg-white/10 px-4 py-3 text-sm font-semibold text-white"
+          >
+            Abrir PDF do comprovante
+          </button>
+        ) : (
+          <img
+            src={url}
+            alt="Comprovante do lançamento"
+            onError={() => setErro(true)}
+            className="max-h-full w-auto max-w-full rounded-xl object-contain"
+          />
+        )}
+      </div>
+    </div>
   );
 }

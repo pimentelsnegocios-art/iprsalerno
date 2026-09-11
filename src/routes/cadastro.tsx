@@ -97,8 +97,8 @@ function CadastroPage() {
               Cadastro recebido!
             </h1>
             <p className="mt-2 text-sm text-[#1E3A5F]/60">
-              Sua conta foi criada e seu nome foi enviado para a liderança. Já pode entrar e
-              começar a fazer parte de tudo por aqui.
+              Seu cadastro está aguardando aprovação da liderança. Assim que aprovado, você terá
+              acesso aos ministérios. Você já pode entrar e ver a agenda, os cultos e os avisos.
             </p>
             <button
               onClick={() => navigate({ to: "/login" })}
@@ -171,7 +171,7 @@ function CadastroPage() {
               <div className="rounded-2xl border border-[#1E3A5F]/10 bg-[#F8F5F0] px-4 py-3">
                 <p className="flex items-center gap-2 text-xs font-medium text-[#1E3A5F]/70">
                   <Users className="h-4 w-4 shrink-0 text-[#B89B5E]" />
-                  Quais ministérios você frequenta? (pode marcar vários)
+                  Quais ministérios você frequenta? (só uma indicação — a liderança confirma)
                 </p>
                 <div className="mt-2 flex flex-wrap gap-1.5">
                   {OPCOES_MINISTERIOS.map((m) => {
