@@ -507,9 +507,9 @@ ${linhas
           />
           <Input
             value={valor}
-            onChange={(e) => setValor(e.target.value)}
-            inputMode="decimal"
-            placeholder="Valor (R$)"
+            onChange={(e) => setValor(formatarValorBRL(e.target.value))}
+            inputMode="numeric"
+            placeholder="R$ 0,00"
             className="mt-2 bg-background"
           />
           <Textarea
@@ -659,15 +659,14 @@ ${linhas
                 {i.observacao ? (
                   <p className="mt-1 text-[11px] italic text-soft">{i.observacao}</p>
                 ) : null}
-                {i.comprovante ? (
-                  <a
-                    href={i.comprovante}
-                    target="_blank"
-                    rel="noreferrer"
+                {i.comprovante && i.comprovante.trim() ? (
+                  <button
+                    type="button"
+                    onClick={() => setVerComprovante(i.comprovante ?? null)}
                     className="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold text-primary"
                   >
                     <Paperclip className="size-3" /> Comprovante
-                  </a>
+                  </button>
                 ) : null}
               </div>
               <span
