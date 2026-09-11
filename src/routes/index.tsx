@@ -18,6 +18,7 @@ import { AppShell } from "@/components/AppShell";
 import { useCultos } from "@/lib/agenda-cultos";
 import { useConfigIgreja } from "@/hooks/useConfigIgreja";
 import { usePerfil } from "@/hooks/usePerfil";
+import { estaPendente, estaRejeitado } from "@/lib/permissoes";
 import { useAvisos, dataAvisoBR } from "@/lib/avisos-db";
 
 
@@ -84,6 +85,17 @@ function Home() {
       </header>
 
       <section className="space-y-3 px-5 pt-4">
+        {perfil && estaPendente(perfil) ? (
+          <div className="surface-card border-primary/40 p-4 text-sm">
+            Seu cadastro está aguardando aprovação da liderança. Assim que aprovado, você terá
+            acesso aos ministérios.
+          </div>
+        ) : null}
+        {perfil && estaRejeitado(perfil) ? (
+          <div className="surface-card border-destructive/50 p-4 text-sm">
+            Cadastro não aprovado. Procure a liderança.
+          </div>
+        ) : null}
         <AniversariantesHoje />
         <Link
 
