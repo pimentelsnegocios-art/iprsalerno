@@ -48,6 +48,7 @@ interface Conta {
 const tabs = [
   { key: "Pendente", label: "Pendentes" },
   { key: "Aprovado", label: "Aprovados" },
+  { key: "Rejeitado", label: "Rejeitados" },
   { key: "Bloqueado", label: "Bloqueados" },
 ] as const;
 
