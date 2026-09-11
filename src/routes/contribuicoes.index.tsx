@@ -115,7 +115,7 @@ function Contribuicoes() {
       setErro("Escolha o tipo de contribuição.");
       return;
     }
-    const numero = Number(valor.replace(/\./g, "").replace(",", "."));
+    const numero = valorBRLParaNumero(valor);
     if (!Number.isFinite(numero) || numero <= 0) {
       setErro("Informe um valor maior que zero.");
       return;
@@ -143,7 +143,7 @@ function Contribuicoes() {
     });
 
     setTipo("");
-    setValor("");
+    setValor("R$ 0,00");
     setMesRef(mesAtual());
     setArquivo(null);
     if (inputRef.current) inputRef.current.value = "";
@@ -231,9 +231,9 @@ function Contribuicoes() {
           <label className="mt-3 block text-xs text-soft">
             Valor *
             <input
-              inputMode="decimal"
+              inputMode="numeric"
               value={valor}
-              onChange={(e) => setValor(e.target.value)}
+              onChange={(e) => setValor(formatarValorBRL(e.target.value))}
               placeholder="R$ 0,00"
               className="mt-1 w-full rounded-xl border border-border bg-background/40 px-3 py-2.5 text-sm text-foreground"
             />
