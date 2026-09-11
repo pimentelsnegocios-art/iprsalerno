@@ -78,6 +78,7 @@ function AdminMembros() {
     const { data } = await supabase
       .from("profiles")
       .select("id, nome, email, cargo, status, ministerios, foto_url")
+      .neq("cargo", "Visitante")
       .order("nome");
     setContas((data as Conta[] | null) ?? []);
     setCarregando(false);
@@ -217,14 +218,14 @@ function AdminMembros() {
                     <Check className="size-4" />
                   </button>
                   <button
-                    aria-label={`Bloquear ${m.nome}`}
-                    onClick={() => atualizar(m.id, { status: "Bloqueado" })}
+                    aria-label={`Recusar ${m.nome}`}
+                    onClick={() => atualizar(m.id, { status: "Rejeitado" })}
                     className="rounded-lg bg-secondary p-2 text-destructive"
                   >
                     <X className="size-4" />
                   </button>
                 </div>
-              ) : m.status === "Bloqueado" ? (
+              ) : m.status === "Bloqueado" || m.status === "Rejeitado" ? (
                 <div className="flex gap-1.5">
                   <button
                     onClick={() => atualizar(m.id, { status: "Aprovado" })}
