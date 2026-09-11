@@ -8,6 +8,7 @@ import { appConfirm } from "@/components/ui/AppDialog";
 import { useConfigIgreja } from "@/hooks/useConfigIgreja";
 import { usePerfil } from "@/hooks/usePerfil";
 import { podeVerCaixaPerfil } from "@/lib/permissoes";
+import { formatarValorBRL, valorBRLParaNumero } from "@/lib/moeda";
 import {
   acoesPix,
   brlPix,
@@ -46,7 +47,7 @@ function Contribuicoes() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const [tipo, setTipo] = useState<TipoContribuicao | "">("");
-  const [valor, setValor] = useState("");
+  const [valor, setValor] = useState("R$ 0,00");
   const [mesRef, setMesRef] = useState(mesAtual());
   const [arquivo, setArquivo] = useState<{
     nome: string;
