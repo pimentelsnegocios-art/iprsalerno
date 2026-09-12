@@ -16,7 +16,7 @@ export function BottomNav() {
 
   return (
     <nav
-      className="nav-gradient fixed inset-x-0 bottom-0 z-40 border-t border-primary/35 shadow-[0_-6px_20px_-16px_oklch(0.19_0.055_252/45%)]"
+      className="nav-gradient fixed inset-x-0 bottom-0 z-40 border-t border-primary/35 shadow-[0_-6px_20px_-16px_color-mix(in_oklab,var(--navy-deep)_45%,transparent)]"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
       <div className="mx-auto flex max-w-lg items-stretch">

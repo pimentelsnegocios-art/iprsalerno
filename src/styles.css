@@ -40,33 +40,33 @@
 :root {
   --radius: 0.875rem;
   --background: oklch(0.98 0.002 250);
-  --foreground: oklch(0.24 0.06 252);
+  --foreground: #122e6b;
   --surface: oklch(1 0 0);
-  --surface-foreground: oklch(0.24 0.06 252);
+  --surface-foreground: #122e6b;
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.24 0.06 252);
+  --card-foreground: #122e6b;
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.24 0.06 252);
+  --popover-foreground: #122e6b;
   --primary: oklch(0.73 0.13 88);
   --primary-foreground: oklch(1 0 0);
   --secondary: oklch(0.96 0.006 250);
-  --secondary-foreground: oklch(0.24 0.06 252);
+  --secondary-foreground: #122e6b;
   --muted: oklch(0.96 0.006 250);
-  --muted-foreground: oklch(0.49 0.035 252);
+  --muted-foreground: color-mix(in oklab, #122e6b 68%, transparent);
   --accent: oklch(0.73 0.13 88);
-  --accent-foreground: oklch(0.19 0.055 252);
+  --accent-foreground: #122e6b;
   --destructive: oklch(0.62 0.22 25);
   --destructive-foreground: oklch(1 0 0);
   --border: oklch(0.89 0.008 250);
   --input: oklch(0.89 0.008 250);
   --ring: oklch(0.73 0.13 88);
 
-  --navy-deep: oklch(0.19 0.055 252);
-  --navy: oklch(0.27 0.085 252);
+  --navy-deep: #122e6b;
+  --navy: color-mix(in oklab, #122e6b 86%, white);
   --gradient-header: linear-gradient(155deg, var(--navy-deep) 0%, var(--navy) 100%);
   --gradient-action: linear-gradient(145deg, var(--navy-deep) 0%, var(--navy) 100%);
-  --shadow-soft: 0 8px 22px -14px oklch(0.19 0.055 252 / 28%);
-  --shadow-glow: 0 0 0 1px oklch(0.73 0.13 88 / 28%), 0 10px 24px -16px oklch(0.19 0.055 252 / 42%);
+  --shadow-soft: 0 8px 22px -14px color-mix(in oklab, #122e6b 28%, transparent);
+  --shadow-glow: 0 0 0 1px oklch(0.73 0.13 88 / 28%), 0 10px 24px -16px color-mix(in oklab, #122e6b 42%, transparent);
 }
 
 /* Ministério de Louvor — preto profundo / dourado / branco */
