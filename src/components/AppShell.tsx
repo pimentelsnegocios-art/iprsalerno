@@ -16,7 +16,7 @@ export function BottomNav() {
 
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-popover/95 backdrop-blur"
+      className="nav-gradient fixed inset-x-0 bottom-0 z-40 border-t border-primary/35 shadow-[0_-6px_20px_-16px_oklch(0.19_0.055_252/45%)]"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
       <div className="mx-auto flex max-w-lg items-stretch">
@@ -27,7 +27,7 @@ export function BottomNav() {
               key={to}
               to={to}
               className={`flex flex-1 flex-col items-center gap-0.5 py-2 text-[11px] font-medium transition-colors ${
-                active ? "text-primary" : "text-soft"
+                active ? "text-primary" : "text-background/80"
               }`}
             >
               <Icon className="size-5" strokeWidth={active ? 2.4 : 1.8} />
@@ -52,7 +52,7 @@ export function BackButton({ className = "" }: { className?: string }) {
       type="button"
       onClick={() => router.history.back()}
       aria-label="Voltar"
-      className={`inline-flex items-center gap-1.5 rounded-xl border border-border bg-popover/70 px-3 py-1.5 text-xs font-semibold text-primary backdrop-blur ${className}`}
+      className={`inline-flex items-center gap-1.5 rounded-xl border border-primary/45 bg-background/10 px-3 py-1.5 text-xs font-semibold text-primary backdrop-blur ${className}`}
     >
       <ChevronLeft className="size-4" /> Voltar
     </button>
@@ -75,7 +75,7 @@ export function PageHeader({
     >
       {back ? <BackButton className="mb-3" /> : null}
       <h1 className="font-display text-3xl leading-tight">{title}</h1>
-      {subtitle ? <p className="mt-1 text-sm text-soft">{subtitle}</p> : null}
+      {subtitle ? <p className="mt-1 text-sm text-background/75">{subtitle}</p> : null}
     </header>
   );
 }
@@ -91,7 +91,7 @@ export function AppShell({
   return (
     <div
       data-theme={theme}
-      className="min-h-screen bg-background text-foreground transition-colors"
+      className="app-shell min-h-screen bg-background text-foreground transition-colors"
     >
       <div className="mx-auto max-w-lg pb-24">{children}</div>
       <BottomNav />

@@ -36,34 +36,37 @@
   --font-display: "Fraunces", ui-serif, Georgia, serif;
 }
 
-/* Tema geral da Igreja — azul suave / champagne (premium bancário) */
+/* Identidade geral da Igreja — Regency navy, dourado e branco */
 :root {
   --radius: 0.875rem;
-  --background: #1e3a5f;
-  --foreground: oklch(1 0 0);
-  --surface: #2c4e7a;
-  --surface-foreground: oklch(1 0 0);
-  --card: #2c4e7a;
-  --card-foreground: oklch(1 0 0);
-  --popover: #254369;
-  --popover-foreground: oklch(1 0 0);
-  --primary: oklch(0.79 0.09 87 / 90%);
-  --primary-foreground: #1e3a5f;
-  --secondary: #3a5f8c;
-  --secondary-foreground: oklch(1 0 0);
-  --muted: #3a5f8c;
-  --muted-foreground: oklch(0.88 0.02 252 / 75%);
-  --accent: oklch(0.79 0.09 87 / 90%);
-  --accent-foreground: #1e3a5f;
+  --background: oklch(0.98 0.002 250);
+  --foreground: oklch(0.24 0.06 252);
+  --surface: oklch(1 0 0);
+  --surface-foreground: oklch(0.24 0.06 252);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.24 0.06 252);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.24 0.06 252);
+  --primary: oklch(0.73 0.13 88);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.96 0.006 250);
+  --secondary-foreground: oklch(0.24 0.06 252);
+  --muted: oklch(0.96 0.006 250);
+  --muted-foreground: oklch(0.49 0.035 252);
+  --accent: oklch(0.73 0.13 88);
+  --accent-foreground: oklch(0.19 0.055 252);
   --destructive: oklch(0.62 0.22 25);
   --destructive-foreground: oklch(1 0 0);
-  --border: #3a5f8c1a;
-  --input: oklch(1 0 0 / 14%);
-  --ring: oklch(0.79 0.09 87);
+  --border: oklch(0.89 0.008 250);
+  --input: oklch(0.89 0.008 250);
+  --ring: oklch(0.73 0.13 88);
 
-  --gradient-header: linear-gradient(160deg, #2c4e7a 0%, #1e3a5f 70%);
-  --shadow-soft: 0 12px 30px -14px oklch(0 0 0 / 55%);
-  --shadow-glow: 0 0 0 1px oklch(0.79 0.09 87 / 25%), 0 10px 28px -12px oklch(0.79 0.09 87 / 35%);
+  --navy-deep: oklch(0.19 0.055 252);
+  --navy: oklch(0.27 0.085 252);
+  --gradient-header: linear-gradient(155deg, var(--navy-deep) 0%, var(--navy) 100%);
+  --gradient-action: linear-gradient(145deg, var(--navy-deep) 0%, var(--navy) 100%);
+  --shadow-soft: 0 8px 22px -14px oklch(0.19 0.055 252 / 28%);
+  --shadow-glow: 0 0 0 1px oklch(0.73 0.13 88 / 28%), 0 10px 24px -16px oklch(0.19 0.055 252 / 42%);
 }
 
 /* Ministério de Louvor — preto profundo / dourado / branco */
@@ -193,6 +196,30 @@
 
 @utility header-gradient {
   background-image: var(--gradient-header);
+  color: oklch(1 0 0);
+}
+
+@utility action-gradient {
+  background-image: var(--gradient-action);
+  color: oklch(1 0 0);
+}
+
+@utility nav-gradient {
+  background-image: var(--gradient-action);
+  color: oklch(1 0 0);
+}
+
+@utility notice-gradient {
+  background-image: var(--gradient-action);
+  color: oklch(1 0 0);
+}
+
+/* Botões de ação nas telas gerais seguem a base navy; temas ministeriais
+   continuam controlados exclusivamente pelos tokens de cada ministério. */
+.app-shell:not([data-theme]) .bg-primary {
+  background-color: var(--navy-deep);
+  background-image: var(--gradient-action);
+  color: oklch(1 0 0);
 }
 
 /* Reaplica os aliases de cor dentro de cada tema de ministério
