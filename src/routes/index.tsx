@@ -66,7 +66,7 @@ function Home() {
             <Cross className="size-6" strokeWidth={2.2} />
           </div>
           <div className="min-w-0">
-            <p className="text-[10px] font-semibold tracking-[0.3em] text-soft">IGREJA</p>
+            <p className="text-[10px] font-semibold tracking-[0.3em] text-primary">IGREJA</p>
             <h1 className="font-display text-xl leading-tight font-extrabold md:text-2xl">
               {config.nome}
             </h1>
@@ -76,7 +76,7 @@ function Home() {
           href={config.mapa_url || "https://maps.app.goo.gl/yuVVKkDf6Sh6ieoV6?g_st=ac"}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-3 flex items-start gap-1.5 border-l-2 border-primary/60 pl-2.5 text-xs text-soft transition hover:text-primary"
+          className="mt-3 flex items-start gap-1.5 border-l-2 border-primary/60 pl-2.5 text-xs text-background/75 transition hover:text-primary"
         >
           <MapPin className="mt-0.5 size-3.5 shrink-0 text-primary" />
           {config.endereco}
@@ -100,26 +100,26 @@ function Home() {
         <Link
 
           to="/avisos"
-          className="relative block overflow-hidden rounded-2xl border border-[#D4B678] bg-[#C9A86A] p-4 text-white shadow-[var(--shadow-glow)]"
+          className="notice-gradient relative block overflow-hidden rounded-2xl border border-primary/40 p-4 shadow-[var(--shadow-glow)]"
         >
-          <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.2em] text-white">
-            <Megaphone className="size-4 text-white" /> Seja bem-vindo,{" "}
+          <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.2em] text-primary">
+            <Megaphone className="size-4 text-primary" /> Seja bem-vindo,{" "}
             {(perfil?.nome ?? "Irmão(ã)").split(" ")[0]}!
           </div>
           {aviso ? (
             <>
-              <h2 className="mt-2 max-w-[80%] font-display text-2xl font-bold leading-snug text-white">
+              <h2 className="mt-2 max-w-[80%] font-display text-2xl font-bold leading-snug text-background">
                 {aviso.titulo}
               </h2>
-              <p className="mt-1 max-w-[85%] text-sm text-white/90">{aviso.descricao}</p>
-              <p className="mt-2 text-xs font-medium text-white/90">
+              <p className="mt-1 max-w-[85%] text-sm text-background/90">{aviso.descricao}</p>
+              <p className="mt-2 text-xs font-medium text-primary">
                 {aviso.autor} · {dataAvisoBR(aviso)} · toque para ver detalhes
               </p>
             </>
           ) : (
-            <p className="mt-2 text-sm text-white/90">Nenhum aviso fixado no momento.</p>
+            <p className="mt-2 text-sm text-background/90">Nenhum aviso fixado no momento.</p>
           )}
-          <Cross className="absolute -right-3 bottom-0 size-24 text-white opacity-40" strokeWidth={1.2} />
+          <Cross className="absolute -right-3 bottom-0 size-24 text-primary opacity-30" strokeWidth={1.2} />
         </Link>
       </section>
 
@@ -129,19 +129,19 @@ function Home() {
           <Link
             key={to}
             to={to}
-            className="surface-card flex flex-col items-center gap-2 px-3 py-5 text-center transition-transform active:scale-95"
+            className="action-gradient flex flex-col items-center gap-2 rounded-2xl border border-primary/35 px-3 py-5 text-center shadow-[var(--shadow-soft)] transition-transform active:scale-95"
           >
             <span className="flex size-14 items-center justify-center rounded-full border-2 border-primary/70 bg-primary/10">
               <Icon className="size-7 text-primary" strokeWidth={1.8} />
             </span>
-            <span className="text-sm font-medium uppercase tracking-wide">{label}</span>
+            <span className="text-sm font-medium uppercase tracking-wide text-background">{label}</span>
             <span className="h-0.5 w-7 bg-primary" />
           </Link>
         ))}
       </section>
 
       <section className="px-5 pb-6">
-        <div className="surface-card overflow-hidden">
+        <div className="surface-card overflow-hidden border-primary/20">
           <div className="flex items-center gap-3 px-4 py-4">
             <span className="flex size-10 items-center justify-center rounded-full bg-primary text-primary-foreground">
               <CalendarCheck className="size-5" />
