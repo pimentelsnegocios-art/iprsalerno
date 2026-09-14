@@ -21,6 +21,7 @@ import { toast } from "sonner";
 import { AppShell, PageHeader } from "@/components/AppShell";
 import { supabase } from "@/integrations/supabase/client";
 import { cultos, pedidosOracao } from "@/lib/church-data";
+import { abrirLivroCaixa } from "@/lib/livro-caixa-externo";
 
 export const Route = createFileRoute("/_authenticated/perfil")({
   head: () => ({
@@ -464,12 +465,13 @@ function Perfil() {
         </div>
 
         <div className="grid gap-2">
-          <Link
-            to="/contribuicoes"
+          <button
+            type="button"
+            onClick={() => abrirLivroCaixa("minhas-contribuicoes")}
             className="surface-card flex items-center gap-3 px-4 py-3 text-sm font-medium"
           >
             <HandCoins className="size-4 text-primary" /> Minhas Contribuições
-          </Link>
+          </button>
           <button
             onClick={() => setModalEditar(true)}
             className="surface-card flex items-center gap-3 px-4 py-3 text-sm font-medium"

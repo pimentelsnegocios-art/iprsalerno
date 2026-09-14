@@ -13,6 +13,7 @@ import {
 import { AppShell, PageHeader } from "@/components/AppShell";
 import { usePerfil } from "@/hooks/usePerfil";
 import { supabase } from "@/integrations/supabase/client";
+import { abrirLivroCaixa } from "@/lib/livro-caixa-externo";
 import { ehVisitante, podeAprovarCadastros, podeVerCaixaPerfil } from "@/lib/permissoes";
 
 export const Route = createFileRoute("/mais")({
@@ -54,22 +55,30 @@ function Mais() {
         subtitle={perfil ? `${perfil.nome} · ${perfil.cargo}` : "Menu do aplicativo"}
       />
       <div className="space-y-3 px-5 py-5">
-        <Link to="/contribuicoes" className="surface-card flex items-center gap-3 p-4">
+        <button
+          type="button"
+          onClick={() => abrirLivroCaixa("minhas-contribuicoes")}
+          className="surface-card flex w-full items-center gap-3 p-4 text-left"
+        >
           <HandCoins className="size-5 text-primary" />
           <div>
-            <p className="font-semibold">PIX da Igreja</p>
-            <p className="text-xs text-soft">Dízimos, ofertas e envio de comprovante</p>
+            <p className="font-semibold">Minhas Contribuições</p>
+            <p className="text-xs text-soft">Dízimos, ofertas e comprovantes</p>
           </div>
-        </Link>
+        </button>
 
         {caixa ? (
-          <Link to="/caixa" className="surface-card flex items-center gap-3 p-4">
+          <button
+            type="button"
+            onClick={() => abrirLivroCaixa("painel")}
+            className="surface-card flex w-full items-center gap-3 p-4 text-left"
+          >
             <Wallet className="size-5 text-primary" />
             <div>
               <p className="font-semibold">Livro Caixa</p>
               <p className="text-xs text-soft">Entradas, saídas, saldo e relatórios</p>
             </div>
-          </Link>
+          </button>
         ) : null}
 
         {admin ? (
