@@ -4,9 +4,13 @@ import { useState } from "react";
 
 import dove from "@/assets/dove.png";
 import { supabase } from "@/integrations/supabase/client";
+import { caminhoSeguroDeRetorno } from "@/lib/auth-return";
 import { OPCOES_MINISTERIOS } from "@/lib/ministerios-opcoes";
 
 export const Route = createFileRoute("/cadastro")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    next: caminhoSeguroDeRetorno(search["next"]),
+  }),
   head: () => ({
     meta: [
       { title: "Cadastre-se — Família IPRB Renovada" },
@@ -18,6 +22,7 @@ export const Route = createFileRoute("/cadastro")({
 
 function CadastroPage() {
   const navigate = useNavigate();
+  const { next } = Route.useSearch();
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
@@ -54,7 +59,7 @@ function CadastroPage() {
       email: email.trim().toLowerCase(),
       password: senha,
       options: {
-        emailRedirectTo: window.location.origin,
+        emailRedirectTo: `${window.location.origin}${next ?? "/"}`,
         data: {
           nome: nome.trim(),
           whatsapp: whatsapp || null,
@@ -101,7 +106,7 @@ function CadastroPage() {
               acesso aos ministérios. Você já pode entrar e ver a agenda, os cultos e os avisos.
             </p>
             <button
-              onClick={() => navigate({ to: "/login" })}
+              onClick={() => navigate({ to: "/login", search: { next } })}
               className="mt-6 w-full rounded-2xl bg-[#1E3A5F] py-3.5 text-sm font-semibold text-white"
             >
               Voltar para o login
@@ -226,7 +231,11 @@ function CadastroPage() {
 
             <p className="mt-5 text-center text-xs text-[#1E3A5F]/60">
               Já tem conta?{" "}
-              <Link to="/login" className="font-semibold text-[#1E3A5F] hover:underline">
+              <Link
+                to="/login"
+                search={{ next }}
+                className="font-semibold text-[#1E3A5F] hover:underline"
+              >
                 Entrar
               </Link>
             </p>

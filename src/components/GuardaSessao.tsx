@@ -3,7 +3,7 @@ import { useEffect, useState, type ReactNode } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
 
-const ROTAS_PUBLICAS = ["/login", "/cadastro", "/reset-password"];
+const ROTAS_PUBLICAS = ["/login", "/cadastro", "/reset-password", "/.lovable/oauth/consent"];
 
 export function GuardaSessao({ children }: { children: ReactNode }) {
   const navigate = useNavigate();

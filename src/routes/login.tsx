@@ -5,9 +5,13 @@ import { toast } from "sonner";
 
 import dove from "@/assets/dove.png";
 import { supabase } from "@/integrations/supabase/client";
+import { caminhoSeguroDeRetorno, irParaRetorno } from "@/lib/auth-return";
 
 export const Route = createFileRoute("/login")({
   ssr: false,
+  validateSearch: (search: Record<string, unknown>) => ({
+    next: caminhoSeguroDeRetorno(search["next"]),
+  }),
   head: () => ({
     meta: [
       { title: "Entrar — Família IPRB Renovada" },
@@ -23,6 +27,7 @@ export const Route = createFileRoute("/login")({
 
 function LoginPage() {
   const navigate = useNavigate();
+  const { next } = Route.useSearch();
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [erro, setErro] = useState("");
@@ -33,9 +38,9 @@ function LoginPage() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/", replace: true });
+      if (data.session) irParaRetorno(next);
     });
-  }, [navigate]);
+  }, [navigate, next]);
 
   async function entrar(e: React.FormEvent) {
     e.preventDefault();
@@ -57,7 +62,7 @@ function LoginPage() {
     const nome =
       (data.user.user_metadata?.["nome"] as string | undefined) ?? data.user.email ?? "irmão(ã)";
     toast.success(`Bem-vindo de volta, ${nome.split(" ")[0]}!`);
-    navigate({ to: "/", replace: true });
+    irParaRetorno(next);
   }
 
   async function enviarRecuperacao(e: React.FormEvent) {
@@ -136,7 +141,11 @@ function LoginPage() {
 
         <p className="mt-5 text-center text-xs text-[#1E3A5F]/60">
           Ainda não tem conta?{" "}
-          <Link to="/cadastro" className="font-semibold text-[#1E3A5F] hover:underline">
+          <Link
+            to="/cadastro"
+            search={{ next }}
+            className="font-semibold text-[#1E3A5F] hover:underline"
+          >
             Cadastre-se
           </Link>
         </p>
