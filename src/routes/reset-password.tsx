@@ -43,7 +43,7 @@ function ResetPassword() {
       return;
     }
     toast.success("Senha atualizada! Você já pode entrar.");
-    navigate({ to: "/login", replace: true });
+    navigate({ to: "/login", search: { next: null }, replace: true });
   }
 
   return (

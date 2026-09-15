@@ -20,7 +20,7 @@ export function GuardaSessao({ children }: { children: ReactNode }) {
       if (!ativo) return;
       if (!data.user && !publica) {
         setLiberado(false);
-        navigate({ to: "/login", replace: true });
+        navigate({ to: "/login", search: { next: null }, replace: true });
         return;
       }
       setLiberado(true);
@@ -31,7 +31,7 @@ export function GuardaSessao({ children }: { children: ReactNode }) {
     const { data: sub } = supabase.auth.onAuthStateChange((evento) => {
       if (evento === "SIGNED_OUT" && !publica) {
         setLiberado(false);
-        navigate({ to: "/login", replace: true });
+        navigate({ to: "/login", search: { next: null }, replace: true });
       }
     });
 

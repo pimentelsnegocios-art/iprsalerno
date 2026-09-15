@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Cross, Loader2, Lock, Mail } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -26,7 +26,6 @@ export const Route = createFileRoute("/login")({
 });
 
 function LoginPage() {
-  const navigate = useNavigate();
   const { next } = Route.useSearch();
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
@@ -40,7 +39,7 @@ function LoginPage() {
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) irParaRetorno(next);
     });
-  }, [navigate, next]);
+  }, [next]);
 
   async function entrar(e: React.FormEvent) {
     e.preventDefault();

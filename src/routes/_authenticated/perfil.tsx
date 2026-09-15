@@ -166,7 +166,7 @@ function Perfil() {
     await queryClient.cancelQueries();
     queryClient.clear();
     await supabase.auth.signOut();
-    navigate({ to: "/login", replace: true });
+    navigate({ to: "/login", search: { next: null }, replace: true });
   }
 
   async function enviarFoto(file: File) {
