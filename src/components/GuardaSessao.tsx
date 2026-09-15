@@ -3,7 +3,7 @@ import { useEffect, useState, type ReactNode } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
 
-const ROTAS_PUBLICAS = ["/login", "/cadastro", "/reset-password"];
+const ROTAS_PUBLICAS = ["/login", "/cadastro", "/reset-password", "/.lovable/oauth/consent"];
 
 export function GuardaSessao({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
@@ -20,7 +20,7 @@ export function GuardaSessao({ children }: { children: ReactNode }) {
       if (!ativo) return;
       if (!data.user && !publica) {
         setLiberado(false);
-        navigate({ to: "/login", replace: true });
+        navigate({ to: "/login", search: { next: null }, replace: true });
         return;
       }
       setLiberado(true);
@@ -31,7 +31,7 @@ export function GuardaSessao({ children }: { children: ReactNode }) {
     const { data: sub } = supabase.auth.onAuthStateChange((evento) => {
       if (evento === "SIGNED_OUT" && !publica) {
         setLiberado(false);
-        navigate({ to: "/login", replace: true });
+        navigate({ to: "/login", search: { next: null }, replace: true });
       }
     });
 

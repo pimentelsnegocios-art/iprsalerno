@@ -40,7 +40,7 @@ function Mais() {
 
   async function sair() {
     await supabase.auth.signOut();
-    navigate({ to: "/login", replace: true });
+    navigate({ to: "/login", search: { next: null }, replace: true });
   }
 
   const visitante = ehVisitante(permissao);
