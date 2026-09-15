@@ -34,6 +34,7 @@ import { Route as CultoDiaRouteImport } from './routes/culto.$dia'
 import { Route as EstudoIndexRouteImport } from './routes/estudo.index'
 import { Route as EstudoIdRouteImport } from './routes/estudo.$id'
 import { Route as MinisteriosIndexRouteImport } from './routes/ministerios.index'
+import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as MinisteriosSlugIndexRouteImport } from './routes/ministerios.$slug.index'
 import { Route as MinisteriosSlugSecaoRouteImport } from './routes/ministerios.$slug.$secao'
 
@@ -162,6 +163,11 @@ const MinisteriosIndexRoute = MinisteriosIndexRouteImport.update({
   path: '/',
   getParentRoute: () => MinisteriosRoute,
 } as any)
+const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
+  id: '/.lovable/oauth/consent',
+  path: '/.lovable/oauth/consent',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MinisteriosSlugIndexRoute = MinisteriosSlugIndexRouteImport.update({
   id: '/$slug/',
   path: '/$slug/',
@@ -198,6 +204,7 @@ export interface FileRoutesByFullPath {
   '/contribuicoes/': typeof ContribuicoesIndexRoute
   '/estudo/': typeof EstudoIndexRoute
   '/ministerios/': typeof MinisteriosIndexRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/ministerios/$slug/$secao': typeof MinisteriosSlugSecaoRoute
   '/ministerios/$slug/': typeof MinisteriosSlugIndexRoute
 }
@@ -225,6 +232,7 @@ export interface FileRoutesByTo {
   '/contribuicoes': typeof ContribuicoesIndexRoute
   '/estudo': typeof EstudoIndexRoute
   '/ministerios': typeof MinisteriosIndexRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/ministerios/$slug/$secao': typeof MinisteriosSlugSecaoRoute
   '/ministerios/$slug': typeof MinisteriosSlugIndexRoute
 }
@@ -255,6 +263,7 @@ export interface FileRoutesById {
   '/contribuicoes/': typeof ContribuicoesIndexRoute
   '/estudo/': typeof EstudoIndexRoute
   '/ministerios/': typeof MinisteriosIndexRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/ministerios/$slug/$secao': typeof MinisteriosSlugSecaoRoute
   '/ministerios/$slug/': typeof MinisteriosSlugIndexRoute
 }
@@ -285,6 +294,7 @@ export interface FileRouteTypes {
     | '/contribuicoes/'
     | '/estudo/'
     | '/ministerios/'
+    | '/.lovable/oauth/consent'
     | '/ministerios/$slug/$secao'
     | '/ministerios/$slug/'
   fileRoutesByTo: FileRoutesByTo
@@ -312,6 +322,7 @@ export interface FileRouteTypes {
     | '/contribuicoes'
     | '/estudo'
     | '/ministerios'
+    | '/.lovable/oauth/consent'
     | '/ministerios/$slug/$secao'
     | '/ministerios/$slug'
   id:
@@ -341,6 +352,7 @@ export interface FileRouteTypes {
     | '/contribuicoes/'
     | '/estudo/'
     | '/ministerios/'
+    | '/.lovable/oauth/consent'
     | '/ministerios/$slug/$secao'
     | '/ministerios/$slug/'
   fileRoutesById: FileRoutesById
@@ -369,6 +381,7 @@ export interface RootRouteChildren {
   EstudoIdRoute: typeof EstudoIdRoute
   ContribuicoesIndexRoute: typeof ContribuicoesIndexRoute
   EstudoIndexRoute: typeof EstudoIndexRoute
+  DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -548,6 +561,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MinisteriosIndexRouteImport
       parentRoute: typeof MinisteriosRoute
     }
+    '/.lovable/oauth/consent': {
+      id: '/.lovable/oauth/consent'
+      path: '/.lovable/oauth/consent'
+      fullPath: '/.lovable/oauth/consent'
+      preLoaderRoute: typeof DotlovableOauthConsentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/ministerios/$slug/': {
       id: '/ministerios/$slug/'
       path: '/$slug'
@@ -616,6 +636,7 @@ const rootRouteChildren: RootRouteChildren = {
   EstudoIdRoute: EstudoIdRoute,
   ContribuicoesIndexRoute: ContribuicoesIndexRoute,
   EstudoIndexRoute: EstudoIndexRoute,
+  DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
